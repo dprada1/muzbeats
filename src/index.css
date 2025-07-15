@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-yellow: #facc15;
+  --color-brand-yellow: #EFBF04;
   --color-dark-bg: #0a0a0a;
   --color-card-bg: #1a1a1a;
   --color-waveform-bg: #2a2a2a;
   --color-white: #ffffff;
+}
+
+body {
+  background-color: #111111;
+  color: white;
 }

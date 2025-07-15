@@ -20,7 +20,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
     };
 
     return (
-        <div className="bg-zinc-900 text-white rounded-xl shadow-md p-4 flex gap-4 w-full max-w-4xl mx-auto">
+        <div className="bg-card-bg text-white rounded-xl shadow-md p-4 flex gap-4 w-full max-w-4xl mx-auto">
             {/* LEFT: Cover Art */}
             <img
                 src={beat.cover}
@@ -32,7 +32,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
             <div className="flex flex-col justify-between flex-1">
                 {/* Title & Key/BPM */}
                 <div>
-                    <h3 className="text-lg font-semibold text-brand-yellow break-words leading-snug">
+                    <h3 className="text-lg font-semibold text-white break-words leading-snug">
                         {beat.title}
                     </h3>
                     <p className="text-sm text-zinc-400 mt-1">
@@ -44,7 +44,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                 <div className="flex items-center gap-4 mt-3">
                     <button
                         onClick={handleTogglePlay}
-                        className="text-white bg-zinc-700 hover:bg-brand-yellow hover:text-black p-2 rounded-full transition"
+                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer"
                     >
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
@@ -55,12 +55,12 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                 </div>
 
                 {/* Price + Cart */}
-                <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-3 mt-3">
                     <span className="text-sm font-medium">${beat.price.toFixed(2)}</span>
 
                     <button
                         onClick={() => onAddToCart(beat)}
-                        className="flex items-center gap-2 border border-brand-yellow text-brand-yellow hover:bg-brand-yellow hover:text-black px-4 py-2 rounded-full text-sm transition"
+                        className="flex items-center gap-2 border border-brand-yellow text-brand-yellow hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
                     >
                         <FaShoppingCart />
                         Add to Cart
