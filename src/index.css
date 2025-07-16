@@ -12,3 +12,8 @@ body {
   background-color: #111111;
   color: white;
 }
+
+html, body {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}

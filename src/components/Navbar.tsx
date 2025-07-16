@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { FaShoppingCart, FaYoutube, FaTiktok, FaEnvelope } from 'react-icons/fa';
+import { FaYoutube, FaTiktok, FaEnvelope } from 'react-icons/fa';
+import { FaCartShopping } from "react-icons/fa6";
 import SearchBar from './SearchBar';
 
 function Navbar() {
     return (
-        <nav className="flex items-center justify-between px-4 h-16 bg-[#1a1a1a] border-b border-neutral-800">
+        <nav className="fixed top-0 left-0 w-full z-50 bg-[#1a1a1a] text-white h-16 px-4 flex items-center justify-between border-b border-neutral-800 shadow-sm">
             <a href="/store" className="flex items-center gap-2 group">
                 <img
                     src="/assets/images/skimask.png"
@@ -21,7 +22,7 @@ function Navbar() {
             </div>
 
             <div className="flex items-center gap-5 text-lg">
-                <Link to="/store/cart" className="hover:text-yellow-400 transition-colors"><FaShoppingCart /></Link>
+                <Link to="/store/cart" className="hover:text-yellow-400 transition-colors"><FaCartShopping /></Link>
                 <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors"><FaYoutube /></a>
                 <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors"><FaTiktok /></a>
                 <a href="mailto:someone@example.com" className="hover:text-yellow-400 transition-colors"><FaEnvelope /></a>

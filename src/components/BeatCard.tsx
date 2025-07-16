@@ -1,5 +1,6 @@
 import type { Beat } from '../types/Beat';
-import { FaPlay, FaPause, FaShoppingCart } from 'react-icons/fa';
+import { FaPlay, FaPause } from 'react-icons/fa';
+import { FaCartShopping } from "react-icons/fa6";
 import { usePlayer } from '../context/PlayerContext';
 
 type Props = {
@@ -62,7 +63,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                         onClick={() => onAddToCart(beat)}
                         className="flex items-center gap-2 border border-brand-yellow text-brand-yellow hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
                     >
-                        <FaShoppingCart />
+                        <FaCartShopping />
                         Add to Cart
                     </button>
                 </div>
