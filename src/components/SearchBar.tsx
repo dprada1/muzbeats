@@ -48,7 +48,7 @@ const SearchBar: React.FC = () => {
 
             <button
                 type="submit"
-                className="flex items-center justify-center bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white px-7 h-full rounded-r-full"
+                className="flex items-center justify-center bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white px-7 h-full rounded-r-full cursor-pointer"
             >
                 <FiSearch className="text-lg" />
             </button>

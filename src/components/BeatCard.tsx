@@ -2,6 +2,7 @@ import type { Beat } from '../types/Beat';
 import { FaPlay, FaPause } from 'react-icons/fa';
 import { FaCartShopping } from "react-icons/fa6";
 import { usePlayer } from '../context/PlayerContext';
+import Waveform from './Waveform';
 
 type Props = {
     beat: Beat;
@@ -50,9 +51,13 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
 
+                    {/*
                     <div className="flex-1 h-10 bg-zinc-800 rounded text-zinc-400 flex items-center justify-center text-sm">
                         Waveform will go here
                     </div>
+                    */}
+
+                    <Waveform beat={beat} />
                 </div>
 
                 {/* Price + Cart */}
@@ -64,7 +69,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                         className="flex items-center gap-2 border border-brand-yellow text-brand-yellow hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
                     >
                         <FaCartShopping />
-                        Add to Cart
+                        <span>Add&nbsp;to&nbsp;Cart</span>
                     </button>
                 </div>
             </div>
