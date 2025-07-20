@@ -1,6 +1,16 @@
 import React, { useRef, useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import { useSearch } from "../context/SearchContext";
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+// One-time tweak so the bar sits **under** the 64-px navbar
+NProgress.configure({ showSpinner: false });
+if (typeof window !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = '#nprogress .bar { top: 64px !important; background: red; }';
+  document.head.appendChild(style);
+}
 
 const SearchBar: React.FC = () => {
     const { searchQuery, setSearchQuery } = useSearch();
@@ -16,7 +26,17 @@ const SearchBar: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        // Start red progress bar + jump to top
+        NProgress.start();
+        window.scrollTo({ top: 0, behavior: 'auto' });
+
         setSearchQuery(input.trim());
+
+        // Stop bar after brief tick so UI feels snappy.
+        // If you do async fetching, call NProgress.done()
+        // in the `.then()` / after the list state updates.
+        setTimeout(() => NProgress.done(), 300);
     };
 
     return (

@@ -46,17 +46,10 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                 <div className="flex items-center gap-4 mt-3">
                     <button
                         onClick={handleTogglePlay}
-                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer"
+                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer no-ring"
                     >
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
-
-                    {/*
-                    <div className="flex-1 h-10 bg-zinc-800 rounded text-zinc-400 flex items-center justify-center text-sm">
-                        Waveform will go here
-                    </div>
-                    */}
-
                     <Waveform beat={beat} />
                 </div>
 
@@ -66,7 +59,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
 
                     <button
                         onClick={() => onAddToCart(beat)}
-                        className="flex items-center gap-2 border border-brand-yellow text-brand-yellow hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
+                        className="flex items-center gap-2 border border-brand-yellow text-brand-yellow no-ring hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
                     >
                         <FaCartShopping />
                         <span>Add&nbsp;to&nbsp;Cart</span>

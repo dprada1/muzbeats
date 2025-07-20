@@ -5,81 +5,108 @@ import {
     useState,
     useEffect,
     type ReactNode,
-  } from 'react';
-  import type { Beat } from '../types/Beat';
-  
-  interface PlayerContextType {
-    currentBeat: Beat | null;
+} from 'react';
+import type { Beat } from '../types/Beat';
+
+interface PlayerContextType {
+	currentBeat: Beat | null;
     isPlaying: boolean;
-    /** the single global <audio> element (read-only) */
     audio: HTMLAudioElement | null;
     play: (beat: Beat) => void;
     pause: () => void;
     toggle: () => void;
-  }
-  
-  const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
-  
-  export function PlayerProvider({ children }: { children: ReactNode }) {
+}
+
+const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+
+export function PlayerProvider({ children }: { children: ReactNode }) {
     const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-  
-    /* create the lone <audio> element exactly once */
+
+    // Create the lone <audio> element exactly once
     useEffect(() => {
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-        /* when a track finishes, flip state */
-        audioRef.current.onended = () => setIsPlaying(false);
-      }
-    }, []);
-  
+		/* create the single <audio> once */
+		if (!audioRef.current) audioRef.current = new Audio();
+		const audio = audioRef.current;
+	
+		/* sync UI ↔ hardware media keys / OS controls */
+		const onPlay  = () => setIsPlaying(true);
+		const onPause = () => setIsPlaying(false);
+	
+		audio.addEventListener('play', onPlay);
+		audio.addEventListener('pause', onPause);
+		audio.addEventListener('ended', onPause); // reset at end
+	
+		/* optional: keyboard Space + MediaPlayPause key */
+		const key = (e: KeyboardEvent) => {
+			const tag = (e.target as HTMLElement).tagName;
+			const typing =
+				tag === 'INPUT' ||
+				tag === 'TEXTAREA' ||
+				(e.target as HTMLElement).isContentEditable;
+		
+			if (e.code === 'Space' && !typing) {
+				e.preventDefault();
+				toggle();
+			}
+		  	if (e.code === 'MediaPlayPause') toggle();
+		};
+		window.addEventListener('keydown', key);
+	
+		return () => {
+			audio.removeEventListener('play', onPlay);
+			audio.removeEventListener('pause', onPause);
+			audio.removeEventListener('ended', onPause);
+			window.removeEventListener('keydown', key);
+		};
+	}, []);
+
     const play = (beat: Beat) => {
-      if (!audioRef.current) return;
-  
-      const audio = audioRef.current;
-  
-      /* load the file only if we switched tracks */
-      if (currentBeat?.audio !== beat.audio) {
-        audio.src = beat.audio;
-        setCurrentBeat(beat);
-      }
-  
-      audio.play().catch(console.error);
-      setIsPlaying(true);
+		if (!audioRef.current) return;
+
+		const audio = audioRef.current;
+
+		// Load the file only if we switched tracks
+		if (currentBeat?.audio !== beat.audio) {
+			audio.src = beat.audio;
+			setCurrentBeat(beat);
+		}
+
+		audio.play().catch(console.error);
+		setIsPlaying(true);
     };
-  
+
     const pause = () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+		if (audioRef.current) {
+			audioRef.current.pause();
+			setIsPlaying(false);
+		}
     };
-  
+
     const toggle = () => {
-      if (!audioRef.current || !currentBeat) return;
-      isPlaying ? pause() : play(currentBeat);
+		if (!audioRef.current || !currentBeat) return;
+		isPlaying ? pause() : play(currentBeat);
     };
-  
+
     return (
-      <PlayerContext.Provider
-        value={{
-          currentBeat,
-          isPlaying,
-          audio: audioRef.current,
-          play,
-          pause,
-          toggle,
-        }}
-      >
-        {children}
-      </PlayerContext.Provider>
+		<PlayerContext.Provider
+			value={{
+			currentBeat,
+			isPlaying,
+			audio: audioRef.current,
+			play,
+			pause,
+			toggle,
+			}}
+		>
+			{children}
+		</PlayerContext.Provider>
     );
-  }
-  
-  export function usePlayer() {
+}
+
+export function usePlayer() {
     const ctx = useContext(PlayerContext);
     if (!ctx) throw new Error('usePlayer must be used inside <PlayerProvider>');
     return ctx;
-  }
-  
+}

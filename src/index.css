@@ -17,3 +17,10 @@ html, body {
   scroll-behavior: smooth;
   overscroll-behavior-y: contain;
 }
+
+/* Remove keyboard focus outline from player controls */
+.no-ring:focus,
+.no-ring:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

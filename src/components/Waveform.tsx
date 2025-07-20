@@ -3,96 +3,109 @@ import WaveSurfer from 'wavesurfer.js';
 import { usePlayer } from '../context/PlayerContext';
 import type { Beat } from '../types/Beat';
 
-/* helper to format mm:ss ------------------------------------------------- */
 const fmt = (t = 0) => {
-  const m = Math.floor(t / 60);
-  const s = Math.round(t % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+	const m = Math.floor(t / 60);
+	const s = Math.round(t % 60).toString().padStart(2, '0');
+	return `${m}:${s}`;
 };
 
-export default function WaveformMuted({ beat }: { beat: Beat }) {
-  /* refs ----------------------------------------------------------------- */
-  const wrapperRef = useRef<HTMLDivElement>(null);   // «relative» wrapper
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
+export default function Waveform({ beat }: { beat: Beat }) {
+	const wrapperRef = useRef<HTMLDivElement>(null);       // observed node
+	const wavesurferRef = useRef<WaveSurfer | null>(null); // WS instance
 
-  /* context -------------------------------------------------------------- */
-  const { audio, currentBeat } = usePlayer();
-  const isActive = currentBeat?.id === beat.id;
+	const { audio, currentBeat } = usePlayer();
+	const isActive = currentBeat?.id === beat.id;
 
-  /* local time state ----------------------------------------------------- */
-  const [time, setTime] = useState(0);
-  const [dur, setDur] = useState(0);
+	const [isVisible, setVisible] = useState(false); // IO callback sets true
+	const [time, setTime] = useState(0);
+	const [dur, setDur] = useState(0);
 
-  /* create + load + keep muted ------------------------------------------ */
-  useEffect(() => {
-    if (!wrapperRef.current) return;
+	useEffect(() => {
+		const el = wrapperRef.current;
+		if (!el) return;
 
-    if (!wavesurferRef.current) {
-      wavesurferRef.current = WaveSurfer.create({
-        container: wrapperRef.current,    // ⬅️ container = wrapper
-        waveColor: '#888',
-        progressColor: 'white',
-        cursorColor: 'transparent',
-        barWidth: 2,
-        height: 64,
-        interact: true,
-      });
-      wavesurferRef.current.setMuted(true);
-    }
+		const io = new IntersectionObserver(
+		([entry]) => {
+			if (entry.isIntersecting) {
+			setVisible(true);
+			io.disconnect(); // load once, then stop observing
+			}
+		},
+		{ rootMargin: '200px' } // preload a bit before entering viewport
+		);
 
-    wavesurferRef.current.load(beat.audio);
+		io.observe(el);
+		return () => io.disconnect();
+	}, []);
 
-    return () => {
-      wavesurferRef.current?.destroy();
-      wavesurferRef.current = null;
-    };
-  }, [beat.audio]);
+	useEffect(() => {
+		if (!isVisible || !wrapperRef.current) return;
 
-  /* mirror <audio> progress --------------------------------------------- */
-  useEffect(() => {
-    const ws = wavesurferRef.current;
-    if (!audio || !ws) return;
+		if (!wavesurferRef.current) {
+			wavesurferRef.current = WaveSurfer.create({
+				container: wrapperRef.current,
+				waveColor: '#888',
+				progressColor: '#fff',
+				cursorColor: 'transparent',
+				barWidth: 2,
+				height: 64,
+				interact: true,
+			});
+			wavesurferRef.current.setMuted(true);
+			wavesurferRef.current.load(beat.audio); // decode happens here
+		}
 
-    if (isActive) {
-      /* sync badges */
-      const tick = () => setTime(audio.currentTime);
-      const meta = () => setDur(audio.duration || 0);
+		return () => {
+			wavesurferRef.current?.destroy();
+			wavesurferRef.current = null;
+		};
+	}, [isVisible, beat.audio]);
 
-      tick();
-      meta();
+	useEffect(() => {
+		const ws = wavesurferRef.current;
+		if (!audio || !ws) return;
 
-      audio.addEventListener('timeupdate', tick);
-      audio.addEventListener('loadedmetadata', meta);
+		if (isActive) {
+			const tick = () => setTime(audio.currentTime);
+			const meta = () => setDur(audio.duration || 0);
 
-      return () => {
-        audio.removeEventListener('timeupdate', tick);
-        audio.removeEventListener('loadedmetadata', meta);
-      };
-    } else {
-      ws.seekTo(0);
-      setTime(0);
-    }
-  }, [isActive, audio]);
+			tick();
+			meta();
 
-  /* click / drag to seek ------------------------------------------------- */
-  useEffect(() => {
-    if (!isActive || !audio || !wavesurferRef.current) return;
-    const ws = wavesurferRef.current;
-    const onSeek = (newSec: number) => (audio.currentTime = newSec);
-    ws.on('interaction', onSeek);
-    return () => ws.un('interaction', onSeek);
-  }, [isActive, audio]);
+			audio.addEventListener('timeupdate', tick);
+			audio.addEventListener('loadedmetadata', meta);
+			return () => {
+				audio.removeEventListener('timeupdate', tick);
+				audio.removeEventListener('loadedmetadata', meta);
+			};
+		} else {
+			ws.seekTo(0);
+			setTime(0);
+		}
+	}, [isActive, audio]);
 
-  /* --------------------------------------------------------------------- */
-  return (
-    <div ref={wrapperRef} className="relative w-full h-16 rounded">
-      {/* time badges ---------------------------------------------------- */}
-      <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[11px] bg-black/75 z-20 text-gray-200 px-1">
-        {fmt(time)}
-      </span>
-      <span className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[11px] bg-black/75 z-20 text-gray-200 px-1">
-        {fmt(dur)}
-      </span>
-    </div>
-  );
+	useEffect(() => {
+		if (!isActive || !audio || !wavesurferRef.current) return;
+
+		const ws = wavesurferRef.current;
+		const onSeek = (sec: number) => (audio.currentTime = sec);
+		ws.on('interaction', onSeek);
+		return () => ws.un('interaction', onSeek);
+	}, [isActive, audio]);
+
+	return (
+		<div ref={wrapperRef} className="relative w-full h-16 rounded">
+		{/* show badges only after WS exists (when visible) */}
+		{wavesurferRef.current && (
+			<>
+			<span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-20 text-[11px] bg-black/75 text-gray-200 px-1 rounded">
+				{fmt(time)}
+			</span>
+			<span className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 z-20 text-[11px] bg-black/75 text-gray-200 px-1 rounded">
+				{fmt(dur)}
+			</span>
+			</>
+		)}
+		</div>
+	);
 }
