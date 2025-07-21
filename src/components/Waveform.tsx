@@ -2,12 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { usePlayer } from '../context/PlayerContext';
 import type { Beat } from '../types/Beat';
-
-const fmt = (t = 0) => {
-	const m = Math.floor(t / 60);
-	const s = Math.round(t % 60).toString().padStart(2, '0');
-	return `${m}:${s}`;
-};
+import { formatTime } from '../utils/formatTime';
 
 export default function Waveform({ beat }: { beat: Beat }) {
 	const wrapperRef = useRef<HTMLDivElement>(null);       // observed node
@@ -119,10 +114,10 @@ export default function Waveform({ beat }: { beat: Beat }) {
 		{wavesurferRef.current && (
 			<>
 			<span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-20 text-[11px] bg-black/75 text-gray-200 px-1 rounded">
-				{fmt(time)}
+				{formatTime(time)}
 			</span>
 			<span className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 z-20 text-[11px] bg-black/75 text-gray-200 px-1 rounded">
-				{fmt(dur)}
+				{formatTime(dur)}
 			</span>
 			</>
 		)}

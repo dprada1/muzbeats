@@ -1,40 +1,14 @@
-import {
-    useEffect,
-    useRef,
-    useState,
-    type MouseEvent,
-} from 'react';
-import {
-    FaPlay,
-    FaPause,
-    FaRepeat,
-} from 'react-icons/fa6';
-import {
-    FaStepBackward,
-    FaStepForward,
-} from 'react-icons/fa';
-import {
-    MdVolumeDown,
-    MdVolumeOff,
-    MdVolumeUp,
-} from 'react-icons/md';
-
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { FaPlay, FaPause, FaRepeat } from 'react-icons/fa6';
+import { FaStepBackward, FaStepForward } from 'react-icons/fa';
+import { MdVolumeDown, MdVolumeOff, MdVolumeUp } from 'react-icons/md';
 import { usePlayer } from '../context/PlayerContext';
 import { useSearch } from '../context/SearchContext';
+import { formatTime } from '../utils/formatTime';
 import AddToCartButton from './AddToCartButton';
 
-/* ------------------------------ helpers ------------------------------ */
-const fmt = (t = 0) => {
-    if (!Number.isFinite(t)) return '0:00';
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60)
-        .toString()
-        .padStart(2, '0');
-    return `${m}:${s}`;
-};
-
-/* ================================ component ================================ */
 export default function PlayerBar() {
+    /* ---------- context ---------- */
     const {
         currentBeat,
         isPlaying,
@@ -45,52 +19,51 @@ export default function PlayerBar() {
         audio,
     } = usePlayer();
     const { beats } = useSearch();
+    const noTrackLoaded = !currentBeat;
 
-    const nothingLoaded = !currentBeat;
+    /* ---------- skip logic ---------- */
+    const currentIndex = currentBeat ? beats.findIndex(b => b.id === currentBeat.id) : -1;
+    const previousBeat = currentIndex > 0 ? beats[currentIndex - 1] : null;
+    const nextBeat = currentIndex !== -1 && currentIndex < beats.length - 1 ? beats[currentIndex + 1] : null;
 
-    /* ----------- skip logic ----------- */
-    const idx = currentBeat ? beats.findIndex((b) => b.id === currentBeat.id) : -1;
-    const prevBeat = idx > 0 ? beats[idx - 1] : null;
-    const nextBeat = idx !== -1 && idx < beats.length - 1 ? beats[idx + 1] : null;
-
-    const skipPrev = () => prevBeat && play(prevBeat);
+    const skipPrevious = () => previousBeat && play(previousBeat);
     const skipNext = () => nextBeat && play(nextBeat);
 
-    /* ----------- timing ----------- */
-    const [time, setTime] = useState(0);
-    const [dur, setDur] = useState(0);
+    /* ---------- timing ---------- */
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
 
     useEffect(() => {
         if (!audio) return;
-        const onTime = () => setTime(audio.currentTime);
-        const onMeta = () => setDur(audio.duration || 0);
 
-        onMeta();
-        onTime();
+        const handleTime = () => setCurrentTime(audio.currentTime);
+        const handleMeta = () => setDuration(audio.duration || 0);
 
-        audio.addEventListener('timeupdate', onTime);
-        audio.addEventListener('loadedmetadata', onMeta);
+        handleTime();
+        handleMeta();
+
+        audio.addEventListener('timeupdate', handleTime);
+        audio.addEventListener('loadedmetadata', handleMeta);
         return () => {
-            audio.removeEventListener('timeupdate', onTime);
-            audio.removeEventListener('loadedmetadata', onMeta);
+            audio.removeEventListener('timeupdate', handleTime);
+            audio.removeEventListener('loadedmetadata', handleMeta);
         };
     }, [audio, currentBeat]);
 
-    /* ----------- seek bar ----------- */
+    /* ---------- seek bar ---------- */
     const barRef = useRef<HTMLDivElement>(null);
     const seek = (e: MouseEvent<HTMLDivElement>) => {
-        if (!audio || !barRef.current || !dur) return;
+        if (!audio || !barRef.current || !duration) return;
         const { left, width } = barRef.current.getBoundingClientRect();
-        const pct = (e.clientX - left) / width;
-        audio.currentTime = pct * dur;
+        audio.currentTime = ((e.clientX - left) / width) * duration;
     };
 
-    /* ----------- volume ----------- */
-    const [vol, setVol] = useState(1);
-    const [muted, setMuted] = useState(false);
-    const prevVol = useRef(1);
+    /* ---------- volume ---------- */
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const previousVolume = useRef(1);
 
-    const changeVol = (v: number) => {
+    const applyVolume = (v: number) => {
         if (!audio) return;
         audio.volume = v;
         audio.muted = v === 0;
@@ -100,120 +73,121 @@ export default function PlayerBar() {
         if (!audio) return;
         if (audio.muted || audio.volume === 0) {
             audio.muted = false;
-            audio.volume = prevVol.current || 0.5;
+            audio.volume = previousVolume.current || 0.5;
         } else {
-            prevVol.current = audio.volume;
+            previousVolume.current = audio.volume;
             audio.muted = true;
         }
     };
 
     useEffect(() => {
         if (!audio) return;
-        const onVol = () => {
-            setVol(audio.volume);
-            setMuted(audio.muted);
+        const syncVolume = () => {
+            setVolume(audio.volume);
+            setIsMuted(audio.muted);
         };
-        onVol();
-        audio.addEventListener('volumechange', onVol);
-        return () => audio.removeEventListener('volumechange', onVol);
+        syncVolume();
+        audio.addEventListener('volumechange', syncVolume);
+        return () => audio.removeEventListener('volumechange', syncVolume);
     }, [audio]);
 
-    let VolIcon;
-    if (muted || vol === 0) VolIcon = MdVolumeOff;
-    else if (vol <= 0.5) VolIcon = MdVolumeDown;
-    else VolIcon = MdVolumeUp;
+    let VolumeIcon = MdVolumeUp;
+    if (isMuted || volume === 0) VolumeIcon = MdVolumeOff;
+    else if (volume <= 0.5) VolumeIcon = MdVolumeDown;
 
-    /* ----------- shared btn style ----------- */
-    const btnBase = 'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none';
+    /* ---------- shared styles ---------- */
+    const iconButton =
+        'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow';
 
-    /* ---------------------------- JSX ---------------------------- */
+    /* ---------- render ---------- */
     return (
         <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50 h-20">
-            {/* top progress bar */}
+            {/* progress bar */}
             <div
                 ref={barRef}
                 onClick={seek}
                 className="h-1 w-full cursor-pointer bg-zinc-700"
             >
-            <div
-                className="h-full bg-white"
-                style={{ width: dur ? `${(time / dur) * 100}%` : '0%' }}
-            />
+                <div
+                    className="h-full bg-white"
+                    style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
+                />
             </div>
 
-            {/* main row */}
-            <div className="flex items-center gap-4 px-4 py-3">
-                {/* thumbnail */}
-                {currentBeat?.cover && (
-                    <img
-                    src={currentBeat.cover}
-                    alt={currentBeat.title}
-                    className="h-12 w-12 rounded object-cover"
-                    />
-                )}
-
-                {/* track info */}
-                <div className="min-w-0">
-                    <div className="truncate font-semibold">
-                        {currentBeat ? currentBeat.title : 'No track loaded'}
-                    </div>
-                    {currentBeat?.key && (
-                        <div className="text-xs text-gray-400">
-                            {currentBeat.key} • {currentBeat.bpm} BPM
-                        </div>
+            {/* 3-column grid */}
+            <div className="grid grid-cols-[320px_1fr_320px] items-center h-[calc(5rem-0.25rem)] px-4 gap-4">
+                {/* left – metadata */}
+                <div className="flex items-center gap-4 overflow-hidden">
+                    {currentBeat?.cover && (
+                        <img
+                            src={currentBeat.cover}
+                            alt={currentBeat.title}
+                            className="h-12 w-12 rounded object-cover shrink-0"
+                        />
                     )}
+                    <div className="min-w-0">
+                        <div className="truncate font-semibold">
+                            {currentBeat ? currentBeat.title : 'No track loaded'}
+                        </div>
+                        {currentBeat?.key && (
+                            <div className="text-xs text-gray-400 truncate">
+                                {currentBeat.key} • {currentBeat.bpm} BPM
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* controls */}
-                <div className="flex items-center gap-4 mx-auto">
+                {/* centre – controls */}
+                <div className="flex items-center justify-center gap-4">
+                    <span className="text-sm tabular-nums w-[48px] text-right">
+                        {formatTime(currentTime)}
+                    </span>
+
                     <button
-                        onClick={skipPrev}
-                        disabled={nothingLoaded || !prevBeat}
-                        className={`${btnBase} hover:text-brand-yellow`}
+                        onClick={skipPrevious}
+                        disabled={noTrackLoaded || !previousBeat}
+                        className={iconButton}
                     >
                         <FaStepBackward size={18} />
                     </button>
 
                     <button
                         onClick={toggle}
-                        disabled={nothingLoaded}
-                        className={`${btnBase} hover:text-brand-yellow`}
+                        disabled={noTrackLoaded}
+                        className={`${iconButton} text-lg`}
                     >
-                        {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
+                        {isPlaying ? <FaPause size={22} /> : <FaPlay size={22} />}
                     </button>
 
                     <button
                         onClick={skipNext}
-                        disabled={nothingLoaded || !nextBeat}
-                        className={`${btnBase} hover:text-brand-yellow`}
+                        disabled={noTrackLoaded || !nextBeat}
+                        className={iconButton}
                     >
                         <FaStepForward size={18} />
                     </button>
 
+                    <span className="text-sm tabular-nums w-[48px]">
+                        {formatTime(duration)}
+                    </span>
+
                     <button
                         onClick={toggleLoop}
-                        disabled={nothingLoaded}
-                        className={`${btnBase} ${isLoop ? 'text-brand-yellow' : 'text-gray-400'}`}
+                        disabled={noTrackLoaded}
+                        className={`${iconButton} ${isLoop ? 'text-brand-yellow' : 'text-gray-400'}`}
                     >
                         <FaRepeat size={18} />
                     </button>
-
-                    {/* time */}
-                    <span className="text-sm tabular-nums w-14 text-right">
-                        {fmt(time)}
-                    </span>
-                    <span className="text-sm opacity-60">/</span>
-                    <span className="text-sm tabular-nums w-14">{fmt(dur)}</span>
                 </div>
 
-                {/* volume */}
-                <div className="flex items-center gap-2">
+                {/* right – volume + cart */}
+                <div className="flex items-center gap-3 justify-end">
                     <button
                         onClick={toggleMute}
-                        disabled={nothingLoaded}
-                        className={`${btnBase} hover:text-brand-yellow`}
+                        disabled={noTrackLoaded}
+                        className={iconButton}
                     >
-                        <VolIcon size={24} />
+                        <VolumeIcon size={20} />
                     </button>
 
                     <input
@@ -221,24 +195,23 @@ export default function PlayerBar() {
                         min={0}
                         max={1}
                         step={0.01}
-                        value={vol}
-                        disabled={nothingLoaded}
-                        onChange={(e) => changeVol(parseFloat(e.target.value))}
+                        value={volume}
+                        disabled={noTrackLoaded}
+                        onChange={(e) => applyVolume(parseFloat(e.target.value))}
                         className={`seek accent-white w-24 no-ring ${
-                            nothingLoaded ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+                            noTrackLoaded ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
                         }`}
                     />
-                </div>
 
-                {/* price + cart */}
-                {currentBeat && (
-                    <div className="flex items-center gap-3 pl-4">
-                        {currentBeat.price && (
-                            <span className="font-medium">${currentBeat.price}</span>
-                        )}
-                        <AddToCartButton beat={currentBeat} />
-                    </div>
-                )}
+                    {currentBeat && (
+                        <div className="flex items-center gap-3">
+                            {currentBeat.price && (
+                                <span className="font-medium">${currentBeat.price}</span>
+                            )}
+                            <AddToCartButton beat={currentBeat} />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -18,7 +18,7 @@ export default function Navbar() {
                 onClick={() => NProgress.start()}
             >
                 <img src="/assets/images/skimask.png" alt="Logo" className="w-10 h-10 object-cover" />
-                <span className="text-white text-lg font-semibold group-hover:text-brand-yellow transition-colors duration-200">
+                <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
                     Muz Beats
                 </span>
             </Link>
