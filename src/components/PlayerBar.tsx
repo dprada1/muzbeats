@@ -92,7 +92,7 @@ export default function PlayerBar() {
 
     /* ---------- shared styles ---------- */
     const iconButton =
-        'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow';
+        'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow cursor-pointer';
 
     /* ---------- render ---------- */
     return (
@@ -113,7 +113,7 @@ export default function PlayerBar() {
                     value={currentTime}
                     onChange={(e) => audio && (audio.currentTime = +e.target.value)}
                     disabled={noTrackLoaded}
-                    className={`progress range-thumb absolute inset-0 w-full h-full bg-transparent ${
+                    className={`progress accent-white no-ring range-thumb absolute inset-0 w-full h-full bg-transparent ${
                         noTrackLoaded ? 'cursor-not-allowed opacity-0' : 'cursor-pointer'
                     }`}
                 />
