@@ -12,9 +12,11 @@ interface PlayerContextType {
 	currentBeat: Beat | null;
     isPlaying: boolean;
     audio: HTMLAudioElement | null;
+	isLoop: boolean;
     play: (beat: Beat) => void;
     pause: () => void;
     toggle: () => void;
+	toggleLoop: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 export function PlayerProvider({ children }: { children: ReactNode }) {
     const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+	const [isLoop, setIsLoop] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Create the lone <audio> element exactly once
@@ -70,6 +73,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 		// Load the file only if we switched tracks
 		if (currentBeat?.audio !== beat.audio) {
 			audio.src = beat.audio;
+			audio.loop = isLoop;
 			setCurrentBeat(beat);
 		}
 
@@ -89,15 +93,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 		isPlaying ? pause() : play(currentBeat);
     };
 
+	const toggleLoop = () => {
+		if (!audioRef.current) return;
+		const next = !isLoop;
+		audioRef.current.loop = next;
+		setIsLoop(next);
+	}
+
     return (
 		<PlayerContext.Provider
 			value={{
 			currentBeat,
 			isPlaying,
+			isLoop,
 			audio: audioRef.current,
 			play,
 			pause,
 			toggle,
+			toggleLoop,
 			}}
 		>
 			{children}

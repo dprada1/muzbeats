@@ -15,7 +15,7 @@ const fmt = (t = 0) => {
 };
 
 export default function PlayerBar() {
-    const { currentBeat, isPlaying, toggle, audio } = usePlayer();
+    const { currentBeat, isPlaying, toggle, audio, isLoop, toggleLoop} = usePlayer();
 
     // Time duration
     const [time, setTime] = useState(0);
@@ -111,7 +111,12 @@ export default function PlayerBar() {
                         <FaStepForward size={18} />
                     </button>
 
-                    <button className="p-1 hover:opacity-75 cursor-pointer no-ring">
+                    <button
+                        onClick={toggleLoop}
+                        className={`p-1 cursor-pointer no-ring ${
+                            isLoop ? 'text-brand-yellow' : 'text-gray-400'
+                        } transition`}
+                    >
                         <FaRepeat size={18} />
                     </button>
 
