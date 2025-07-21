@@ -1,51 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-yellow: #EFBF04;
-  --color-dark-bg: #0a0a0a;
-  --color-card-bg: #1a1a1a;
-  --color-waveform-bg: #2a2a2a;
-  --color-white: #ffffff;
+	--color-brand-yellow: #EFBF04;
+	--color-dark-bg: #0a0a0a;
+	--color-card-bg: #1a1a1a;
+	--color-waveform-bg: #2a2a2a;
+	--color-white: #ffffff;
 }
 
 body {
-  background-color: #111111;
-  color: white;
+	background-color: #111111;
+	color: white;
 }
 
 html, body {
-  scroll-behavior: smooth;
-  overscroll-behavior-y: contain;
+	scroll-behavior: smooth;
+	overscroll-behavior-y: contain;
 }
 
 /* Remove keyboard focus outline from player controls */
 .no-ring:focus,
 .no-ring:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
-/* PlayerBar seek slider ------------------------------------------------- */
-input[type='range'].seek::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.15s ease;
+/* =========================================================================
+   Range knob (used by volume + progress sliders)
+	====================================================================== */
+input[type='range'].range-thumb::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease;
 }
-input[type='range'].seek:hover::-webkit-slider-thumb,
-input[type='range'].seek:active::-webkit-slider-thumb {
-  transform: scale(1.5);
+
+/* progress bar — hide the track, keep the thumb visible */
+input[type='range'].progress::-webkit-slider-runnable-track {
+    background: transparent;
 }
-input[type='range'].seek::-moz-range-thumb {
-  height: 12px;
-  width: 12px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.15s ease;
+input[type='range'].progress::-moz-range-track {
+    background: transparent;
 }
-input[type='range'].seek:hover::-moz-range-thumb,
-input[type='range'].seek:active::-moz-range-thumb {
-  transform: scale(1.5);
+
+input[type='range'].range-thumb:hover::-webkit-slider-thumb,
+input[type='range'].range-thumb:active::-webkit-slider-thumb {
+    transform: scale(1.5);
+}
+
+/* Firefox */
+input[type='range'].range-thumb::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease;
+}
+input[type='range'].range-thumb:hover::-moz-range-thumb,
+input[type='range'].range-thumb:active::-moz-range-thumb {
+    transform: scale(1.5);
 }

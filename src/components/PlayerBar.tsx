@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaPlay, FaPause, FaRepeat } from 'react-icons/fa6';
 import { FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { MdVolumeDown, MdVolumeOff, MdVolumeUp } from 'react-icons/md';
@@ -52,11 +52,6 @@ export default function PlayerBar() {
 
     /* ---------- seek bar ---------- */
     const barRef = useRef<HTMLDivElement>(null);
-    const seek = (e: MouseEvent<HTMLDivElement>) => {
-        if (!audio || !barRef.current || !duration) return;
-        const { left, width } = barRef.current.getBoundingClientRect();
-        audio.currentTime = ((e.clientX - left) / width) * duration;
-    };
 
     /* ---------- volume ---------- */
     const [volume, setVolume] = useState(1);
@@ -103,14 +98,24 @@ export default function PlayerBar() {
     return (
         <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50 h-20">
             {/* progress bar */}
-            <div
-                ref={barRef}
-                onClick={seek}
-                className="h-1 w-full cursor-pointer bg-zinc-700"
-            >
+            <div ref={barRef} className="relative h-1 w-full bg-zinc-700">
+                {/* filled portion */}
                 <div
-                    className="h-full bg-white"
+                    className="absolute inset-0 bg-white pointer-events-none"
                     style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
+                />
+                {/* invisible range captures drag / hover */}
+                <input
+                    type="range"
+                    min={0}
+                    max={duration}
+                    step={0.01}
+                    value={currentTime}
+                    onChange={(e) => audio && (audio.currentTime = +e.target.value)}
+                    disabled={noTrackLoaded}
+                    className={`progress range-thumb absolute inset-0 w-full h-full bg-transparent ${
+                        noTrackLoaded ? 'cursor-not-allowed opacity-0' : 'cursor-pointer'
+                    }`}
                 />
             </div>
 
@@ -148,7 +153,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded || !previousBeat}
                         className={iconButton}
                     >
-                        <FaStepBackward size={18} />
+                        <FaStepBackward size={24} />
                     </button>
 
                     <button
@@ -156,7 +161,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded}
                         className={`${iconButton} text-lg`}
                     >
-                        {isPlaying ? <FaPause size={22} /> : <FaPlay size={22} />}
+                        {isPlaying ? <FaPause size={24} /> : <FaPlay size={24} />}
                     </button>
 
                     <button
@@ -164,7 +169,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded || !nextBeat}
                         className={iconButton}
                     >
-                        <FaStepForward size={18} />
+                        <FaStepForward size={24} />
                     </button>
 
                     <span className="text-sm tabular-nums w-[48px]">
@@ -176,7 +181,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded}
                         className={`${iconButton} ${isLoop ? 'text-brand-yellow' : 'text-gray-400'}`}
                     >
-                        <FaRepeat size={18} />
+                        <FaRepeat size={20} />
                     </button>
                 </div>
 
@@ -187,7 +192,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded}
                         className={iconButton}
                     >
-                        <VolumeIcon size={20} />
+                        <VolumeIcon size={28} />
                     </button>
 
                     <input
@@ -198,7 +203,7 @@ export default function PlayerBar() {
                         value={volume}
                         disabled={noTrackLoaded}
                         onChange={(e) => applyVolume(parseFloat(e.target.value))}
-                        className={`seek accent-white w-24 no-ring ${
+                        className={`range-thumb accent-white w-24 no-ring ${
                             noTrackLoaded ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
                         }`}
                     />
