@@ -1,15 +1,14 @@
 import type { Beat } from '../types/Beat';
 import { FaPlay, FaPause } from 'react-icons/fa';
-import { FaCartShopping } from "react-icons/fa6";
 import { usePlayer } from '../context/PlayerContext';
 import Waveform from './Waveform';
+import AddToCartButton from './AddToCartButton';
 
 type Props = {
     beat: Beat;
-    onAddToCart: (beat: Beat) => void;
 };
 
-export default function BeatCard({ beat, onAddToCart }: Props) {
+export default function BeatCard({ beat }: Props) {
     const { currentBeat, isPlaying, play, pause } = usePlayer();
     const isThisPlaying = currentBeat?.id === beat.id && isPlaying;
 
@@ -27,7 +26,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
             <img
                 src={beat.cover}
                 alt={beat.title}
-                className="w-28 h-28 md:w-32 md:h-32 rounded-lg object-cover"
+                className="w-28 h-28 md:w-36 md:h-36 rounded-lg object-cover"
             />
 
             {/* RIGHT: Content */}
@@ -56,14 +55,7 @@ export default function BeatCard({ beat, onAddToCart }: Props) {
                 {/* Price + Cart */}
                 <div className="flex items-center gap-3 mt-3">
                     <span className="text-sm font-medium">${beat.price.toFixed(2)}</span>
-
-                    <button
-                        onClick={() => onAddToCart(beat)}
-                        className="flex items-center gap-2 border border-brand-yellow text-brand-yellow no-ring hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition"
-                    >
-                        <FaCartShopping />
-                        <span>Add&nbsp;to&nbsp;Cart</span>
-                    </button>
+                    <AddToCartButton beat={beat} />
                 </div>
             </div>
         </div>

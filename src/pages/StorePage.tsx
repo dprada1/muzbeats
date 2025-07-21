@@ -41,12 +41,11 @@ export default function StorePage() {
             </div>
 
             {/* Beat Cards */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 pb-[64px]">
                 {filteredBeats.map(beat => (
                     <BeatCard
                         key={beat.id}
                         beat={beat}
-                        onAddToCart={(b) => console.log("Add to cart", b.title)}
                     />
                 ))}
             </div>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { FaPlay, FaPause, FaRepeat, FaVolumeHigh, FaCartShopping } from 'react-icons/fa6';
+import { FaPlay, FaPause, FaRepeat, FaVolumeHigh } from 'react-icons/fa6';
 import { FaStepForward, FaStepBackward } from "react-icons/fa";
 import { usePlayer } from '../context/PlayerContext';
+import AddToCartButton from './AddToCartButton';
 
 // Formats time as MM:SS
 const fmt = (t = 0) => {
@@ -56,7 +57,7 @@ export default function PlayerBar() {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50">
+        <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50 h-20">
             {/* top progress bar */}
             <div
                 ref={barRef}
@@ -83,7 +84,7 @@ export default function PlayerBar() {
                 {/* track info ----------------------------------------------------- */}
                 <div className="min-w-0">
                     <div className="truncate font-semibold">
-                        {currentBeat ? currentBeat.title : 'Pick a beat'}
+                        {currentBeat ? currentBeat.title : 'No track loaded'}
                     </div>
                     {currentBeat?.key && (
                         <div className="text-xs text-gray-400">
@@ -142,10 +143,7 @@ export default function PlayerBar() {
                         {currentBeat.price && (
                         <span className="font-medium">${currentBeat.price}</span>
                         )}
-                        <button className="flex items-center gap-2 border border-brand-yellow text-brand-yellow no-ring hover:bg-brand-yellow cursor-pointer hover:text-black px-3 py-1 rounded-full text-sm transition">
-                        <FaCartShopping />
-                        <span>Add&nbsp;to&nbsp;Cart</span>
-                        </button>
+                        <AddToCartButton beat={currentBeat} />
                     </div>
                 )}
             </div>

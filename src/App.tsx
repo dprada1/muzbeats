@@ -16,7 +16,6 @@ function Layout() {
 	);
 }
 
-
 function App() {
 	return (
 		<BrowserRouter>
@@ -30,17 +29,5 @@ function App() {
 		</BrowserRouter>
 	);
 }
-
-
-/*
-function App() {
-	return (
-		<div className="min-h-screen bg-[--color-dark-bg] text-[--color-brand-yellow] flex items-center justify-center">
-		<h1 className="text-3xl font-bold">Hello Tailwind v4 + custom theme</h1>
-		</div>
-	);
-
-}
-*/
 
 export default App;

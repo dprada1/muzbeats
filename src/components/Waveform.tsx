@@ -13,7 +13,7 @@ export default function Waveform({ beat }: { beat: Beat }) {
 	const wrapperRef = useRef<HTMLDivElement>(null);       // observed node
 	const wavesurferRef = useRef<WaveSurfer | null>(null); // WS instance
 
-	const { audio, currentBeat } = usePlayer();
+	const { audio, currentBeat, play } = usePlayer();
 	const isActive = currentBeat?.id === beat.id;
 
 	const [isVisible, setVisible] = useState(false); // IO callback sets true
@@ -52,6 +52,12 @@ export default function Waveform({ beat }: { beat: Beat }) {
 				interact: true,
 			});
 			wavesurferRef.current.setMuted(true);
+			
+			// Show duration
+			wavesurferRef.current.on('decode', (duration: number) => {
+				setDur(duration);
+				setTime(0);
+			});
 			wavesurferRef.current.load(beat.audio); // decode happens here
 		}
 
@@ -88,7 +94,16 @@ export default function Waveform({ beat }: { beat: Beat }) {
 		if (!isActive || !audio || !wavesurferRef.current) return;
 
 		const ws = wavesurferRef.current;
-		const onSeek = (sec: number) => (audio.currentTime = sec);
+		const onSeek = (sec: number) => {
+			if (!isActive) {
+				/* load & play the clicked beat if it isn’t already active */
+				play(beat);
+				return;
+			} else {
+				audio.currentTime = sec;
+				if (audio.paused) audio.play().catch(() => null);
+			}
+		};
 		ws.on('interaction', onSeek);
 		return () => ws.un('interaction', onSeek);
 	}, [isActive, audio]);

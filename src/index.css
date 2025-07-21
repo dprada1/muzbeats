@@ -24,3 +24,28 @@ html, body {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* PlayerBar seek slider ------------------------------------------------- */
+input[type='range'].seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+input[type='range'].seek:hover::-webkit-slider-thumb,
+input[type='range'].seek:active::-webkit-slider-thumb {
+  transform: scale(1.5);
+}
+input[type='range'].seek::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+input[type='range'].seek:hover::-moz-range-thumb,
+input[type='range'].seek:active::-moz-range-thumb {
+  transform: scale(1.5);
+}
