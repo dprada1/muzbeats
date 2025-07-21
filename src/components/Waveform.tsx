@@ -72,7 +72,12 @@ export default function Waveform({ beat }: { beat: Beat }) {
 		if (!audio || !ws) return;
 
 		if (isActive) {
-			const tick = () => setTime(audio.currentTime);
+			const tick = () => {
+				setTime(audio.currentTime);
+				if (audio.duration) {
+					ws.seekTo(audio.currentTime / audio.duration);
+				}
+			};
 			const meta = () => setDur(audio.duration || 0);
 
 			tick();
