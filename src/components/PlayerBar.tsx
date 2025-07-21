@@ -3,6 +3,7 @@ import { FaPlay, FaPause, FaRepeat, FaVolumeHigh } from 'react-icons/fa6';
 import { FaStepForward, FaStepBackward } from "react-icons/fa";
 import { usePlayer } from '../context/PlayerContext';
 import AddToCartButton from './AddToCartButton';
+import { useSearch } from '../context/SearchContext';
 
 // Formats time as MM:SS
 const fmt = (t = 0) => {
@@ -15,7 +16,15 @@ const fmt = (t = 0) => {
 };
 
 export default function PlayerBar() {
-    const { currentBeat, isPlaying, toggle, audio, isLoop, toggleLoop} = usePlayer();
+    const { currentBeat, isPlaying, toggle, play, audio, isLoop, toggleLoop} = usePlayer();
+    const { beats } = useSearch();
+
+    const idx = currentBeat ? beats.findIndex((b) => b.id === currentBeat.id) : -1;
+    const prevBeat = idx > 0 ? beats[idx - 1] : null;
+    const nextBeat = idx !== -1 && idx < beats.length - 1 ? beats[idx + 1] : null;
+
+    const skipPrev = () => prevBeat && play(prevBeat);
+    const skipNext = () => nextBeat && play(nextBeat);
 
     // Time duration
     const [time, setTime] = useState(0);
@@ -95,7 +104,11 @@ export default function PlayerBar() {
 
                 {/* controls ------------------------------------------------------- */}
                 <div className="flex items-center gap-4 mx-auto">
-                    <button className="p-1 hover:opacity-75 cursor-pointer no-ring">
+                    <button
+                        onClick={skipPrev}
+                        disabled={!prevBeat}
+                        className="p-1 hover:opacity-75 cursor-pointer no-ring"
+                    >
                         <FaStepBackward size={18} />
                     </button>
 
@@ -107,7 +120,11 @@ export default function PlayerBar() {
                         {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
                     </button>
 
-                    <button className="p-1 hover:opacity-75 cursor-pointer no-ring">
+                    <button
+                        onClick={skipNext}
+                        disabled={!nextBeat}
+                        className="p-1 hover:opacity-75 cursor-pointer no-ring"
+                    >
                         <FaStepForward size={18} />
                     </button>
 

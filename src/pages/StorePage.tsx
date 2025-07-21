@@ -8,7 +8,7 @@ import { filterBeats } from "../utils/filterBeats";
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
     const [filteredBeats, setFilteredBeats] = useState<Beat[]>([]);
-    const { searchQuery } = useSearch();
+    const { searchQuery, setBeats: setVisibleBeats } = useSearch();
 
     // Load beats initially
     useEffect(() => {
@@ -26,6 +26,7 @@ export default function StorePage() {
         const parsed = parseSearchQuery(searchQuery);
         const filtered = filterBeats(beats, parsed);
         setFilteredBeats(filtered);
+        setVisibleBeats(filtered); // Make list visible to PlayerBar
     }, [searchQuery, beats]);
 
     return (
