@@ -161,7 +161,7 @@ export default function PlayerBar() {
                         disabled={noTrackLoaded}
                         className={`${iconButton} text-lg`}
                     >
-                        {isPlaying ? <FaPause size={24} /> : <FaPlay size={24} />}
+                        {isPlaying ? <FaPause size={28} /> : <FaPlay size={28} />}
                     </button>
 
                     <button

@@ -19,19 +19,15 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'muz-cart-v1';
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<Beat[]>([]);
-
-    /* --- localStorage hydration --------------------------------------- */
-    useEffect(() => {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            try {
-                setItems(JSON.parse(raw));
-            } catch {
-                localStorage.removeItem(STORAGE_KEY);
-            }
+    const [items, setItems] = useState<Beat[]>(() => {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch {
+            localStorage.removeItem(STORAGE_KEY);
+            return [];
         }
-    }, []);
+    });
 
     /* --- persist whenever items change -------------------------------- */
     useEffect(() => {

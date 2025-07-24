@@ -98,7 +98,7 @@ export default function CartPage() {
                             {/* remove btn */}
                             <button
                                 onClick={() => remove(beat.id)}
-                                className="flex items-center gap-1 px-3 py-1 border-1 border-red-500 text-red-500 rounded-full no-ring hover:bg-red-500 hover:text-black transition"
+                                className="flex items-center gap-1 px-3 py-1 border-1 border-red-500 text-red-500 rounded-full no-ring hover:bg-red-500 cursor-pointer hover:text-black transition"
                             >
                                 <FaTrash /> Remove
                             </button>
@@ -109,7 +109,7 @@ export default function CartPage() {
                     {items.length > 0 && (
                         <button
                             onClick={() => navigate('/store')}
-                            className="self-start mt-2 bg-brand-yellow text-black font-medium px-6 py-2 rounded-full hover:bg-brand-yellow/90 transition no-ring"
+                            className="self-start mt-2 bg-brand-yellow text-black font-medium px-6 py-2 rounded-full hover:bg-brand-yellow/90 cursor-pointer transition no-ring"
                         >
                             ← Continue Shopping
                         </button>
@@ -126,14 +126,14 @@ export default function CartPage() {
 
                         <button
                             onClick={() => alert('Checkout flow coming soon!')}
-                            className="block w-full bg-[#0084ff] text-white font-bold text-center py-3 rounded-full hover:bg-[#0a74d1] transition no-ring"
+                            className="block w-full bg-[#0084ff] text-white font-bold text-center py-3 rounded-full hover:bg-[#0a74d1] cursor-pointer transition no-ring"
                         >
                             Proceed to Checkout
                         </button>
 
                         <button
                             onClick={() => setShowConfirm(true)}
-                            className="mt-3 block w-full text-red-500 text-sm underline hover:text-red-300 no-ring"
+                            className="mt-3 block w-full text-red-500 text-sm underline hover:text-red-300 cursor-pointer no-ring"
                         >
                             Clear Cart
                         </button>
