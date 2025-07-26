@@ -1,55 +1,6 @@
-import type { Beat } from "../types/Beat";
+import type { Beat } from "../../types/Beat";
 import type { SearchParams } from "./searchParser";
-
-// Converts a musical key string into a normalized format.
-// e.g. "C♯min" → "c#min" "E♭ Maj" → "ebmaj"
-function normalizeKeyNotation(key: string): string {
-    return key
-        .replace(/\s+/g, "")
-        .replace(/♯/g, "#")
-        .replace(/♭/g, "b")
-        .toLowerCase();
-}
-
-// Returns enharmonic and relative key equivalents for matching flexibility.
-// Used to match user-entered keys like "C#min" to beats in "Dbmin", "Emaj", etc.
-// e.g. getEnharmonicEquivalents("ebmin") → ["f#maj", "d#min"]
-function getEnharmonicEquivalents(key: string): string[] {
-    const map: Record<string, string[]> = {
-        "cmaj": ["b#maj", "amin"],
-        "b#maj": ["cmaj", "amin"],
-        "amin": ["cmaj", "b#maj"],
-        "gmaj": ["emin"],
-        "emin": ["gmaj"],
-        "dmaj": ["bmin"],
-        "bmin": ["dmaj"],
-        "amaj": ["f#min", "gbmin"],
-        "f#min": ["amaj", "gbmin"],
-        "gbmin": ["amaj", "f#min"],
-        "emaj": ["c#min", "dbmin"],
-        "c#min": ["emaj", "dbmin"],
-        "dbmin": ["emaj", "c#min"],
-        "bmaj": ["g#min", "abmin"],
-        "g#min": ["bmaj", "abmin"],
-        "abmin": ["bmaj", "g#min"],
-        "f#maj": ["ebmin", "d#min"],
-        "d#min": ["f#maj", "ebmin"],
-        "ebmin": ["f#maj", "d#min"],
-        "dbmaj": ["bbmin", "a#min"],
-        "bbmin": ["dbmaj", "a#min"],
-        "a#min": ["dbmaj", "bbmin"],
-        "abmaj": ["fmin"],
-        "fmin": ["abmaj"],
-        "ebmaj": ["cmin"],
-        "cmin": ["ebmaj"],
-        "bbmaj": ["gmin", "a#maj"],
-        "gmin": ["bbmaj", "a#maj"],
-        "a#maj": ["bbmaj", "gmin"],
-        "fmaj": ["dmin"],
-        "dmin": ["fmaj"]
-    };
-    return map[key] || [];
-}
+import { normalizeKeyNotation, getEnharmonicEquivalents } from "./keyUtils";
 
 /**
  * Filters a list of beats based on parsed search criteria.

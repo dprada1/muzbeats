@@ -8,33 +8,33 @@ import { useSearch } from '../context/SearchContext';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function CartPage() {
-    /* cart + navigation -------------------------------------------------- */
-    const { items, remove, clear } = useCart();
+    /* cart + navigation */
+    const { cartItems, removeFromCart, clearCart } = useCart();
     const navigate = useNavigate();
 
-    /* player & queue sync ------------------------------------------------ */
+    /* player & queue sync */
     const { play, pause, isPlaying, currentBeat } = usePlayer();
     const { setBeats } = useSearch(); // filtered-beats array for PlayerBar
 
     useEffect(() => {
-        setBeats(items);          // while on /cart: queue = cart items
+        setBeats(cartItems); // while on /cart: queue = cart items
         return () => setBeats([]); // clear on unmount
-    }, [items, setBeats]);
+    }, [cartItems, setBeats]);
 
-    /* scroll to top on mount -------------------------------------------- */
+    /* scroll to top on mount */
     useEffect(() => window.scrollTo({ top: 0 }), []);
 
-    /* clear-cart confirm modal ------------------------------------------ */
+    /* clear-cart confirm modal */
     const [showConfirm, setShowConfirm] = useState(false);
 
-    /* total -------------------------------------------------------------- */
-    const total = items.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
+    /* total */
+    const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
 
     return (
         <div className="mx-auto max-w-6xl pt-20 px-4 text-white pb-[64px]">
             {/* header */}
             <h1 className="text-4xl font-bold mb-2">Your Cart</h1>
-            {items.length === 0 ? (
+            {cartItems.length === 0 ? (
                 <>
                     <p className="text-zinc-400 text-lg">Your cart is empty.</p>
                     <p className="mt-2">
@@ -45,7 +45,7 @@ export default function CartPage() {
                 </>
             ) : (
                 <p className="text-zinc-400 text-lg mb-8">
-                    {items.length} {items.length === 1 ? 'item' : 'items'} in your cart.
+                    {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart.
                 </p>
             )}
 
@@ -53,7 +53,7 @@ export default function CartPage() {
             <div className="grid lg:grid-cols-[1fr_280px] gap-8">
                 {/* beat list */}
                 <div className="flex flex-col gap-6">
-                    {items.map(beat => (
+                    {cartItems.map(beat => (
                         <div
                             key={beat.id}
                             className="flex items-center gap-4 p-4 bg-[#1e1e1e] rounded-2xl"
@@ -97,7 +97,7 @@ export default function CartPage() {
 
                             {/* remove btn */}
                             <button
-                                onClick={() => remove(beat.id)}
+                                onClick={() => removeFromCart(beat.id)}
                                 className="flex items-center gap-1 px-3 py-1 border-1 border-red-500 text-red-500 rounded-full no-ring hover:bg-red-500 cursor-pointer hover:text-black transition"
                             >
                                 <FaTrash /> Remove
@@ -106,7 +106,7 @@ export default function CartPage() {
                     ))}
 
                     {/* continue shopping */}
-                    {items.length > 0 && (
+                    {cartItems.length > 0 && (
                         <button
                             onClick={() => navigate('/store')}
                             className="self-start mt-2 bg-brand-yellow text-black font-medium px-6 py-2 rounded-full hover:bg-brand-yellow/90 cursor-pointer transition no-ring"
@@ -117,7 +117,7 @@ export default function CartPage() {
                 </div>
 
                 {/* summary */}
-                {items.length > 0 && (
+                {cartItems.length > 0 && (
                     <div className="bg-[#1e1e1e] rounded-2xl p-6 h-max">
                         <h2 className="text-2xl font-semibold mb-4">Cart Summary</h2>
                         <p className="text-lg mb-6">
@@ -149,7 +149,7 @@ export default function CartPage() {
                 confirmLabel="Clear"
                 cancelLabel="Keep"
                 onConfirm={() => {
-                    clear();
+                    clearCart();
                     setShowConfirm(false);
                 }}
                 onCancel={() => setShowConfirm(false)}

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import BeatCard from '../components/BeatCard';
 import type { Beat } from '../types/Beat';
 import { useSearch } from '../context/SearchContext';
-import { parseSearchQuery } from "../utils/searchParser";
-import { filterBeats } from "../utils/filterBeats";
+import { filterBeats } from "../utils/search/filterBeats";
+import { parseSearchQuery } from '../utils/search/searchParser';
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);

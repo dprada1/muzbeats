@@ -8,18 +8,19 @@ import {
 import type { Beat } from '../types/Beat';
 
 interface CartContextType {
-    items: Beat[];
-    add: (b: Beat) => void;
-    remove: (id: string) => void;
+    cartItems: Beat[];
+    addToCart: (b: Beat) => void;
+    removeFromCart: (id: string) => void;
     inCart: (id: string) => boolean;
-    clear: () => void;
+    clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'muz-cart-v1';
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<Beat[]>(() => {
+    /* Hydrate synchronously */
+    const [cartItems, setCartItems] = useState<Beat[]>(() => {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
             return raw ? JSON.parse(raw) : [];
@@ -29,21 +30,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     });
 
-    /* --- persist whenever items change -------------------------------- */
+    /* Persist whenever items change */
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }, [items]);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
+    }, [cartItems]);
 
-    /* --- helpers ------------------------------------------------------- */
-    const add = (b: Beat) =>
-        setItems((arr) => (arr.find((i) => i.id === b.id) ? arr : [...arr, b]));
-    const remove = (id: string) =>
-        setItems((arr) => arr.filter((i) => i.id !== id));
-    const inCart = (id: string) => items.some((i) => i.id === id);
-    const clear = () => setItems([]);
+    /* Helpers */
+    const addToCart = (b: Beat) =>
+        setCartItems((arr) => (arr.find((i) => i.id === b.id) ? arr : [...arr, b]));
+    const removeFromCart = (id: string) =>
+        setCartItems((arr) => arr.filter((i) => i.id !== id));
+    const inCart = (id: string) => cartItems.some((i) => i.id === id);
+    const clearCart = () => setCartItems([]);
 
     return (
-        <CartContext.Provider value={{ items, add, remove, inCart, clear }}>
+        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, inCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );

@@ -6,12 +6,12 @@ import { useCart } from '../context/CartContext';
 import NProgress from 'nprogress';
 
 export default function Navbar() {
-    const { items } = useCart();
-    const qty = items.length;
+    const { cartItems } = useCart();
+    const qty = cartItems.length;
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50 bg-[#1a1a1a] text-white h-16 px-4 flex items-center justify-between border-b border-neutral-800 shadow-sm">
-            {/* logo ---------------------------------------------------------------- */}
+            {/* logo */}
             <Link
                 to="/store"
                 className="flex items-center gap-2 group no-ring"

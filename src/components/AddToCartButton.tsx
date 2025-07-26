@@ -8,12 +8,12 @@ interface Props {
 }
 
 export default function AddToCartButton({ beat, className = '' }: Props) {
-    const { inCart, add, remove } = useCart();
+    const { inCart, addToCart, removeFromCart } = useCart();
     const active = inCart(beat.id);
 
     const handle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        active ? remove(beat.id) : add(beat);
+        active ? removeFromCart(beat.id) : addToCart(beat);
     };
 
     // Style tokens
