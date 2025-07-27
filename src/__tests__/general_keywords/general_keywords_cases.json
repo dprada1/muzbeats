@@ -1,0 +1,4 @@
+[
+    { "input": "pierre bright",  "expected": ["pierre", "bright"] },
+    { "input": "pierre C#m 160", "expected": ["pierre"] }
+]
