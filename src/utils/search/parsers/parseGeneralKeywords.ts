@@ -9,11 +9,11 @@ import type { SearchParams } from "../searchParser";
  */
 export function parseGeneralKeywords(
     tokens: string[],
-    used: Set<number>,
+    usedIndices: Set<number>,
     out: SearchParams
 ): void {
     tokens.forEach((token, index) => {
-        if (!used.has(index)) {
+        if (!usedIndices.has(index)) {
             out.queryTokens.push(token.toLowerCase());
         }
     });

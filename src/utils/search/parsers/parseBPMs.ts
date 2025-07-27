@@ -38,11 +38,11 @@ const SPACED_SEP_RE = new RegExp(`^${RANGE_SEP}$`);
  */
 export function parseBPMs(
     tokens: string[],
-    used: Set<number>,
+    usedIndices: Set<number>,
     out: SearchParams
 ): void {
     for (let i = 0; i < tokens.length; i++) {
-        if (used.has(i)) continue;
+        if (usedIndices.has(i)) continue;
         const one = tokens[i],
               two = tokens[i + 1],
               three = tokens[i + 2],
@@ -58,7 +58,7 @@ export function parseBPMs(
             } else if (min < max && isValidBPM(min) && isValidBPM(max)) {
                 out.bpmRanges.push([min, max]);
             }
-            used.add(i);
+            usedIndices.add(i);
             continue;
         }
 
@@ -75,9 +75,9 @@ export function parseBPMs(
             } else if (min < max && isValidBPM(min) && isValidBPM(max)) {
                 out.bpmRanges.push([min, max]);
             }
-            used.add(i).add(i + 1).add(i + 2);
+            usedIndices.add(i).add(i + 1).add(i + 2);
             if (four?.toLowerCase() === "bpm") {
-                used.add(i + 3);
+                usedIndices.add(i + 3);
                 i += 3;
             } else {
                 i += 2;
@@ -92,7 +92,7 @@ export function parseBPMs(
             if (isValidBPM(val)) {
                 out.bpmValues.push(val);
             }
-            used.add(i);
+            usedIndices.add(i);
             continue;
         }
 
@@ -102,7 +102,7 @@ export function parseBPMs(
             if (isValidBPM(val)) {
                 out.bpmValues.push(val);
             }
-            used.add(i).add(i + 1);
+            usedIndices.add(i).add(i + 1);
             i += 1;
             continue;
         }

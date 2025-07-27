@@ -23,10 +23,10 @@ export default function StorePage() {
 
     // Filter beats based on search query
     useEffect(() => {
-        const parsed = parseSearchQuery(searchQuery);
-        const filtered = filterBeats(beats, parsed);
-        setFilteredBeats(filtered);
-        setVisibleBeats(filtered); // Make list visible to PlayerBar
+        const searchParams = parseSearchQuery(searchQuery);
+        const filteredBeats = filterBeats(beats, searchParams)
+        setFilteredBeats(filteredBeats);
+        setVisibleBeats(filteredBeats); // Make list visible to PlayerBar
     }, [searchQuery, beats]);
 
     return (
