@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { parseSearchQuery }   from "../../utils/search/searchParser";
+import { parseSearchQuery } from "../../../utils/search/searchParser";
 
 interface BpmCase {
     input:     string;

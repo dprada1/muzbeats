@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { CartProvider, useCart } from '../context/CartContext.tsx';
-import type { Beat } from '../types/Beat.ts';
+import { CartProvider, useCart } from '../../context/CartContext.tsx';
+import type { Beat } from '../../types/Beat.ts';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
     <CartProvider>{children}</CartProvider>

@@ -5,7 +5,7 @@ import {
     normalizeQuality,
     normalizeKeyNotation,
     getEnharmonicEquivalents
-} from "../utils/search/keyUtils";
+} from "../../utils/search/keyUtils";
 
 describe("keyUtils", () => {
 

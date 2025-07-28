@@ -44,9 +44,9 @@ export function parseBPMs(
     for (let i = 0; i < tokens.length; i++) {
         if (usedIndices.has(i)) continue;
         const one = tokens[i],
-              two = tokens[i + 1],
-              three = tokens[i + 2],
-              four = tokens[i + 3];
+              two = tokens[i + 1] ?? "",
+              three = tokens[i + 2] ?? "",
+              four = tokens[i + 3] ?? "";
 
         // 1) Compact range
         const cr = one.match(COMPACT_RANGE_RE);
@@ -85,7 +85,18 @@ export function parseBPMs(
             continue;
         }
 
-        // 3) Compact single value
+        // 3) Spaced single value: “160 bpm”
+        if (SPACED_NUM_RE.test(one) && two.trim().toLowerCase() === "bpm") {
+            const val = parseFloat(one);
+            if (isValidBPM(val)) {
+                out.bpmValues.push(val);
+            }
+            usedIndices.add(i).add(i + 1);
+            i += 1;
+            continue;
+        }
+    
+        // 4) Compact single value: “160”, “160bpm”, “bpm160”, “160.0”
         const cv = one.match(COMPACT_VAL_RE);
         if (cv) {
             const val = parseFloat(cv[1]);
@@ -93,17 +104,6 @@ export function parseBPMs(
                 out.bpmValues.push(val);
             }
             usedIndices.add(i);
-            continue;
-        }
-
-        // 4) Spaced single value: “160 bpm”
-        if (SPACED_NUM_RE.test(one) && two?.toLowerCase() === "bpm") {
-            const val = parseFloat(one);
-            if (isValidBPM(val)) {
-                out.bpmValues.push(val);
-            }
-            usedIndices.add(i).add(i + 1);
-            i += 1;
             continue;
         }
 

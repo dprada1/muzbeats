@@ -18,6 +18,7 @@ Normalization rules:
 from itertools import product
 import json
 from typing import List, Dict, Union
+import os
 
 # Define elements
 Roots = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -44,6 +45,7 @@ def normalize_quality(q: str) -> str:
     return q.lower()
 
 def main():
+    print("✅ Starting key test case generation...")
     counter = 1
 
     # 1) Single-letter roots (X) → both major & minor
@@ -132,11 +134,21 @@ def main():
         })
         counter += 1
 
-    # Summary and write JSON file
-    print(f"\nTotal combinations printed: {counter - 1}")
-    with open("src/__tests__/key_test_cases.json", "w", encoding="utf-8") as f:
-        json.dump(cases, f, ensure_ascii=False, indent=4)
-    print(f"Wrote {len(cases)} key test cases to key_test_cases.json")
+    # Summary
+    print(f"\n📊 Total combinations generated: {counter - 1}")
+
+    # Try saving the JSON file
+    OUTPUT_PATH = "src/__tests__/search/keys/key_test_cases.json"
+
+    try:
+        os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+        with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+            json.dump(cases, f, ensure_ascii=False, indent=4)
+        print(f"✅ Wrote {len(cases)} key test cases to: {OUTPUT_PATH}")
+        print(f"📁 Absolute path: {os.path.abspath(OUTPUT_PATH)}")
+    except Exception as e:
+        print("❌ Failed to write key test cases to file.")
+        print(f"Error: {e}")
 
 # Main generation logic
 if __name__ == '__main__':

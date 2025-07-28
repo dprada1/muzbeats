@@ -1,6 +1,6 @@
 import { describe, expect } from "vitest";
-import { parseSearchQuery } from "../../utils/search/searchParser";
-import keyCases from "../keys/key_test_cases.json";
+import { parseSearchQuery } from "../../../utils/search/searchParser";
+import keyCases from "./key_test_cases.json";
 
 interface KeyCase {
     input: string;
