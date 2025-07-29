@@ -5,7 +5,6 @@ describe("parseSearchQuery - General keywords only", () => {
     generalKeywordCases.forEach(({ input, expected }) => {
         it(`should extract general keywords from "${input}"`, () => {
             const searchParamsResult = parseSearchQuery(input);
-            console.debug(searchParamsResult); // Debug print statement
             expect(searchParamsResult.queryTokens.sort()).toEqual(expected.sort());
         });
     });

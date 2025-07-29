@@ -24,7 +24,6 @@ export default function StorePage() {
     // Filter beats based on search query
     useEffect(() => {
         const searchParamsResult = parseSearchQuery(searchQuery);
-        console.log(searchParamsResult); // Debug statement
         const filteredBeats = filterBeats(beats, searchParamsResult)
         setFilteredBeats(filteredBeats);
         setVisibleBeats(filteredBeats); // Make list visible to PlayerBar

@@ -16,50 +16,57 @@ import { normalizeKeyNotation, getEnharmonicEquivalents } from "./keyUtils";
  */
 export function filterBeats(beats: Beat[], searchParams: SearchParams): Beat[] {
     const { bpmValues, bpmRanges, keys, queryTokens } = searchParams;
-
+  
     return beats.filter(beat => {
-        const beatTitle = beat.title.toLowerCase();
-        const beatKey = normalizeKeyNotation(beat.key);
-        const searchableText = `${beatTitle} ${beatKey}`;
-
-        // --- Token-based general matching (e.g. "bright pierre")
+        // --- Prepare searchable text: title, key, and optional tags, sanitized
+        const sanitizedTitle = beat.title
+            .toLowerCase()
+            .replace(/[-–—]/g, ""); // remove hyphens and unicode dashes
+    
+        const sanitizedKey = normalizeKeyNotation(beat.key)
+            .toLowerCase();
+    
+        // include tags if present at runtime (mock data)
+        const beatTags: string[] = (beat as any).tags ?? [];
+        const sanitizedTags = beatTags.map(tag => tag.toLowerCase());
+    
+        const searchableText = [sanitizedTitle, sanitizedKey, ...sanitizedTags].join(" ");
+    
+        // --- General keyword matching
         if (queryTokens.length) {
             const allTokensMatch = queryTokens.every(token =>
-                searchableText.includes(token)
+            searchableText.includes(token.toLowerCase())
             );
             if (!allTokensMatch) return false;
         }
-
+    
         // --- BPM matching
         const matchesBpmValue = bpmValues.includes(beat.bpm);
         const matchesBpmRange = bpmRanges.some(
             ([min, max]) => beat.bpm >= min && beat.bpm <= max
         );
-
         const bpmFilteringActive = bpmValues.length > 0 || bpmRanges.length > 0;
-        const bpmMatched = matchesBpmValue || matchesBpmRange;
-
-        if (bpmFilteringActive && !bpmMatched) {
+        if (bpmFilteringActive && !(matchesBpmValue || matchesBpmRange)) {
             return false;
         }
-
+    
         // --- Key matching (enharmonic + relative equivalents)
         if (keys.length > 0) {
-            const beatVariants = new Set([
-                beatKey,
-                ...getEnharmonicEquivalents(beatKey)
+            const beatVariants = new Set<string>([
+            sanitizedKey,
+            ...getEnharmonicEquivalents(sanitizedKey)
             ]);
-
+    
             const searchVariants = keys.flatMap(k => {
-                const norm = normalizeKeyNotation(k);
-                return [norm, ...getEnharmonicEquivalents(norm)];
+            const norm = normalizeKeyNotation(k).toLowerCase();
+            return [norm, ...getEnharmonicEquivalents(norm)];
             });
-
-            const matched = searchVariants.some(k => beatVariants.has(k));
-            if (!matched) return false;
+    
+            const keyMatched = searchVariants.some(k => beatVariants.has(k));
+            if (!keyMatched) return false;
         }
-
-        // All filters passed
+    
+        // all criteria passed
         return true;
     });
-}
+  }

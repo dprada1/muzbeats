@@ -15,10 +15,5 @@ export function parseGeneralKeywords(
     tokens.forEach((token, index) => {
         if (usedIndices.has(index)) return;
         out.queryTokens.push(token.toLowerCase());
-        /*
-        if (!usedIndices.has(index)) {
-            out.queryTokens.push(token.toLowerCase());
-        }
-        */
     });
 }
