@@ -4,6 +4,8 @@ import { FaCartShopping } from "react-icons/fa6";
 import SearchBar from './SearchBar';
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
+import { InfoTooltip } from './InfoToolTip';
+import { IoInformationCircleOutline } from "react-icons/io5";
 
 export default function Navbar() {
     const { cartItems } = useCart();
@@ -23,7 +25,17 @@ export default function Navbar() {
                 </span>
             </Link>
 
-            <div className="flex-1 mx-10 max-w-xl">
+            <div className="flex-1 flex items-center justify-center space-x-3 px-10">
+                <InfoTooltip
+                    trigger={
+                        <IoInformationCircleOutline
+                            className="text-gray-400 hover:text-white"
+                            size={20}
+                            aria-label="Search help"
+                        />
+                    }
+                message="Search by key (e.g. C#min), BPM (e.g. 120), or any title keyword."
+                />
                 <SearchBar />
             </div>
 
@@ -41,7 +53,6 @@ export default function Navbar() {
                 <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaYoutube size={20}/></a>
                 <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaTiktok size={20}/></a>
                 <a href="mailto:someone@example.com" className="hover:text-brand-yellow transition-colors"><FaEnvelope size={20}/></a>
-                <Link to="/about" className="underline hover:text-brand-yellow transition-colors">About Me</Link>
             </div>
         </nav>
     );
