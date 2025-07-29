@@ -8,7 +8,6 @@ import { formatTime } from '@/utils/formatTime';
 import AddToCartButton from './AddToCartButton';
 
 export default function PlayerBar() {
-    /* ---------- context ---------- */
     const {
         currentBeat,
         isPlaying,
@@ -21,7 +20,6 @@ export default function PlayerBar() {
     const { beats } = useSearch();
     const noTrackLoaded = !currentBeat;
 
-    /* ---------- skip logic ---------- */
     const currentIndex = currentBeat ? beats.findIndex(b => b.id === currentBeat.id) : -1;
     const previousBeat = currentIndex > 0 ? beats[currentIndex - 1] : null;
     const nextBeat = currentIndex !== -1 && currentIndex < beats.length - 1 ? beats[currentIndex + 1] : null;
@@ -29,19 +27,15 @@ export default function PlayerBar() {
     const skipPrevious = () => previousBeat && play(previousBeat);
     const skipNext = () => nextBeat && play(nextBeat);
 
-    /* ---------- timing ---------- */
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
 
     useEffect(() => {
         if (!audio) return;
-
         const handleTime = () => setCurrentTime(audio.currentTime);
         const handleMeta = () => setDuration(audio.duration || 0);
-
         handleTime();
         handleMeta();
-
         audio.addEventListener('timeupdate', handleTime);
         audio.addEventListener('loadedmetadata', handleMeta);
         return () => {
@@ -50,10 +44,8 @@ export default function PlayerBar() {
         };
     }, [audio, currentBeat]);
 
-    /* ---------- seek bar ---------- */
     const barRef = useRef<HTMLDivElement>(null);
 
-    /* ---------- volume ---------- */
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
     const previousVolume = useRef(1);
@@ -90,21 +82,17 @@ export default function PlayerBar() {
     if (isMuted || volume === 0) VolumeIcon = MdVolumeOff;
     else if (volume <= 0.5) VolumeIcon = MdVolumeDown;
 
-    /* ---------- shared styles ---------- */
     const iconButton =
         'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow cursor-pointer';
 
-    /* ---------- render ---------- */
     return (
         <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50 h-20">
             {/* progress bar */}
             <div ref={barRef} className="relative h-1 w-full bg-zinc-700">
-                {/* filled portion */}
                 <div
                     className="absolute inset-0 bg-white pointer-events-none"
                     style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
                 />
-                {/* invisible range captures drag / hover */}
                 <input
                     type="range"
                     min={0}
@@ -119,9 +107,9 @@ export default function PlayerBar() {
                 />
             </div>
 
-            {/* 3-column grid */}
-            <div className="grid grid-cols-[320px_1fr_320px] items-center h-[calc(5rem-0.25rem)] px-4 gap-4">
-                {/* left – metadata */}
+            {/* 3-column grid: side columns shrink between 80px–240px */}
+            <div className="grid grid-cols-[minmax(80px,240px)_1fr_minmax(80px,240px)] items-center h-[calc(5rem-0.25rem)] px-4 gap-2 sm:gap-4">
+                {/* left – metadata: cover + title + key/BPM (always shown) */}
                 <div className="flex items-center gap-4 overflow-hidden">
                     {currentBeat?.cover && (
                         <img
@@ -134,17 +122,15 @@ export default function PlayerBar() {
                         <div className="truncate font-semibold">
                             {currentBeat ? currentBeat.title : 'No track loaded'}
                         </div>
-                        {currentBeat?.key && (
-                            <div className="text-xs text-gray-400 truncate">
-                                {currentBeat.key} • {currentBeat.bpm} BPM
-                            </div>
-                        )}
+                        <div className="text-xs text-gray-400 truncate">
+                            {currentBeat?.key} • {currentBeat?.bpm} BPM
+                        </div>
                     </div>
                 </div>
 
                 {/* centre – controls */}
-                <div className="flex items-center justify-center gap-4">
-                    <span className="text-sm tabular-nums w-[48px] text-right">
+                <div className="flex items-center justify-center gap-2 sm:gap-4">
+                    <span className="text-sm tabular-nums w-[48px] text-right hidden sm:inline">
                         {formatTime(currentTime)}
                     </span>
 
@@ -172,7 +158,7 @@ export default function PlayerBar() {
                         <FaStepForward size={24} />
                     </button>
 
-                    <span className="text-sm tabular-nums w-[48px]">
+                    <span className="text-sm tabular-nums w-[48px] hidden sm:inline">
                         {formatTime(duration)}
                     </span>
 
@@ -186,7 +172,7 @@ export default function PlayerBar() {
                 </div>
 
                 {/* right – volume + cart */}
-                <div className="flex items-center gap-3 justify-end">
+                <div className="flex items-center gap-2 sm:gap-3 justify-end">
                     <button
                         onClick={toggleMute}
                         disabled={noTrackLoaded}
@@ -203,7 +189,7 @@ export default function PlayerBar() {
                         value={volume}
                         disabled={noTrackLoaded}
                         onChange={(e) => applyVolume(parseFloat(e.target.value))}
-                        className={`range-thumb accent-white w-24 no-ring ${
+                        className={`range-thumb accent-white w-24 no-ring hidden sm:block ${
                             noTrackLoaded ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
                         }`}
                     />
@@ -211,7 +197,7 @@ export default function PlayerBar() {
                     {currentBeat && (
                         <div className="flex items-center gap-3">
                             {currentBeat.price && (
-                                <span className="font-medium">${currentBeat.price}</span>
+                                <span className="hidden sm:flex font-medium">${currentBeat.price}</span>
                             )}
                             <AddToCartButton beat={currentBeat} />
                         </div>
