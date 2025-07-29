@@ -1,4 +1,4 @@
-import type { SearchParams } from "../searchParser";
+import type { SearchParams } from "@/types/SearchParams";
 
 /** Minimum allowed BPM (inclusive). */
 const MIN_BPM = 40;

@@ -1,7 +1,7 @@
-import { filterBeats } from '../../utils/search/filterBeats';
-import type { SearchParams } from '../../utils/search/searchParser';
-import mockBeats from '../shared/mockBeats.json';
-import type { Beat } from '../../types/Beat';
+import { filterBeats } from '@/utils/search/filterBeats';
+import type { SearchParams } from '@/types/SearchParams';
+import mockBeats from '@/__tests__/shared/mockBeats.json';
+import type { Beat } from '@/types/Beat';
 
 type TestCase = {
     params: SearchParams;

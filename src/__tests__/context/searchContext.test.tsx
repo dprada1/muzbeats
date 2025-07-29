@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
-import { SearchProvider, useSearch } from '../../context/SearchContext';
-import type { Beat } from '../../types/Beat';
+import { SearchProvider, useSearch } from '@/context/SearchContext';
+import type { Beat } from '@/types/Beat';
 
 /**
  * Unit tests for SearchContext: verifies default state and setter behavior.

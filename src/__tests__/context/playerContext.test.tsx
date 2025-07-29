@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { vi } from 'vitest';
-import { PlayerProvider, usePlayer } from '../../context/PlayerContext';
-import type { Beat } from '../../types/Beat';
+import { PlayerProvider, usePlayer } from '@/context/PlayerContext';
+import type { Beat } from '@/types/Beat';
 
 /**
  * Flush pending useEffect calls by awaiting a resolved promise in act.

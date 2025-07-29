@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import { usePlayer } from '../context/PlayerContext';
-import type { Beat } from '../types/Beat';
-import { formatTime } from '../utils/formatTime';
+import { usePlayer } from '@/context/PlayerContext';
+import type { Beat } from '@/types/Beat';
+import { formatTime } from '@/utils/formatTime';
 
 export default function Waveform({ beat }: { beat: Beat }) {
 	const wrapperRef = useRef<HTMLDivElement>(null);       // observed node
@@ -96,7 +96,7 @@ export default function Waveform({ beat }: { beat: Beat }) {
 		const ws = wavesurferRef.current;
 		const onSeek = (sec: number) => {
 			if (!isActive) {
-				/* load & play the clicked beat if it isn’t already active */
+				// load & play the clicked beat if it isn’t already active
 				play(beat);
 				return;
 			} else {

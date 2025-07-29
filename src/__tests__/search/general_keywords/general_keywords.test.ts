@@ -1,4 +1,4 @@
-import { parseSearchQuery } from "../../../utils/search/searchParser";
+import { parseSearchQuery } from "@/utils/search/searchParser";
 import generalKeywordCases from "./general_keywords_cases.json";
 
 describe("parseSearchQuery - General keywords only", () => {

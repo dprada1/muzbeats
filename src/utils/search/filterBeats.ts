@@ -1,5 +1,5 @@
-import type { Beat } from "../../types/Beat";
-import type { SearchParams } from "./searchParser";
+import type { Beat } from "@/types/Beat";
+import type { SearchParams } from "@/types/SearchParams";
 import { normalizeKeyNotation, getEnharmonicEquivalents } from "./keyUtils";
 
 /**

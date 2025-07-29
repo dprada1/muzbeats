@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { FaPlay, FaPause, FaRepeat } from 'react-icons/fa6';
 import { FaStepBackward, FaStepForward } from 'react-icons/fa';
 import { MdVolumeDown, MdVolumeOff, MdVolumeUp } from 'react-icons/md';
-import { usePlayer } from '../context/PlayerContext';
-import { useSearch } from '../context/SearchContext';
-import { formatTime } from '../utils/formatTime';
+import { usePlayer } from '@/context/PlayerContext';
+import { useSearch } from '@/context/SearchContext';
+import { formatTime } from '@/utils/formatTime';
 import AddToCartButton from './AddToCartButton';
 
 export default function PlayerBar() {

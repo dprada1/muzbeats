@@ -5,7 +5,7 @@ import {
     useEffect,
     type ReactNode,
 } from 'react';
-import type { Beat } from '../types/Beat';
+import type { Beat } from '@/types/Beat';
 
 interface CartContextType {
     cartItems: Beat[];

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { FaYoutube, FaTiktok, FaEnvelope } from 'react-icons/fa';
 import { FaCartShopping } from "react-icons/fa6";
 import SearchBar from './SearchBar';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 
 export default function Navbar() {

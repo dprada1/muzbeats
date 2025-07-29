@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Beat } from '../types/Beat';
+import type { Beat } from '@/types/Beat';
 
 interface SearchContextProps {
     searchQuery: string;

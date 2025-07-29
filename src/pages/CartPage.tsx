@@ -2,10 +2,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { FaTrash } from 'react-icons/fa6';
 import { FaPlay, FaPause } from 'react-icons/fa';
-import { useCart } from '../context/CartContext';
-import { usePlayer } from '../context/PlayerContext';
-import { useSearch } from '../context/SearchContext';
-import ConfirmDialog from '../components/ConfirmDialog';
+import { useCart } from '@/context/CartContext';
+import { usePlayer } from '@/context/PlayerContext';
+import { useSearch } from '@/context/SearchContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function CartPage() {
     /* cart + navigation */

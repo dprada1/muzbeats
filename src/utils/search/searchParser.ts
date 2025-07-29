@@ -1,13 +1,7 @@
 import { parseKeys } from "./parsers/parseKeys";
 import { parseBPMs } from "./parsers/parseBPMs";
 import { parseGeneralKeywords } from "./parsers/parseGeneralKeywords";
-
-export interface SearchParams {
-    bpmRanges:   [number, number][];
-    bpmValues:   number[];
-    keys:        string[];
-    queryTokens: string[];
-}
+import type { SearchParams } from "@/types/SearchParams";
 
 /**
  * Parses a raw search string into structured SearchParams.

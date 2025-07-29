@@ -1,4 +1,4 @@
-import type { SearchParams } from "../searchParser";
+import type { SearchParams } from "@/types/SearchParams";
 
 /**
  * Parses any tokens not already consumed by other parsers

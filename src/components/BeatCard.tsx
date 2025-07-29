@@ -1,6 +1,6 @@
-import type { Beat } from '../types/Beat';
+import type { Beat } from '@/types/Beat';
 import { FaPlay, FaPause } from 'react-icons/fa';
-import { usePlayer } from '../context/PlayerContext';
+import { usePlayer } from '@/context/PlayerContext';
 import Waveform from './Waveform';
 import AddToCartButton from './AddToCartButton';
 

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
-import { useSearch } from "../context/SearchContext";
+import { useSearch } from "@/context/SearchContext";
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 

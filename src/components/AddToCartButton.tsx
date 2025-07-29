@@ -1,6 +1,6 @@
 import { FaCartShopping, FaTrash } from 'react-icons/fa6';
-import { useCart } from '../context/CartContext';
-import type { Beat } from '../types/Beat';
+import { useCart } from '@/context/CartContext';
+import type { Beat } from '@/types/Beat';
 
 interface Props {
     beat: Beat;

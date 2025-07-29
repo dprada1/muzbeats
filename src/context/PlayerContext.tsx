@@ -6,7 +6,7 @@ import {
     useEffect,
     type ReactNode,
 } from 'react';
-import type { Beat } from '../types/Beat';
+import type { Beat } from '@/types/Beat';
 
 interface PlayerContextType {
 	currentBeat: Beat | null;
@@ -29,11 +29,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     // Create the lone <audio> element exactly once
     useEffect(() => {
-		/* create the single <audio> once */
 		if (!audioRef.current) audioRef.current = new Audio();
 		const audio = audioRef.current;
 	
-		/* sync UI ↔ hardware media keys / OS controls */
+		// Sync UI ↔ hardware media keys / OS controls
 		const onPlay  = () => setIsPlaying(true);
 		const onPause = () => setIsPlaying(false);
 	
@@ -41,7 +40,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 		audio.addEventListener('pause', onPause);
 		audio.addEventListener('ended', onPause); // reset at end
 	
-		/* optional: keyboard Space + MediaPlayPause key */
+		// Keyboard Space + MediaPlayPause key
 		const key = (e: KeyboardEvent) => {
 			const tag = (e.target as HTMLElement).tagName;
 			const typing =
