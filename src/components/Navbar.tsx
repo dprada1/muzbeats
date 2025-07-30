@@ -26,20 +26,20 @@ export default function Navbar() {
             </Link>
 
             <div className="flex-1 flex items-center justify-center space-x-3 px-10">
-                <InfoTooltip
-                    trigger={
-                        <IoInformationCircleOutline
-                            className="text-gray-400 hover:text-white"
-                            size={20}
-                            aria-label="Search help"
-                        />
-                    }
-                message="Search by key (e.g. C#min), BPM (e.g. 120), or any title keyword."
-                />
+            <InfoTooltip
+                trigger={<IoInformationCircleOutline className="h-5 w-5 text-gray-300" />}
+                message={
+                    <ul className="list-disc pl-4 space-y-1">
+                    <li><strong>Key:</strong> (e.g. C#m)</li>
+                    <li><strong>BPM:</strong> single (120) or range (140-160)</li>
+                    <li><strong>Keywords:</strong> anywhere in track's title</li>
+                    </ul>
+                }
+            />
                 <SearchBar />
             </div>
 
-            <div className="flex items-center gap-5 text-lg">
+            <div className="flex items-center gap-5 text-lg pr-4">
                 {/* cart icon + badge */}
                 <Link to="/store/cart" className="relative inline-flex no-ring hover:text-brand-yellow transition-colors">
                     <FaCartShopping size={20}/>

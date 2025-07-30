@@ -122,9 +122,12 @@ export default function PlayerBar() {
                         <div className="truncate font-semibold">
                             {currentBeat ? currentBeat.title : 'No track loaded'}
                         </div>
-                        <div className="text-xs text-gray-400 truncate">
-                            {currentBeat?.key} • {currentBeat?.bpm} BPM
-                        </div>
+                        {/* only render Key • BPM if we’ve actually loaded a beat */}
+                        {currentBeat && (
+                            <div className="text-xs text-gray-400 truncate">
+                                {currentBeat?.key} • {currentBeat?.bpm} BPM
+                            </div>
+                        )}
                     </div>
                 </div>
 
