@@ -17,7 +17,7 @@ export default function AddToCartButton({ beat, className = '' }: Props) {
     };
 
     // Style tokens
-    const base = 'flex items-center gap-2 px-3 py-1 rounded-full border transition no-ring text-sm cursor-pointer';
+    const base = 'flex items-center gap-2 px-3 py-1 rounded-full border transition no-ring text-sm cursor-pointer min-w-[8rem] justify-center';
     const filled = 'bg-transparent border-brand-yellow text-brand-yellow hover:bg-brand-yellow hover:text-black';
     const outline = 'border-brand-yellow text-brand-yellow hover:bg-brand-yellow hover:text-black';
 
@@ -27,7 +27,7 @@ export default function AddToCartButton({ beat, className = '' }: Props) {
             className={`${base} ${active ? outline : filled} ${className}`}
         >
             {active ? <FaTrash /> : <FaCartShopping />}
-            <span className="whitespace-nowrap">{active ? 'Remove from Cart' : 'Add to Cart'}</span>
+            <span className="whitespace-nowrap">{active ? 'Remove' : 'Add to Cart'}</span>
         </button>
     );
 }
