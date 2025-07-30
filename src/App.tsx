@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import PlayerBar from './components/PlayerBar';
 import StorePage from './pages/StorePage';
 import CartPage from './pages/CartPage';
+import BeatDetail from './pages/BeatDetail';
 
 function Layout() {
 	return (
@@ -18,15 +19,14 @@ function Layout() {
 
 function App() {
 	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path="/" element={<Navigate to="/store" replace />} />
-				<Route path="/store" element={<Layout />}>
-					<Route index element={<StorePage />} />
-					<Route path="cart" element={<CartPage />} />
-				</Route>
-			</Routes>
-		</BrowserRouter>
+		<Routes>
+			<Route path="/" element={<Navigate to="/store" replace />} />
+			<Route path="/store" element={<Layout />}>
+				<Route index element={<StorePage />} />
+				<Route path="cart" element={<CartPage />} />
+				<Route path="beat/:beatId" element={<BeatDetail />}/>
+			</Route>
+		</Routes>
 	);
 }
 

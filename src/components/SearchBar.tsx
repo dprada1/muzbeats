@@ -1,8 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import { useSearch } from "@/context/SearchContext";
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
+import { useNavigate, createSearchParams } from "react-router-dom";
 
 // Position the top bar under the navbar
 NProgress.configure({ showSpinner: false });
@@ -14,13 +15,16 @@ if (typeof window !== 'undefined') {
 
 const SearchBar: React.FC = () => {
     const { searchQuery, setSearchQuery } = useSearch();
-    const [input, setInput] = useState(searchQuery);
+    const [input, setInput] = useState('');
+    useEffect(() => setInput(searchQuery), [searchQuery]);
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const navigate = useNavigate();
 
     const handleClear = () => {
         setInput("");
         setSearchQuery("");
+        navigate("/store");
         inputRef.current?.focus();
     };
 
@@ -29,6 +33,15 @@ const SearchBar: React.FC = () => {
         NProgress.start();
         window.scrollTo({ top: 0, behavior: 'auto' });
         setSearchQuery(input.trim());
+        const q = input.trim();
+        if (q) {
+            navigate({
+                pathname: "/store",
+                search: createSearchParams({ q }).toString(),
+            });
+        } else {
+            navigate("/store");
+        }
         setTimeout(() => NProgress.done(), 300);
     };
 

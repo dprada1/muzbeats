@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Beat } from '@/types/Beat';
+import { useSearchParams } from 'react-router-dom';
 
 interface SearchContextProps {
     searchQuery: string;
@@ -11,8 +12,23 @@ interface SearchContextProps {
 const SearchContext = createContext<SearchContextProps | undefined>(undefined);
 
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchQuery, _setSearchQuery] = useState(() => searchParams.get('q') || '');
+
+    // When URL changes, sync into state
+    useEffect(() => {
+        _setSearchQuery(searchParams.get('q') || '');
+    }, [searchParams]);
+
+    // Wrap setter to push into URL
+    const setSearchQuery = (query: string) => {
+        _setSearchQuery(query);
+        if (query) setSearchParams({ q: query });
+        else setSearchParams({});
+    };
+
     const [beats, setBeats] = useState<Beat[]>([]);
+
     return (
         <SearchContext.Provider value={{ searchQuery, setSearchQuery, beats, setBeats }}>
             {children}

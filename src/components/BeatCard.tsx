@@ -3,6 +3,7 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import { usePlayer } from '@/context/PlayerContext';
 import Waveform from './Waveform';
 import AddToCartButton from './AddToCartButton';
+import { ShareBeatButton } from './ShareBeatButton';
 
 type Props = {
     beat: Beat;
@@ -52,10 +53,14 @@ export default function BeatCard({ beat }: Props) {
                     <Waveform beat={beat} />
                 </div>
 
-                {/* Price + Cart */}
+                {/* Price + Cart + Share*/}
                 <div className="flex items-center gap-3 mt-3">
                     <span className="text-sm font-medium">${beat.price.toFixed(2)}</span>
                     <AddToCartButton beat={beat} />
+                    <ShareBeatButton 
+                        url={`${window.location.origin}/store/beat/${beat.id}`}
+                        title={beat.title}
+                    />
                 </div>
             </div>
         </div>
