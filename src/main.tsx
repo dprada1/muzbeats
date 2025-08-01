@@ -6,17 +6,20 @@ import { PlayerProvider } from './context/PlayerContext.tsx'
 import { SearchProvider } from './context/SearchContext.tsx'
 import { CartProvider } from './context/CartContext.tsx'
 import { BrowserRouter } from 'react-router-dom'
+import { WaveformCacheProvider } from './context/WaveformContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
 		<BrowserRouter>
-			<CartProvider>
-				<PlayerProvider>
-					<SearchProvider>
-						<App />
-					</SearchProvider>
-				</PlayerProvider>
-			</CartProvider>
+			<WaveformCacheProvider>
+				<CartProvider>
+					<PlayerProvider>
+						<SearchProvider>
+							<App />
+						</SearchProvider>
+					</PlayerProvider>
+				</CartProvider>
+			</WaveformCacheProvider>
 		</BrowserRouter>
 	</React.StrictMode>
 )

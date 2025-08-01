@@ -13,7 +13,7 @@ interface PlayerContextType {
     isPlaying: boolean;
     audio: HTMLAudioElement | null;
 	isLoop: boolean;
-    play: (beat: Beat) => void;
+    play: (beat: Beat, startTime?: number) => void;
     pause: () => void;
     toggle: () => void;
 	toggleLoop: () => void;
@@ -64,7 +64,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 		};
 	}, []);
 
-    const play = (beat: Beat) => {
+    const play = (beat: Beat, startTime: number = 0) => {
 		if (!audioRef.current) return;
 
 		const audio = audioRef.current;
@@ -74,6 +74,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 			audio.src = beat.audio;
 			audio.loop = isLoop;
 			setCurrentBeat(beat);
+			audio.currentTime = startTime;
 		}
 
 		audio.play().catch(console.error);

@@ -4,6 +4,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import Waveform from './Waveform';
 import AddToCartButton from './AddToCartButton';
 import { ShareBeatButton } from './ShareBeatButton';
+import { useWaveformCache } from '@/context/WaveformContext';
 
 type Props = {
     beat: Beat;
@@ -11,13 +12,17 @@ type Props = {
 
 export default function BeatCard({ beat }: Props) {
     const { currentBeat, isPlaying, play, pause } = usePlayer();
+    const { positions } = useWaveformCache();
     const isThisPlaying = currentBeat?.id === beat.id && isPlaying;
+
+    // Look up last-saved time for this beat
+    const lastPos = positions[beat.id] ?? 0;
 
     const handleTogglePlay = () => {
         if (isThisPlaying) {
             pause();
         } else {
-            play(beat);
+            play(beat, lastPos);
         }
     };
 
