@@ -18,22 +18,29 @@ export default function Waveform({ beat }: { beat: Beat }) {
     const [time, setTime]         = useState(0);
     const [dur, setDur]           = useState(0);
 
-    // Lazy-load when in view
+    // Lazy-load when in view **or if this beat is active**
     useEffect(() => {
+        // If live, load immediately
+        if (isActive) {
+            setVisible(true);
+            return;
+        }
+
+        // Otherwise, lazy-load by IntersectionObserver
         const el = wrapperRef.current;
         if (!el) return;
         const io = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                setVisible(true);
-                io.disconnect();
+                    setVisible(true);
+                    io.disconnect();
                 }
             },
             { rootMargin: '200px' }
         );
         io.observe(el);
         return () => io.disconnect();
-    }, []);
+    }, [isActive]);
 
     // Initialize or load + cache buffer & restore position
     useEffect(() => {
@@ -54,25 +61,32 @@ export default function Waveform({ beat }: { beat: Beat }) {
             ws.setMuted(true);
 
             if (buffers[beat.id]) {
-                // Use cached buffer
+                // Use cached buffer + pick up live time if this is the active beat
                 (ws.backend as any).buffer = buffers[beat.id]!;
                 ws.drawBuffer();
-                // restore duration & last position
                 const total = buffers[beat.id].duration;
                 setDur(total);
-                const last = positions[beat.id] ?? 0;
-                ws.seekTo(last / total);
-                setTime(last);
+                const last  = positions[beat.id] ?? 0;
+                const now   = isActive && audio
+                            ? Math.min(audio.currentTime, total)
+                            : last;
+                ws.seekTo(total > 0 ? now / total : 0);
+                setTime(now);
+
             } else {
                 ws.on('ready', () => {
-                const buf = (ws.backend as any)?.buffer as AudioBuffer;
-                if (buf) {
-                    setBuffer(beat.id, buf);
-                }
-                // set initial duration/time
-                const total = ws.getDuration();
-                setDur(total);
-                setTime(0);
+                    const buf = (ws.backend as any)?.buffer as AudioBuffer;
+                    if (buf) setBuffer(beat.id, buf);
+                    // set initial duration & pick up live time if active
+                    const total = ws.getDuration();
+                    setDur(total);
+                    const last = positions[beat.id] ?? 0;
+                    const now  = isActive && audio
+                                ? Math.min(audio.currentTime, total)
+                                : last;
+                    ws.seekTo(total > 0 ? now / total : 0);
+                    setTime(now);
+
                 });
                 ws.load(beat.audio);
             }
@@ -90,30 +104,30 @@ export default function Waveform({ beat }: { beat: Beat }) {
         if (!audio || !ws) return;
 
         if (isActive) {
-        const tick = () => {
-            const t = audio.currentTime;
-            setTime(t);
-            setPosition(beat.id, t);
-            if (audio.duration) {
-                ws.seekTo(t / audio.duration);
-            }
-        };
-        const meta = () => setDur(audio.duration || 0);
+            const tick = () => {
+                const t = audio.currentTime;
+                setTime(t);
+                setPosition(beat.id, t);
+                if (audio.duration) {
+                    ws.seekTo(t / audio.duration);
+                }
+            };
+            const meta = () => setDur(audio.duration || 0);
 
-        tick();
-        meta();
-        audio.addEventListener('timeupdate', tick);
-        audio.addEventListener('loadedmetadata', meta);
-        return () => {
-            audio.removeEventListener('timeupdate', tick);
-            audio.removeEventListener('loadedmetadata', meta);
-        };
+            tick();
+            meta();
+            audio.addEventListener('timeupdate', tick);
+            audio.addEventListener('loadedmetadata', meta);
+            return () => {
+                audio.removeEventListener('timeupdate', tick);
+                audio.removeEventListener('loadedmetadata', meta);
+            };
         } else {
             const last = positions[beat.id] ?? 0;
             ws.seekTo(last / dur);
             setTime(last);
         }
-    }, [isActive, audio, setPosition, beat.id]);
+    }, [isActive, audio, setPosition, beat.id, positions, dur]);
 
     // Click-to-seek behavior
     useEffect(() => {
