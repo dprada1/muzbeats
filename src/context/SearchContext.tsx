@@ -12,17 +12,30 @@ interface SearchContextProps {
 const SearchContext = createContext<SearchContextProps | undefined>(undefined);
 
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    let searchParams: URLSearchParams;
+    let setSearchParams: (init: Record<string, string>) => void;
+    let hasSearchParams = true;
+
+    try {
+        [searchParams, setSearchParams] = useSearchParams();
+    } catch {
+        hasSearchParams = false;
+        searchParams = new URLSearchParams();
+        setSearchParams = () => {};
+    }
+
     const [searchQuery, _setSearchQuery] = useState(() => searchParams.get('q') || '');
 
     // When URL changes, sync into state
     useEffect(() => {
+        if (!hasSearchParams) return;
         _setSearchQuery(searchParams.get('q') || '');
-    }, [searchParams]);
+    }, [searchParams, hasSearchParams]);
 
     // Wrap setter to push into URL
     const setSearchQuery = (query: string) => {
         _setSearchQuery(query);
+        if (!hasSearchParams) return;
         if (query) setSearchParams({ q: query });
         else setSearchParams({});
     };
