@@ -1,5 +1,5 @@
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar/Navbar';
+import Navbar from './components/NavBar/NavBar';
 import PlayerBar from './components/PlayerBar/PlayerBar';
 import StorePage from './pages/StorePage';
 import CartPage from './pages/CartPage';

@@ -1,53 +1,22 @@
-import React, { useRef, useState, useEffect } from "react";
+import React from "react";
 import { FiSearch, FiX } from "react-icons/fi";
-import { useSearch } from "@/context/SearchContext";
-import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
-import { useNavigate, createSearchParams } from "react-router-dom";
-
-// Position the top bar under the navbar
-NProgress.configure({ showSpinner: false });
-if (typeof window !== 'undefined') {
-    const style = document.createElement('style');
-    style.innerHTML = '#nprogress .bar { top: 64px !important; background: red; }';
-    document.head.appendChild(style);
-}
+import { useSearchBar } from "./useSearchBar";
 
 const SearchBar: React.FC = () => {
-    const { searchQuery, setSearchQuery } = useSearch();
-    const [input, setInput] = useState('');
-    useEffect(() => setInput(searchQuery), [searchQuery]);
-    const [isFocused, setIsFocused] = useState(false);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const navigate = useNavigate();
-
-    const handleClear = () => {
-        setInput("");
-        setSearchQuery("");
-        navigate("/store");
-        inputRef.current?.focus();
-    };
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        NProgress.start();
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        setSearchQuery(input.trim());
-        const q = input.trim();
-        if (q) {
-            navigate({
-                pathname: "/store",
-                search: createSearchParams({ q }).toString(),
-            });
-        } else {
-            navigate("/store");
-        }
-        setTimeout(() => NProgress.done(), 300);
-    };
+    const {
+        input,
+        setInput,
+        inputRef,
+        isFocused,
+        onFocus,
+        onBlur,
+        handleClear,
+        onSubmit,
+    } = useSearchBar();
 
     return (
         <form
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
             className={`
                 flex items-center w-full max-w-xl transition-all duration-200
                 ${isFocused ? "outline-1 outline-[#3ea6ff]" : "outline-1 outline-[#333]"}
@@ -63,8 +32,8 @@ const SearchBar: React.FC = () => {
                     placeholder="Search beats..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
                     className="bg-transparent focus:outline-none text-sm text-white placeholder-[#808080] w-full"
                 />
                 {input && (

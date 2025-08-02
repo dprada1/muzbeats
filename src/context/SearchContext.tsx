@@ -32,12 +32,9 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         _setSearchQuery(searchParams.get('q') || '');
     }, [searchParams, hasSearchParams]);
 
-    // Wrap setter to push into URL
+    // State-only setter; URL updates come from navigate() in the UI
     const setSearchQuery = (query: string) => {
         _setSearchQuery(query);
-        if (!hasSearchParams) return;
-        if (query) setSearchParams({ q: query });
-        else setSearchParams({});
     };
 
     const [beats, setBeats] = useState<Beat[]>([]);
