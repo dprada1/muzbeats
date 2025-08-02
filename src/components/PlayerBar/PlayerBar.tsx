@@ -5,7 +5,7 @@ import { MdVolumeDown, MdVolumeOff, MdVolumeUp } from 'react-icons/md';
 import { usePlayer } from '@/context/PlayerContext';
 import { useSearch } from '@/context/SearchContext';
 import { formatTime } from '@/utils/formatTime';
-import AddToCartButton from './AddToCartButton';
+import AddToCartButton from '../buttons/AddToCartButton';
 
 export default function PlayerBar() {
     const {

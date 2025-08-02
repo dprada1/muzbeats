@@ -5,7 +5,7 @@ import { FaPlay, FaPause } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { useSearch } from '@/context/SearchContext';
-import ConfirmDialog from '@/components/ConfirmDialog';
+import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 
 export default function CartPage() {
     /* cart + navigation */

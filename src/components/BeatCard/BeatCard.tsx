@@ -1,9 +1,9 @@
 import type { Beat } from '@/types/Beat';
 import { FaPlay, FaPause } from 'react-icons/fa';
 import { usePlayer } from '@/context/PlayerContext';
-import Waveform from './Waveform';
-import AddToCartButton from './AddToCartButton';
-import { ShareBeatButton } from './ShareBeatButton';
+import Waveform from '../Waveform/Waveform';
+import AddToCartButton from '../buttons/AddToCartButton';
+import { ShareBeatButton } from '../buttons/ShareBeatButton';
 import { useWaveformCache } from '@/context/WaveformContext';
 
 type Props = {

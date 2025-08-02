@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { FaYoutube, FaTiktok, FaEnvelope } from 'react-icons/fa';
 import { FaCartShopping } from "react-icons/fa6";
-import SearchBar from './SearchBar';
+import SearchBar from '../SearchBar/SearchBar';
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
-import { InfoTooltip } from './InfoToolTip';
+import { InfoTooltip } from '../ui/Tooltip/InfoToolTip';
 import { IoInformationCircleOutline } from "react-icons/io5";
 
 export default function Navbar() {
