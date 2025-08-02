@@ -48,7 +48,7 @@ export function parseBPMs(
               three = tokens[i + 2] ?? "",
               four = tokens[i + 3] ?? "";
 
-        // 1) Compact range
+        // 1) Compact range token (e.g. "100-110" or "bpm100-110")
         const cr = one.match(COMPACT_RANGE_RE);
         if (cr) {
             const min = parseFloat(cr[1]),
@@ -59,10 +59,17 @@ export function parseBPMs(
                 out.bpmRanges.push([min, max]);
             }
             usedIndices.add(i);
+            // ALSO consume an adjacent standalone "bpm" token before or after
+            if (i > 0 && tokens[i - 1].toLowerCase() === "bpm") {
+                usedIndices.add(i - 1);
+            }
+            if (tokens[i + 1]?.toLowerCase() === "bpm") {
+                usedIndices.add(i + 1);
+            }
             continue;
         }
 
-        // 2) Spaced range: “150 - 170” or “150 – 170” etc.
+        // 2) Spaced range: "100 - 110" (optionally prefixed/suffixed with "bpm")
         if (
             SPACED_NUM_RE.test(one) &&
             SPACED_SEP_RE.test(two) &&
@@ -76,27 +83,38 @@ export function parseBPMs(
                 out.bpmRanges.push([min, max]);
             }
             usedIndices.add(i).add(i + 1).add(i + 2);
-            if (four?.toLowerCase() === "bpm") {
+            // consume trailing "bpm" token
+            if (four.toLowerCase() === "bpm") {
                 usedIndices.add(i + 3);
                 i += 3;
             } else {
                 i += 2;
             }
+            // consume leading "bpm" token (e.g. "bpm 100 - 110")
+            if (i - 3 >= 0 && tokens[i - 3]?.toLowerCase() === "bpm") {
+                usedIndices.add(i - 3);
+            }
             continue;
         }
 
-        // 3) Spaced single value: “160 bpm”
-        if (SPACED_NUM_RE.test(one) && two.trim().toLowerCase() === "bpm") {
-            const val = parseFloat(one);
+        // 3) Spaced single value: "160 bpm" or "bpm 160"
+        if (
+            (SPACED_NUM_RE.test(one) && two.toLowerCase() === "bpm") ||
+            (one.toLowerCase() === "bpm" && SPACED_NUM_RE.test(two))
+        ) {
+            // Determine where the numeric lives
+            const numericToken = SPACED_NUM_RE.test(one) ? one : two;
+            const val = parseFloat(numericToken);
             if (isValidBPM(val)) {
                 out.bpmValues.push(val);
             }
+            // consume both tokens
             usedIndices.add(i).add(i + 1);
             i += 1;
             continue;
         }
-    
-        // 4) Compact single value: “160”, “160bpm”, “bpm160”, “160.0”
+
+        // 4) Compact single value token (e.g. "160", "160bpm", "bpm160")
         const cv = one.match(COMPACT_VAL_RE);
         if (cv) {
             const val = parseFloat(cv[1]);
@@ -106,7 +124,6 @@ export function parseBPMs(
             usedIndices.add(i);
             continue;
         }
-
-        // skip other tokens
+        // Unrecognised tokens are ignored here; they'll be considered keywords elsewhere.
     }
 }

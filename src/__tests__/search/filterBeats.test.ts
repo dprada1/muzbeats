@@ -11,19 +11,19 @@ type TestCase = {
 // Define test cases mirroring previous scenarios, but with explicit SearchParams
 const testCases: TestCase[] = [
     // Single-criterion
-    { params: { bpmRanges: [], bpmValues: [],     keys: ['D#min'], queryTokens: [] },        expectedIds: ['mock-001'] },
-    { params: { bpmRanges: [], bpmValues: [160],  keys: [],        queryTokens: [] },        expectedIds: ['mock-002'] },
-    { params: { bpmRanges: [], bpmValues: [],     keys: [],        queryTokens: ['lofi'] },   expectedIds: ['mock-003'] },
+    { params: { bpmRanges: [], bpmValues: [],     keys: ['D#min'], queryTokens: [] },            expectedIds: ['mock-001'] },
+    { params: { bpmRanges: [], bpmValues: [160],  keys: [],        queryTokens: [] },            expectedIds: ['mock-002'] },
+    { params: { bpmRanges: [], bpmValues: [],     keys: [],        queryTokens: ['lofi'] },      expectedIds: ['mock-003'] },
 
     // Two-criterion
-    { params: { bpmRanges: [], bpmValues: [],     keys: ['Amin'], queryTokens: ['808'] },   expectedIds: ['mock-004'] },
-    { params: { bpmRanges: [], bpmValues: [105],  keys: ['Gmin'], queryTokens: [] },        expectedIds: ['mock-005'] },
-    { params: { bpmRanges: [], bpmValues: [],     keys: ['Bmaj'], queryTokens: ['hyperpop'] }, expectedIds: ['mock-006'] },
-    { params: { bpmRanges: [], bpmValues: [],     keys: ['Emin'], queryTokens: ['void'] },  expectedIds: ['mock-007'] },
+    { params: { bpmRanges: [], bpmValues: [],     keys: ['Amin'], queryTokens: ['808'] },        expectedIds: ['mock-004'] },
+    { params: { bpmRanges: [], bpmValues: [105],  keys: ['Gmin'], queryTokens: [] },             expectedIds: ['mock-005'] },
+    { params: { bpmRanges: [], bpmValues: [],     keys: ['Bmaj'], queryTokens: ['hyperpop'] },   expectedIds: ['mock-006'] },
+    { params: { bpmRanges: [], bpmValues: [],     keys: ['Emin'], queryTokens: ['void'] },       expectedIds: ['mock-007'] },
 
     // Three-criterion
-    { params: { bpmRanges: [], bpmValues: [85],   keys: ['Cmaj'], queryTokens: ['afternoon'] },    expectedIds: ['mock-003'] },
-    { params: { bpmRanges: [], bpmValues: [120],  keys: ['D#min'],queryTokens: ['space'] },  expectedIds: ['mock-001'] },
+    { params: { bpmRanges: [], bpmValues: [85],   keys: ['Cmaj'], queryTokens: ['afternoon'] },  expectedIds: ['mock-003'] },
+    { params: { bpmRanges: [], bpmValues: [120],  keys: ['D#min'],queryTokens: ['space'] },      expectedIds: ['mock-001'] },
 ];
 
 describe('filterBeats unit tests (pure SearchParams)', () => {
