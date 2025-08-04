@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import type { Beat } from '@/types/Beat';
-import PlayerBar from '@/components/PlayerBar/PlayerBar';
+import PlayerBar from '@/components/PlayerBar';
 import BeatCard from '@/components/BeatCard/BeatCard';
 
 export default function BeatDetail() {
