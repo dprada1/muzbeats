@@ -1,4 +1,4 @@
-import { usePlayerBarContext } from "../PlayerBarContext";
+import { usePlayerBarContext } from "@/components/PlayerBar/PlayerBarContext";
 
 export default function Progress() {
     const { currentTime, duration, seekTo, noTrackLoaded } =
