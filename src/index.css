@@ -16,6 +16,7 @@ body {
 html, body {
 	scroll-behavior: smooth;
 	overscroll-behavior-y: contain;
+    overflow-x: hidden;
 }
 
 /* Remove keyboard focus outline from player controls */
@@ -61,4 +62,21 @@ input[type='range'].range-thumb::-moz-range-thumb {
 input[type='range'].range-thumb:hover::-moz-range-thumb,
 input[type='range'].range-thumb:active::-moz-range-thumb {
     transform: scale(1.5);
+}
+
+:root {
+    --playerbar-h: 80px; /* default desktop */
+}
+
+@media (max-width: 640px) {
+    :root {
+        --playerbar-h: 64px; /* phones */
+    }
+}
+
+/* Keep content visible above the fixed PlayerBar and iOS bottom bar */
+@supports (padding: max(0px)) {
+    body {
+        padding-bottom: max(var(--playerbar-h), env(safe-area-inset-bottom));
+    }
 }

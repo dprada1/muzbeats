@@ -27,40 +27,44 @@ export default function BeatCard({ beat }: Props) {
     };
 
     return (
-        <div className="bg-card-bg text-white rounded-xl shadow-md p-4 flex gap-4 w-full max-w-4xl mx-auto">
+        <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto">
             {/* LEFT: Cover Art */}
             <img
                 src={beat.cover}
                 alt={beat.title}
-                className="w-28 h-28 md:w-36 md:h-36 rounded-lg object-cover"
+                className="aspect-square w-20 h-20 md:w-36 md:h-36 rounded-lg object-cover"
             />
 
             {/* RIGHT: Content */}
             <div className="flex flex-col justify-between flex-1">
                 {/* Title & Key/BPM */}
-                <div>
-                    <h3 className="text-lg font-semibold text-white break-words leading-snug">
+                <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold text-white leading-snug truncate">
                         {beat.title}
                     </h3>
-                    <p className="text-sm text-zinc-400 mt-1">
+                    <p className="text-xs sm:text-sm text-zinc-400 mt-1">
                         {beat.key} • {beat.bpm} BPM
                     </p>
                 </div>
 
                 {/* Play + Waveform */}
-                <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-3 sm:gap-4 mt-3">
                     <button
                         onClick={handleTogglePlay}
-                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer no-ring"
+                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer no-ring min-w-[44px] min-h-[44px] flex items-center justify-center self-center"
                     >
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
-                    <Waveform beat={beat} />
+                    <div className="min-w-0 flex-1">
+                        <Waveform beat={beat} />
+                    </div>
                 </div>
 
                 {/* Price + Cart + Share*/}
-                <div className="flex items-center gap-3 mt-3">
-                    <span className="text-sm font-medium">${beat.price.toFixed(2)}</span>
+                <div className="flex items-center gap-3 mt-2 sm:mt-3">
+                    <span className="text-sm font-medium">
+                        ${beat.price.toFixed(2)}
+                    </span>
                     <AddToCartButton beat={beat} />
                     <ShareBeatButton 
                         url={`${window.location.origin}/store/beat/${beat.id}`}

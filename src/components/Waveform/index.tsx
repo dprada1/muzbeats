@@ -6,7 +6,10 @@ export default function Waveform(props: { beat: Beat }) {
     const { wrapperRef, time, dur }: UseWaveformResult = useWaveform(props.beat);
 
     return (
-        <div ref={wrapperRef} className="relative w-full h-16 rounded">
+        <div
+            ref={wrapperRef}
+            className="relative w-full h-12 sm:h-16 rounded overflow-hidden"
+        >
             {dur > 0 && (
                 <>
                 <span

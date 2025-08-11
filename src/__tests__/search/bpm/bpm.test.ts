@@ -13,8 +13,6 @@ vi.resetModules();
 // Synchronously require the JSON so it’s fresh on each run
 const bpmCases: BpmCase[] = require("./bpm_test_cases.json");
 
-console.log(bpmCases);
-
 describe("parseSearchQuery - BPM parsing", () => {
     bpmCases.forEach(({ input, bpmValues, bpmRanges }) => {
         test(`"${input}" → values=[${bpmValues}] ranges=[${bpmRanges.map(

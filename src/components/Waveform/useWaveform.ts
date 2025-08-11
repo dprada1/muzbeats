@@ -14,9 +14,7 @@ export interface UseWaveformResult {
     dur: number;
 }
 
-export default function useWaveform(
-    beat: Beat
-): UseWaveformResult {
+export default function useWaveform(beat: Beat): UseWaveformResult {
     const wrapperRef    = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
 
@@ -44,7 +42,7 @@ export default function useWaveform(
                     io.disconnect();
                 }
             },
-            { rootMargin: '200px' }
+            { rootMargin: window.matchMedia('(max-width: 480px').matches ? '400px' : '200px' }
         );
         io.observe(el);
         return () => io.disconnect();

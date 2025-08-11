@@ -14,6 +14,12 @@ const SearchBar: React.FC = () => {
         onSubmit,
     } = useSearchBar();
 
+    const onClearClick = () => {
+        // visually clear immediately, then let the hook navigate/reset URL
+        setInput("");
+        handleClear();
+    };
+
     return (
         <form
             onSubmit={onSubmit}
@@ -24,7 +30,10 @@ const SearchBar: React.FC = () => {
             `}
             style={{ height: "40px" }}
         >
-            <div className="flex items-center px-3 flex-grow">
+            <div
+                className="relative flex items-center px-3 flex-grow h-full rounded-l-full cursor-text"
+                onClick={() => inputRef.current?.focus()}
+            >
                 <FiSearch className="text-[#808080] text-lg mr-2" />
                 <input
                     ref={inputRef}
@@ -34,11 +43,18 @@ const SearchBar: React.FC = () => {
                     onChange={(e) => setInput(e.target.value)}
                     onFocus={onFocus}
                     onBlur={onBlur}
-                    className="bg-transparent focus:outline-none text-sm text-white placeholder-[#808080] w-full"
+                    className="bg-transparent focus:outline-none text-sm text-white placeholder-[#808080] w-full pr-12"
+                    inputMode="search"
                 />
                 {input && (
-                    <button type="button" onClick={handleClear} className="ml-2">
-                        <FiX className="text-[#808080] hover:text-white text-lg" />
+                    <button
+                        type="button"
+                        onClick={onClearClick}
+                        aria-label="Clear search"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center active:scale-[0.97] z-10"
+                        style={{ WebkitTapHighlightColor: "transparent" }}
+                    >
+                        <FiX className="text-[#808080] hover:text-white cursor-pointer text-xl" />
                     </button>
                 )}
             </div>
