@@ -188,7 +188,7 @@ export const InfoTooltip: React.FC<Props> = ({
     };
 
     return (
-        <div ref={wrapRef} className={`relative inline-block ${className}`}>
+        <div ref={wrapRef} className={`relative inline-flex items-center ${className}`}>
             <button
                 ref={trigRef}
                 type="button"
@@ -198,7 +198,7 @@ export const InfoTooltip: React.FC<Props> = ({
                 onFocus={() => setOpen(true)}
                 onBlur={() => setOpen(false)}
                 onClick={() => setOpen(v => !v)}
-                className="no-ring"
+                className="no-ring h-full flex items-center justify-center"
             >
                 {trigger}
             </button>

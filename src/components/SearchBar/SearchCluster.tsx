@@ -10,7 +10,7 @@ type Props = {
 const SearchCluster: React.FC<Props> = ({ className }) => {
     return (
         <div
-            className={`sticky md:static z-40 bg-[#0f0f0f] md:bg-transparent py-1 md:py-0 w-full ${className ?? ""}`}
+            className={`sticky md:static z-40 bg-transparent py-1 md:py-0 w-full ${className ?? ""}`}
             style={{ top: "calc(64px + env(safe-area-inset-top))" }}
         >
             <div className="flex items-center gap-2 w-full">
@@ -24,7 +24,7 @@ const SearchCluster: React.FC<Props> = ({ className }) => {
                         <li><strong>Keywords:</strong> anywhere in track's title</li>
                         </ul>
                     )}
-                    trigger={<IoInformationCircleOutline className="text-xl" />}
+                    trigger={<IoInformationCircleOutline className="text-xl leading-none" />}
                 />
                 <div className="flex-1">
                     <SearchBar />

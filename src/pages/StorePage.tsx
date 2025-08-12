@@ -33,7 +33,7 @@ export default function StorePage() {
     return (
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto px-0">
             {/* Mobile: tight sticky search under the fixed NavBar */}
-            <div className="md:hidden sticky top-16 z-40 bg-[#0f0f0f] py-1">
+            <div className="md:hidden sticky top-16 z-40 bg-inherit py-1">
                 <SearchCluster />
             </div>
 
