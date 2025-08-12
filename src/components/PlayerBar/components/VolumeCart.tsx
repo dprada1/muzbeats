@@ -50,7 +50,7 @@ export default function VolumeCart() {
             />
             {currentBeat && (
                 <div className="flex items-center gap-3">
-                    <span className="hidden sm:flex font-medium">
+                    <span className="pointer-events-none hidden sm:flex font-medium">
                         ${currentBeat.price.toFixed(2)}
                     </span>
                     <AddToCartButton beat={currentBeat} />

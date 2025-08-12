@@ -23,7 +23,7 @@ export default function PlaybackControls() {
 
     return (
         <div className="flex items-center justify-center gap-2 sm:gap-4">
-            <span className="text-sm tabular-nums w-[48px] text-right hidden sm:inline">
+            <span className="pointer-events-none text-sm tabular-nums w-[48px] text-right hidden sm:inline">
                 {formatTime(currentTime)}
             </span>
             <button
@@ -47,7 +47,7 @@ export default function PlaybackControls() {
             >
                 <FaStepForward size={24} />
             </button>
-            <span className="text-sm tabular-nums w-[48px] hidden sm:inline">
+            <span className="pointer-events-none text-sm tabular-nums w-[48px] hidden sm:inline">
                 {formatTime(duration)}
             </span>
             <button

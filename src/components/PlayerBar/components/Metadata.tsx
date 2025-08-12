@@ -4,7 +4,7 @@ export default function Metadata() {
     const { currentBeat } = usePlayerBarContext();
 
     return (
-        <div className="flex items-center gap-4 overflow-hidden">
+        <div className="pointer-events-none flex items-center gap-4 overflow-hidden">
             {currentBeat?.cover && (
                 <img
                     src={currentBeat.cover}

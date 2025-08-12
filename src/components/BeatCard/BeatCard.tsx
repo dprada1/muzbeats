@@ -14,8 +14,6 @@ export default function BeatCard({ beat }: Props) {
     const { currentBeat, isPlaying, play, pause } = usePlayer();
     const { positions } = useWaveformCache();
     const isThisPlaying = currentBeat?.id === beat.id && isPlaying;
-
-    // Look up last-saved time for this beat
     const lastPos = positions[beat.id] ?? 0;
 
     const handleTogglePlay = () => {
@@ -42,31 +40,31 @@ export default function BeatCard({ beat }: Props) {
                     <h3 className="text-base sm:text-lg font-semibold text-white leading-snug truncate">
                         {beat.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-300">
                         {beat.key} • {beat.bpm} BPM
                     </p>
                 </div>
 
                 {/* Play + Waveform */}
-                <div className="flex items-center gap-3 sm:gap-4 mt-3">
+                <div className="min-w-0 flex items-center gap-3 sm:gap-4 sm:mt-1">
                     <button
                         onClick={handleTogglePlay}
-                        className="text-card-bg bg-white hover:opacity-75 hover:text-black p-3 rounded-full transition cursor-pointer no-ring min-w-[44px] min-h-[44px] flex items-center justify-center self-center"
+                        className="text-card-bg bg-white hover:opacity-90 rounded-full w-11 h-11 sm:w-12 sm:h-12 transition cursor-pointer no-ring min-w-[44px] min-h-[44px] flex items-center justify-center self-center"
                     >
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 overflow-hidden">
                         <Waveform beat={beat} />
                     </div>
                 </div>
 
                 {/* Price + Cart + Share*/}
-                <div className="flex items-center gap-3 mt-2 sm:mt-3">
+                <div className="flex items-center gap-3 mt-2">
                     <span className="text-sm font-medium">
                         ${beat.price.toFixed(2)}
                     </span>
                     <AddToCartButton beat={beat} />
-                    <ShareBeatButton 
+                    <ShareBeatButton
                         url={`${window.location.origin}/store/beat/${beat.id}`}
                         title={beat.title}
                     />

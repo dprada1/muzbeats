@@ -74,7 +74,7 @@ export default function CartPage() {
                                             play(beat);
                                         }
                                     }}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition no-ring"
+                                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 cursor-pointer transition no-ring"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black">
                                         {currentBeat?.id === beat.id && isPlaying ? (
@@ -87,7 +87,7 @@ export default function CartPage() {
                             </div>
 
                             {/* metadata */}
-                            <div className="flex-1 min-w-0">
+                            <div className="pointer-events-none flex-1 min-w-0">
                                 <h3 className="font-semibold truncate">{beat.title}</h3>
                                 <p className="text-sm text-zinc-400 truncate">
                                     {beat.key} • {beat.bpm} BPM
