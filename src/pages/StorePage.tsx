@@ -31,13 +31,23 @@ export default function StorePage() {
     }, [searchQuery, beats]);
 
     return (
-        <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto px-0">
+        <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
             {/* Mobile: tight sticky search under the fixed NavBar */}
-            <div className="md:hidden sticky z-40 bg-inherit">
-                <SearchCluster />
+            <div
+                className="fixed inset-x-0 z-40 md:hidden bg-[#111111] px-4 top-1 pt-3"
+                style={{ top: "calc(64px + env(safe-area-inset-top))" }}
+            >
+                <SearchCluster className="pb-0.5"/>
+
+                {/* push the fade OUTSIDE the bar so it shows */}
+                <div
+                    className="pointer-events-none absolute left-0 right-0 pt-1
+                                h-4 bg-gradient-to-b from-[#111111]/60 via-[#111111]/25 to-transparent"
+                    aria-hidden
+                />
             </div>
 
-            <div>
+            <div className="mt-[48px] md:mt-0">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-0.5 sm:mb-1">
                     Beat Store
                 </h1>
@@ -46,6 +56,16 @@ export default function StorePage() {
                         ? `Showing ${filteredBeats.length} result${filteredBeats.length !== 1 ? "s" : ""} for "${searchQuery}"`
                         : `All beats (${beats.length})`}
                 </p>
+            </div>
+
+            {/* Debug - Shows what screen sizes the device is */}
+            <div className="fixed bottom-2 right-2 z-[9999] rounded bg-black/70 px-2 py-1 text-xs font-mono text-white">
+                <span className="sm:hidden">base (&lt;640)</span>
+                <span className="hidden sm:inline md:hidden">sm (≥640)</span>
+                <span className="hidden md:inline lg:hidden">md (≥768)</span>
+                <span className="hidden lg:inline xl:hidden">lg (≥1024)</span>
+                <span className="hidden xl:inline 2xl:hidden">xl (≥1280)</span>
+                <span className="hidden 2xl:inline">2xl (≥1536)</span>
             </div>
 
             <div className="flex flex-col gap-3 sm:gap-4 pb-[64px]">
