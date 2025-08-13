@@ -42,8 +42,8 @@ export default function Navbar() {
                             </span>
                         )}
                     </Link>
-                    <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaYoutube size={20}/></a>
-                    <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaTiktok size={20}/></a>
+                    <a href="https://youtube.com/@prodmuz" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaYoutube size={20}/></a>
+                    <a href="https://tiktok.com/@prod.muz" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaTiktok size={20}/></a>
                     <a href="mailto:someone@example.com" className="hover:text-brand-yellow transition-colors"><FaEnvelope size={20}/></a>
                 </div>
             </div>

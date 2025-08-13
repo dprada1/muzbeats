@@ -1,147 +1,88 @@
-import { useEffect, useRef, useState } from 'react';
-import type WaveSurfer from 'wavesurfer.js';
+import { useRef, useState } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useWaveformCache } from '@/context/WaveformContext';
-import { createWaveSurfer } from './loader';
 import type { Beat } from '@/types/Beat';
 
+import { useVisibilityGate } from './internal/useVisibilityGate';
+import { useWaveSurferInit } from './internal/useWaveSurferInit';
+import { useWaveSurferSync } from './internal/useWaveSurferSync';
+import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
+import { useWaveSurferResize } from './internal/useWaveSurferResize';
+
 export interface UseWaveformResult {
-    /** DOM ref for where to mount WaveSurfer */
     wrapperRef: React.RefObject<HTMLDivElement | null>;
-    /** Current playback time (s) */
     time: number;
-    /** Track duration (s) */
     dur: number;
 }
 
+/**
+ * Orchestrates the Waveform component by composing focused internal hooks:
+ * - Visibility gate (IO): lazily marks the card visible via IntersectionObserver so heavy work is deferred.
+ * - WS init/reuse + restore: creates WaveSurfer when visible, reuses cached AudioBuffer, and restores playhead.
+ * - Sync with global audio: mirrors the global audio time into the visual cursor and caches the resume position.
+ * - Interaction to seek/start: clicking/dragging the waveform seeks the global player (and starts if inactive).
+ * - Resize sync: keeps the WS canvas aligned to its container when screen size changes.
+ *
+ * @param {Beat} beat
+ *   The beat whose waveform should render; used for ids, audio URL, and cache lookups.
+ *
+ * @returns {{ wrapperRef: React.RefObject<HTMLDivElement|null>, time: number, dur: number }}
+ *   - wrapperRef: attach to the waveform container div.
+ *   - time: current time (seconds) for the left badge.
+ *   - dur: total duration (seconds) for the right badge.
+ */
 export default function useWaveform(beat: Beat): UseWaveformResult {
-    const wrapperRef    = useRef<HTMLDivElement>(null);
-    const wavesurferRef = useRef<WaveSurfer | null>(null);
-
     const { audio, currentBeat, play } = usePlayer();
-    const isActive = currentBeat?.id === beat.id;
-
     const { buffers, setBuffer, positions, setPosition } = useWaveformCache();
 
-    const [isVisible, setVisible] = useState(false);
-    const [time, setTime]         = useState(0);
-    const [dur, setDur]           = useState(0);
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const [time, setTime] = useState(0);
+    const [dur, setDur] = useState(0);
 
-    // Lazy‐load when in view or if active
-    useEffect(() => {
-        if (isActive) {
-            setVisible(true);
-            return;
-        }
-        const el = wrapperRef.current;
-        if (!el) return;
-        const io = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setVisible(true);
-                    io.disconnect();
-                }
-            },
-            { rootMargin: window.matchMedia('(max-width: 480px').matches ? '400px' : '200px' }
-        );
-        io.observe(el);
-        return () => io.disconnect();
-    }, [isActive]);
+    const isActive = currentBeat?.id === beat.id;
 
-    // Initialize or reuse buffer + restore position
-    useEffect(() => {
-        if (!isVisible || !wrapperRef.current) return;
-        if (!wavesurferRef.current) {
-            const ws: any = createWaveSurfer(wrapperRef.current);
-            wavesurferRef.current = ws;
-            ws.setMuted(true);
+    // 1. Lazy visibility
+    const isVisible = useVisibilityGate(isActive, wrapperRef);
 
-            if (buffers[beat.id]) {
-                // reuse cached AudioBuffer
-                (ws.backend as any).buffer = buffers[beat.id]!;
-                ws.drawBuffer();
-                const total = buffers[beat.id]!.duration;
-                setDur(total);
-                const last = positions[beat.id] ?? 0;
-                const now  = isActive && audio
-                    ? Math.min(audio.currentTime, total)
-                    : last;
-                ws.seekTo(total > 0 ? now / total : 0);
-                setTime(now);
+    // 2. Create/reuse WS instance + restore position
+    const wsRef = useWaveSurferInit({
+        isVisible,
+        wrapperRef,
+        beat,
+        isActive,
+        audio: audio ?? null,
+        buffers,
+        positions,
+        setBuffer,
+        onReady: (duration, now) => { setDur(duration); setTime(now); },
+    });
 
-            } else {
-                ws.on('ready', () => {
-                    const buf = (ws.backend as any)?.buffer as AudioBuffer;
-                    if (buf) setBuffer(beat.id, buf);
+    // 3. Follow <audio> (active) or show cached position (inactive)
+    useWaveSurferSync({
+        wsRef,
+        audio: audio ?? null,
+        isActive,
+        beatId: beat.id,
+        positions,
+        setPosition,
+        dur,
+        setTime,
+        setDur,
+    });
 
-                    const total = ws.getDuration();
-                    setDur(total);
-                    const last = positions[beat.id] ?? 0;
-                    const now  = isActive && audio
-                        ? Math.min(audio.currentTime, total)
-                        : last;
-                    ws.seekTo(total > 0 ? now / total : 0);
-                    setTime(now);
-                });
-                ws.load(beat.audio);
-            }
-        }
+    // 4. Click/drag to seek (works active or not)
+    useWaveSurferInteraction({
+        wsRef,
+        audio: audio ?? null,
+        isActive,
+        beat,
+        play,
+        setPosition,
+        getDur: () => dur,
+    });
 
-        return () => {
-            wavesurferRef.current?.destroy();
-            wavesurferRef.current = null;
-        };
-    }, [isVisible, beat.audio, beat.id, buffers, positions, setBuffer]);
-
-    // Sync playhead & cache position in real time
-    useEffect(() => {
-        const ws = wavesurferRef.current;
-        if (!audio || !ws) return;
-
-        if (isActive) {
-            const tick = () => {
-                const t = audio.currentTime;
-                setTime(t);
-                setPosition(beat.id, t);
-                if (audio.duration) {
-                    ws.seekTo(t / audio.duration);
-                }
-            };
-            const meta = () => setDur(audio.duration || 0);
-
-            tick();
-            meta();
-            audio.addEventListener('timeupdate', tick);
-            audio.addEventListener('loadedmetadata', meta);
-            return () => {
-                audio.removeEventListener('timeupdate', tick);
-                audio.removeEventListener('loadedmetadata', meta);
-            };
-        } else {
-            const last = positions[beat.id] ?? 0;
-            ws.seekTo(dur > 0 ? last / dur : 0);
-            setTime(last);
-        }
-    }, [isActive, audio, setPosition, beat.id, positions, dur]);
-
-    // Click‐to‐seek support via WaveSurfer interaction event
-    useEffect(() => {
-        const ws = wavesurferRef.current;
-        if (!isActive || !audio || !ws) return;
-
-        const onSeek = (sec: number) => {
-            if (!isActive) {
-                play(beat);
-            } else {
-                audio.currentTime = sec;
-                if (audio.paused) audio.play().catch(() => null);
-            }
-        };
-        ws.on('interaction', onSeek);
-        return () => {
-            ws.un('interaction', onSeek);
-        };
-    }, [isActive, audio, play, beat]);
+    // 5. Keep canvas in sync with container size (prevents overflow on small screens)
+    useWaveSurferResize(wsRef, wrapperRef);
 
     return { wrapperRef, time, dur };
 }
