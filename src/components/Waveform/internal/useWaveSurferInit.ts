@@ -14,38 +14,40 @@ type InitParams = {
     buffers: Record<string, AudioBuffer>;
     positions: Record<string, number>;
     setBuffer: (id: string, buf: AudioBuffer) => void;
-    onReady: (dur: number, now: number) => void; // upstream sets setDur + setTime
+    onReady: (dur: number, now: number) => void;
+    layoutKey?: string; // ← triggers destroy/recreate when breakpoint bucket changes
 };
 
 /**
  * useWaveSurferInit
- * Creates a WaveSurfer instance when the card becomes visible, reuses a cached
- * decoded AudioBuffer if available (instant draw), restores the playhead to either
- * the global <audio> time (if active) or the last cached position, and caches new
- * buffers on first decode. Destroys the instance on unmount.
+ * Creates/reuses WaveSurfer when visible, restores playhead, caches decoded buffer,
+ * and DESTROYS/Recreates the instance if layoutKey changes (fixes height on breakpoint).
  *
- * @returns Ref to the WaveSurfer instance (null until created).
+ * @returns {RefObject<WaveSurfer|null>} ref to the WaveSurfer instance
  */
 export function useWaveSurferInit({
     isVisible, wrapperRef, beat, isActive, audio,
-    buffers, positions, setBuffer, onReady,
+    buffers, positions, setBuffer, onReady, layoutKey,
 }: InitParams): RefObject<WaveSurfer | null> {
     const wsRef = useRef<WaveSurfer | null>(null);
 
     useEffect(() => {
-        // create only when visible, node exists, and no instance yet
-        if (!isVisible || !wrapperRef.current || wsRef.current) return;
+        if (!isVisible || !wrapperRef.current) return;
+
+        // Tear down any existing instance before building for this layoutKey
+        if (wsRef.current) {
+            wsRef.current.destroy();
+            wsRef.current = null;
+        }
 
         const el = wrapperRef.current;
         const ws = createWaveSurfer(el) as WaveSurfer;
         wsRef.current = ws;
 
-        // App uses the global <audio> for sound; WaveSurfer stays muted when supported.
         (ws as any).setMuted?.(true);
 
         const cached = buffers[beat.id];
         if (cached) {
-            // Reuse decoded buffer → instant draw (private access quarantined)
             const wsi = ws as unknown as WSInternals;
             if (wsi.backend) {
                 wsi.backend.buffer = cached;
@@ -57,7 +59,8 @@ export function useWaveSurferInit({
 
             onReady(total, now);
             ws.seekTo(total > 0 ? now / total : 0);
-            return;
+
+            return () => { wsRef.current?.destroy(); wsRef.current = null; };
         }
 
         const handleReady = () => {
@@ -75,13 +78,13 @@ export function useWaveSurferInit({
         (ws as any).on?.('ready', handleReady);
         ws.load(beat.audio);
 
-        return () => { (ws as any).un?.('ready', handleReady); };
-    }, [isVisible, wrapperRef, beat.id, beat.audio, isActive, audio, buffers, positions, setBuffer, onReady]);
-
-    // destroy instance when the parent unmounts
-    useEffect(() => {
-        return () => { wsRef.current?.destroy(); wsRef.current = null; };
-    }, []);
+        return () => {
+            (ws as any).un?.('ready', handleReady);
+            wsRef.current?.destroy();
+            wsRef.current = null;
+        };
+    // include layoutKey so we rebuild once per breakpoint change
+    }, [isVisible, wrapperRef, beat.id, beat.audio, isActive, audio, buffers, positions, setBuffer, onReady, layoutKey]);
 
     return wsRef;
 }

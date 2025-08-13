@@ -7,7 +7,7 @@ import { useVisibilityGate } from './internal/useVisibilityGate';
 import { useWaveSurferInit } from './internal/useWaveSurferInit';
 import { useWaveSurferSync } from './internal/useWaveSurferSync';
 import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
-import { useWaveSurferResize } from './internal/useWaveSurferResize';
+import { useLayoutBucket } from './internal/useWaveSurferResize'; // repurposed file exports layout key
 
 export interface UseWaveformResult {
     wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -16,12 +16,14 @@ export interface UseWaveformResult {
 }
 
 /**
- * Orchestrates the Waveform component by composing focused internal hooks:
+ * Orchestrates the Waveform component by composing focused internal hooks.
+ *
+ * Hooks (why each exists):
  * - Visibility gate (IO): lazily marks the card visible via IntersectionObserver so heavy work is deferred.
  * - WS init/reuse + restore: creates WaveSurfer when visible, reuses cached AudioBuffer, and restores playhead.
- * - Sync with global audio: mirrors the global audio time into the visual cursor and caches the resume position.
+ * - Sync with <audio>: mirrors the global <audio> time into the visual cursor and caches the resume position.
  * - Interaction to seek/start: clicking/dragging the waveform seeks the global player (and starts if inactive).
- * - Resize sync: keeps the WS canvas aligned to its container when screen size changes.
+ * - Resize sync: handled by breakpoint-driven remount via layoutKey (no separate redraw hook needed).
  *
  * @param {Beat} beat
  *   The beat whose waveform should render; used for ids, audio URL, and cache lookups.
@@ -41,10 +43,13 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
 
     const isActive = currentBeat?.id === beat.id;
 
-    // 1. Lazy visibility
+    // ① visibility
     const isVisible = useVisibilityGate(isActive, wrapperRef);
 
-    // 2. Create/reuse WS instance + restore position
+    // Derive a coarse layout key from the wrapper's width; used to remount WS on breakpoint changes.
+    const layoutKey = useLayoutBucket(wrapperRef);
+
+    // ② init/reuse WS; rebuild when layoutKey changes
     const wsRef = useWaveSurferInit({
         isVisible,
         wrapperRef,
@@ -55,9 +60,10 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         positions,
         setBuffer,
         onReady: (duration, now) => { setDur(duration); setTime(now); },
+        layoutKey, // drives destroy/recreate once per meaningful layout change
     });
 
-    // 3. Follow <audio> (active) or show cached position (inactive)
+    // ③ sync with <audio> (active) or show cached position (inactive)
     useWaveSurferSync({
         wsRef,
         audio: audio ?? null,
@@ -70,7 +76,7 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         setDur,
     });
 
-    // 4. Click/drag to seek (works active or not)
+    // ④ click/drag to seek (works active or not)
     useWaveSurferInteraction({
         wsRef,
         audio: audio ?? null,
@@ -80,9 +86,6 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         setPosition,
         getDur: () => dur,
     });
-
-    // 5. Keep canvas in sync with container size (prevents overflow on small screens)
-    useWaveSurferResize(wsRef, wrapperRef);
 
     return { wrapperRef, time, dur };
 }

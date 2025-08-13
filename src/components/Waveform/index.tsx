@@ -8,8 +8,7 @@ export default function Waveform(props: { beat: Beat }) {
     return (
         <div
             ref={wrapperRef}
-            //className="relative w-full h-12 sm:h-16 rounded overflow-hidden"
-            className="relative w-full h-11 xs:h-12 sm:h-14 md:h-20"
+            className="relative w-full h-12 sm:h-16 rounded overflow-hidden"
         >
             {dur > 0 && (
                 <>
