@@ -15,6 +15,54 @@ type SyncParams = {
 };
 
 /**
+ * tickSync
+ * Keeps UI and WaveSurfer cursor in sync with the global <audio>, a few times per second.
+ * - Updates left time badge and caches resume position.
+ * - Seeks WS (muted) to match <audio> using a clamped 0..1 ratio.
+ * - Dev-guards rare seek failures and stale refs.
+ */
+function tickSync(
+    wsRef: RefObject<WaveSurfer | null>,
+    ws: WaveSurfer,
+    audio: HTMLAudioElement,
+    beatId: string,
+    setPosition: (id: string, t: number) => void,
+    setTime: (t: number) => void
+): void {
+    const t = audio.currentTime || 0;
+    if (Number.isFinite(t) && t >= 0) {
+        setTime(t);
+        setPosition(beatId, t);
+    }
+
+    const total = audio.duration;
+    if (!Number.isFinite(total) || total <= 0) return;
+
+    // Wavesurfer expects 0..1; clamp to avoid tiny float drift past the ends
+    const ratio = Math.min(1, Math.max(0, t / total));
+    if (wsRef.current === ws) {
+        try {
+            ws.seekTo(ratio);
+        } catch (e) {
+            if ((import.meta as any)?.env?.DEV) {
+                console.warn('[Waveform] seekTo failed', { beatId, t, total, ratio, e });
+            }
+        }
+    }
+}
+
+/**
+ * metaSync
+ * Sets the right-hand duration badge from <audio> metadata (initial and on updates).
+ */
+function metaSync(
+    audio: HTMLAudioElement,
+    setDur: (d: number) => void
+): void {
+    setDur(audio.duration || 0);
+}
+
+/**
  * useWaveSurferSync
  * Keeps the visual waveform and UI labels in sync with the global <audio> element.
  * - Inactive: seeks to the last cached position and exits.
@@ -39,43 +87,10 @@ export function useWaveSurferSync({
             return;
         }
 
-        /**
-         * tick()
-         * Keeps the UI and WaveSurfer cursor in sync with the global <audio>.
-         * - Updates the left time badge and cached resume position (a few times/sec).
-         * - Seeks the muted WaveSurfer instance to match <audio> using a clamped 0..1 ratio.
-         */
-        const tick = () => {
-            const t = audio.currentTime || 0;
-            if (Number.isFinite(t) && t >= 0) {
-                setTime(t);
-                setPosition(beatId, t);
-            }
+        // Prime UI, then wire listeners using extracted helpers
+        const tick = () => tickSync(wsRef, ws, audio, beatId, setPosition, setTime);
+        const meta = () => metaSync(audio, setDur);
 
-            const total = audio.duration;
-            if (!Number.isFinite(total) || total <= 0) return;
-
-            // Wavesurfer expects 0..1; clamp to avoid tiny float drift past the ends
-            const ratio = Math.min(1, Math.max(0, t / total));
-            if (wsRef.current === ws) {
-                try {
-                    ws.seekTo(ratio);
-                } catch (e) {
-                    if ((import.meta as any)?.env?.DEV) {
-                        console.warn('[Waveform] seekTo failed', { beatId, t, total, ratio, e });
-                    }
-                }
-            }
-        };
-
-        /**
-         * meta()
-         * Sets the right-hand duration badge from <audio> metadata.
-         * Called immediately and on 'loadedmetadata' to reflect the latest total duration.
-         */
-        const meta = () => setDur(audio.duration || 0);
-
-        // Prime UI, then wire listeners
         tick();
         meta();
         audio.addEventListener('timeupdate', tick);
