@@ -19,7 +19,7 @@ export function useVisibilityGate(
     // If this beat is active, mark visible and skip setting up IntersectionObserver
     useEffect(() => {
         // Beat's waveform is in playerbar, force visible and skip IO setup
-        if (isActive) { console.log("It's active!"); setVisible(true); return; }  // never executes
+        if (isActive) { console.log("It's active!"); setVisible(true); return; }
 
         const wrapperEl = wrapperRef.current;
         if (!wrapperEl) return;

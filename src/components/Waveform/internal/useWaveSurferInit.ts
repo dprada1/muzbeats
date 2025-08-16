@@ -15,13 +15,13 @@ type InitParams = {
     positions: Record<string, number>;
     setBuffer: (id: string, buf: AudioBuffer) => void;
     onReady: (dur: number, now: number) => void;
-    containerSize?: string; // ← triggers destroy/recreate when breakpoint bucket changes
+    containerSize?: 'compact' | 'regular';
 };
 
 /**
  * useWaveSurferInit
  * Creates/reuses WaveSurfer when visible, restores playhead, caches decoded buffer,
- * and DESTROYS/Recreates the instance if layoutKey changes (fixes height on breakpoint).
+ * and DESTROYS/Recreates the instance if containerSize changes (fixes height on breakpoint).
  *
  * @returns {RefObject<WaveSurfer|null>} ref to the WaveSurfer instance
  */
@@ -29,68 +29,78 @@ export function useWaveSurferInit({
     isVisible, wrapperRef, beat, isActive, audio,
     buffers, positions, setBuffer, onReady, containerSize,
 }: InitParams): RefObject<WaveSurfer | null> {
-    //console.log("useWaveSurferInit.ts ran!")
     const wsRef = useRef<WaveSurfer | null>(null);
 
     useEffect(() => {
-        if (!isVisible || !wrapperRef.current || wsRef.current) return;
+        // Skip WS instantiation if not visible or instance already exists
+        if (!isVisible || wsRef.current) { console.log("Skipped waveform creation for", beat.title); return; }
 
-        // Tear down any existing instance before building for this layoutKey
-        /*
-        if (wsRef.current) {
-            wsRef.current.destroy();
-            wsRef.current = null;
-        }
-        */
+        // Instantiate WS
+        console.log("Creating waveform for", beat.title);
+        const wrapperEl = wrapperRef.current;
+        if (!wrapperEl) return;
 
-        const el = wrapperRef.current;
-        const ws = createWaveSurfer(el) as WaveSurfer;
+        const ws = createWaveSurfer(wrapperEl);
         wsRef.current = ws;
+        ws.setMuted?.(true); // PlayerBar drives audio; WS is visual only
 
-        (ws as any).setMuted?.(true);
-
+        // ---- Cached path: hydrate instantly, no network/decode ----
         const cached = buffers[beat.id];
         if (cached) {
-            const wsi = ws as unknown as WSInternals;
+            const wsi = ws as unknown as WSInternals; // minimal internal touch
             if (wsi.backend) {
                 wsi.backend.buffer = cached;
                 wsi.drawBuffer?.();
             }
-            const total = cached.duration;
-            const last = positions[beat.id] ?? 0;
-            const now  = isActive && audio ? Math.min(audio.currentTime, total) : last;
 
-            onReady(total, now);
-            ws.seekTo(total > 0 ? now / total : 0);
+            const duration = cached.duration;           // seconds
+            const savedTime = positions[beat.id] ?? 0;  // seconds
 
-            return () => { wsRef.current?.destroy(); wsRef.current = null; };
+            // If this is the active beat, follow the global <audio> time.
+            // Otherwise, resume from our saved position.
+            const startTime  = isActive && audio ? Math.min(audio.currentTime, duration) : savedTime;
+
+            onReady(duration, startTime); // Update time badges in UI
+            ws.seekTo(duration > 0 ? startTime / duration : 0);
+
+            // cleanup (Strict Mode safe)
+            return () => {
+                wsRef.current?.destroy();
+                wsRef.current = null;
+            };
         }
 
         const handleReady = () => {
             const buf = (ws as any)?.backend?.buffer as AudioBuffer | undefined;
             if (buf) setBuffer(beat.id, buf);
 
-            const total = ws.getDuration();
-            const last = positions[beat.id] ?? 0;
-            const now  = isActive && audio ? Math.min(audio.currentTime, total) : last;
+            const duration = ws.getDuration();
+            const savedTime = positions[beat.id] ?? 0;
+            const startTime  = isActive && audio ? Math.min(audio.currentTime, duration) : savedTime;
 
-            onReady(total, now);
-            ws.seekTo(total > 0 ? now / total : 0);
+            onReady(duration, startTime);
+            ws.seekTo(duration > 0 ? startTime / duration : 0);
         };
 
         (ws as any).on?.('ready', handleReady);
         ws.load(beat.audio);
 
-        /*
         return () => {
-            (ws as any).un?.('ready', handleReady);
+            console.log("cleanup for", beat.title);
+            ws.un('ready', handleReady);
             wsRef.current?.destroy();
             wsRef.current = null;
         };
-        */
-        return;
-    // include layoutKey so we rebuild once per breakpoint change
-    }, [isVisible, wrapperRef, beat.id, beat.audio, isActive, audio, buffers, setBuffer, onReady, containerSize]);
+    }, [isVisible]);
+
+    useEffect(() => {
+        const ws = wsRef.current;
+        const wrapperEl = wrapperRef.current;
+        if (!ws || !wrapperEl) return;
+        requestAnimationFrame(() => {
+            ws.setOptions?.({ height: wrapperEl.clientHeight }); // height adapts
+        });
+    }, [containerSize]);
 
     return wsRef;
 }

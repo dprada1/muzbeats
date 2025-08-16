@@ -7,13 +7,12 @@ import { useVisibilityGate } from './internal/useVisibilityGate';
 import { useWaveSurferInit } from './internal/useWaveSurferInit';
 import { useWaveSurferSync } from './internal/useWaveSurferSync';
 import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
-//import { useWaveSurferResize } from './internal/useWaveSurferResize'; // repurposed file exports layout key
 import { useViewportContainerSize } from './internal/useViewportContainerSize';
 
 export interface UseWaveformResult {
     wrapperRef: React.RefObject<HTMLDivElement | null>;
-    time: number;
-    dur: number;
+    startTime: number;
+    duration: number;
 }
 
 /**
@@ -39,8 +38,8 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
     const { buffers, setBuffer, positions, setPosition } = useWaveformCache();
 
     const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const [time, setTime] = useState(0);
-    const [dur, setDur] = useState(0);
+    const [startTime, setTime] = useState(0);
+    const [duration, setDur] = useState(0);
 
     const isActive = currentBeat?.id === beat.id;
 
@@ -61,7 +60,7 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         positions,
         setBuffer,
         onReady: (duration, now) => { setDur(duration); setTime(now); },
-        containerSize, // drives destroy/recreate once per meaningful layout change
+        containerSize,
     });
 
     // ③ sync with <audio> (active) or show cached position (inactive)
@@ -72,7 +71,7 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         beatId: beat.id,
         positions,
         setPosition,
-        dur,
+        duration,
         setTime,
         setDur,
     });
@@ -85,8 +84,8 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         beat,
         play,
         setPosition,
-        getDur: () => dur,
+        getDur: () => duration,
     });
 
-    return { wrapperRef, time, dur };
+    return { wrapperRef, startTime, duration };
 }

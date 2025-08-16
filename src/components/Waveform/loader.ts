@@ -13,6 +13,7 @@ export function createWaveSurfer(container: HTMLElement): WaveSurfer {
         barRadius:     2,
         barGap:        1,
         height:        container.clientHeight,
+        fillParent:    true,
         interact:      true,
         normalize:     true,
     });

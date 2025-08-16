@@ -9,7 +9,7 @@ type SyncParams = {
     beatId: string;
     positions: Record<string, number>;
     setPosition: (id: string, t: number) => void;
-    dur: number;
+    duration: number;
     setTime: (t: number) => void;
     setDur: (d: number) => void;
 };
@@ -71,7 +71,7 @@ function metaSync(
  * - Also sets the total duration on `loadedmetadata`.
  */
 export function useWaveSurferSync({
-    wsRef, audio, isActive, beatId, positions, setPosition, dur, setTime, setDur
+    wsRef, audio, isActive, beatId, positions, setPosition, duration, setTime, setDur
 }: SyncParams): void {
     useEffect(() => {
         const ws = wsRef.current;
@@ -80,8 +80,8 @@ export function useWaveSurferSync({
         // Inactive card: jump to last cached position and bail
         if (!isActive) {
             const last = positions[beatId] ?? 0;
-            if (dur > 0) {
-                try { ws.seekTo(last / dur); } catch { /* ignore */ }
+            if (duration > 0) {
+                try { ws.seekTo(last / duration); } catch { /* ignore */ }
             }
             setTime(last);
             return;
@@ -102,5 +102,5 @@ export function useWaveSurferSync({
         };
         // positions is ref-backed (stable identity); safe to omit from deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isActive, audio, beatId, setPosition, dur, wsRef, setTime, setDur]);
+    }, [isActive, audio, beatId, setPosition, duration, wsRef, setTime, setDur]);
 }
