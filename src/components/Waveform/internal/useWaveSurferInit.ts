@@ -15,7 +15,7 @@ type InitParams = {
     positions: Record<string, number>;
     setBuffer: (id: string, buf: AudioBuffer) => void;
     onReady: (dur: number, now: number) => void;
-    layoutKey?: string; // ← triggers destroy/recreate when breakpoint bucket changes
+    containerSize?: string; // ← triggers destroy/recreate when breakpoint bucket changes
 };
 
 /**
@@ -27,18 +27,21 @@ type InitParams = {
  */
 export function useWaveSurferInit({
     isVisible, wrapperRef, beat, isActive, audio,
-    buffers, positions, setBuffer, onReady, layoutKey,
+    buffers, positions, setBuffer, onReady, containerSize,
 }: InitParams): RefObject<WaveSurfer | null> {
+    //console.log("useWaveSurferInit.ts ran!")
     const wsRef = useRef<WaveSurfer | null>(null);
 
     useEffect(() => {
-        if (!isVisible || !wrapperRef.current) return;
+        if (!isVisible || !wrapperRef.current || wsRef.current) return;
 
         // Tear down any existing instance before building for this layoutKey
+        /*
         if (wsRef.current) {
             wsRef.current.destroy();
             wsRef.current = null;
         }
+        */
 
         const el = wrapperRef.current;
         const ws = createWaveSurfer(el) as WaveSurfer;
@@ -78,13 +81,16 @@ export function useWaveSurferInit({
         (ws as any).on?.('ready', handleReady);
         ws.load(beat.audio);
 
+        /*
         return () => {
             (ws as any).un?.('ready', handleReady);
             wsRef.current?.destroy();
             wsRef.current = null;
         };
+        */
+        return;
     // include layoutKey so we rebuild once per breakpoint change
-    }, [isVisible, wrapperRef, beat.id, beat.audio, isActive, audio, buffers, positions, setBuffer, onReady, layoutKey]);
+    }, [isVisible, wrapperRef, beat.id, beat.audio, isActive, audio, buffers, setBuffer, onReady, containerSize]);
 
     return wsRef;
 }

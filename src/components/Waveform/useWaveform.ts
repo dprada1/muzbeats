@@ -7,7 +7,8 @@ import { useVisibilityGate } from './internal/useVisibilityGate';
 import { useWaveSurferInit } from './internal/useWaveSurferInit';
 import { useWaveSurferSync } from './internal/useWaveSurferSync';
 import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
-import { useLayoutBucket } from './internal/useWaveSurferResize'; // repurposed file exports layout key
+//import { useWaveSurferResize } from './internal/useWaveSurferResize'; // repurposed file exports layout key
+import { useViewportContainerSize } from './internal/useViewportContainerSize';
 
 export interface UseWaveformResult {
     wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -47,7 +48,7 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
     const isVisible = useVisibilityGate(isActive, wrapperRef);
 
     // Derive a coarse layout key from the wrapper's width; used to remount WS on breakpoint changes.
-    const layoutKey = useLayoutBucket(wrapperRef);
+    const containerSize = useViewportContainerSize();
 
     // ② init/reuse WS; rebuild when layoutKey changes
     const wsRef = useWaveSurferInit({
@@ -60,7 +61,7 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
         positions,
         setBuffer,
         onReady: (duration, now) => { setDur(duration); setTime(now); },
-        layoutKey, // drives destroy/recreate once per meaningful layout change
+        containerSize, // drives destroy/recreate once per meaningful layout change
     });
 
     // ③ sync with <audio> (active) or show cached position (inactive)

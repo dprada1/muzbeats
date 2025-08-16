@@ -8,35 +8,41 @@ import type { RefObject } from 'react';
  *
  * @param isActive   Whether this beat is the one playing in the global player.
  * @param wrapperRef Ref to the card/waveform container element (may be null before mount).
- * @param opts       Optional tuning for the small-screen query and root margins.
  * @returns          Boolean flag indicating the card should initialize its expensive bits.
  */
 export function useVisibilityGate(
     isActive: boolean,
     wrapperRef: RefObject<HTMLElement | null>,
-    opts?: { smallQuery?: string; marginSmall?: string; marginLarge?: string }
 ): boolean {
     const [isVisible, setVisible] = useState(false);
 
     // If this beat is active, mark visible and skip setting up IntersectionObserver
     useEffect(() => {
-        if (isActive) { setVisible(true); return; }
+        // Beat's waveform is in playerbar, force visible and skip IO setup
+        if (isActive) { console.log("It's active!"); setVisible(true); return; }  // never executes
 
-        const el = wrapperRef.current;
-        if (!el) return;
+        const wrapperEl = wrapperRef.current;
+        if (!wrapperEl) return;
 
-        const smallQuery = opts?.smallQuery ?? '(max-width: 480px)';
-        const rootMargin = window.matchMedia(smallQuery).matches
-            ? (opts?.marginSmall ?? '400px')
-            : (opts?.marginLarge ?? '200px');
+        console.debug("Creating new intersection observer...");
 
         const io = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) { setVisible(true); io.disconnect(); }
-        }, { rootMargin });
+            if (entry.isIntersecting) {
+                setVisible(true);
+                console.log("I set visible to true!");
+                io.disconnect();
+                console.log("I disconnected the container! - IO");
+            }
+        }, { rootMargin: '300px' });
 
-        io.observe(el);
-        return () => io.disconnect();
-    }, [isActive, wrapperRef, opts?.smallQuery, opts?.marginSmall, opts?.marginLarge]);
+        io.observe(wrapperEl);
+        console.log("I observed the container!");
+
+        return () => {
+            io.disconnect();
+            console.log("I disconnected the container! - cleanup");
+        };
+    }, [isActive, wrapperRef]);
 
     return isVisible;
 }
