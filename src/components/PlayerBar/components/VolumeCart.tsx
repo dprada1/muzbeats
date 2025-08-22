@@ -24,7 +24,7 @@ export default function VolumeCart() {
             <button
                 onClick={toggleMute}
                 disabled={noTrackLoaded}
-                className={iconButton}
+                className={iconButton + " hidden sm:flex"}
             >
                 {isMuted || volume === 0 ? (
                     <MdVolumeOff size={28} />

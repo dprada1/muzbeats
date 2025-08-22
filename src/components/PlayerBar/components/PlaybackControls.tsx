@@ -53,7 +53,7 @@ export default function PlaybackControls() {
             <button
                 onClick={toggleLoop}
                 disabled={noTrackLoaded}
-                className={`${iconButton} ${
+                className={`${iconButton + " hidden sm:flex"} ${
                     isLoop ? 'text-brand-yellow' : 'text-gray-400'
                 }`}
             >
