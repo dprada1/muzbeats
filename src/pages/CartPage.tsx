@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { FaTrash, FaPlay, FaPause } from 'react-icons/fa6';
 import { useCart } from '@/context/CartContext';
@@ -8,7 +8,6 @@ import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 
 export default function CartPage() {
     const { cartItems, removeFromCart, clearCart } = useCart();
-    const navigate = useNavigate();
 
     const { play, pause, isPlaying, currentBeat } = usePlayer();
     const { setBeats } = useSearch();
@@ -89,26 +88,28 @@ export default function CartPage() {
                                             </h3>
 
                                             {/* meta + price on the left, Remove on the right */}
-                                            <div className="flex items-center gap-1 sm:gap-2">
-                                                <div className="min-w-0">
+                                            <div className="grid grid-cols-[1fr_auto] items-center gap-1 sm:gap-2">
+                                                <div className="min-w-0 leading-tight">
                                                     <p className="text-xs sm:text-sm text-zinc-400 truncate">
                                                         {beat.key} · {beat.bpm} BPM
                                                     </p>
-                                                    <p className="text-sm sm:text-lg font-semibold mt-1">
+                                                    {/* tiny separation but keeps the stack vertically compact */}
+                                                    <p className="text-sm sm:text-lg font-semibold mt-[2px]">
                                                         ${beat.price?.toFixed(2)}
                                                     </p>
                                                 </div>
 
                                                 <button
                                                     onClick={() => removeFromCart(beat.id)}
-                                                    className="flex-none self-center inline-flex items-center gap-1 px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400 hover:bg-[#353535] hover:text-red-300 transition no-ring"
+                                                    className="cursor-pointer inline-flex items-center gap-1
+                                                            px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400
+                                                            hover:bg-[#353535] hover:text-red-300 transition no-ring"
                                                     aria-label="Remove from cart"
                                                 >
                                                     <FaTrash className="text-sm" />
                                                     <span className="text-sm sm:text-base">Remove</span>
                                                 </button>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
@@ -121,8 +122,7 @@ export default function CartPage() {
                         <div className="bg-[#1e1e1e] rounded-2xl p-5">
                             <h2 className="text-xl font-semibold mb-3">Cart Summary</h2>
                             <div className="flex items-center justify-between text-lg mb-4">
-                                <span className="text-white">Total:</span>
-                                <span className="font-bold">${total}</span>
+                                <span className="text-white font-bold">Total: ${total}</span>
                             </div>
                             <button
                                 className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"

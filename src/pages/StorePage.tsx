@@ -58,16 +58,6 @@ export default function StorePage() {
                 </p>
             </div>
 
-            {/* Debug - Shows what screen sizes the device is */}
-            <div className="fixed bottom-2 right-2 z-[9999] rounded bg-black/70 px-2 py-1 text-xs font-mono text-white">
-                <span className="sm:hidden">base (&lt;640)</span>
-                <span className="hidden sm:inline md:hidden">sm (≥640)</span>
-                <span className="hidden md:inline lg:hidden">md (≥768)</span>
-                <span className="hidden lg:inline xl:hidden">lg (≥1024)</span>
-                <span className="hidden xl:inline 2xl:hidden">xl (≥1280)</span>
-                <span className="hidden 2xl:inline">2xl (≥1536)</span>
-            </div>
-
             <div className="flex flex-col gap-3 sm:gap-4 pb-[64px]">
                 {filteredBeats.map((beat) => (
                     <BeatCard key={beat.id} beat={beat} />
