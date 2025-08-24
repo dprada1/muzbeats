@@ -22,20 +22,48 @@ export default function ConfirmDialog({
     onCancel,
     children,
 }: ConfirmDialogProps) {
-    /* close on Esc */
+    // Close on Esc
     useEffect(() => {
         const esc = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
         if (isOpen) window.addEventListener('keydown', esc);
         return () => window.removeEventListener('keydown', esc);
     }, [isOpen, onCancel]);
 
+    // Prevent background scrolling while the dialog is open
+        useEffect(() => {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }, []);
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="w-full max-w-sm bg-[#1e1e1e] rounded-xl p-6 shadow-lg">
-                <h3 className="text-xl font-semibold mb-3">{title}</h3>
-                {children ? children : <p className="text-sm mb-6">{message}</p>}
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            onClick={onCancel} // click-outside closes
+        >
+            {/* backdrop */}
+            <div className="absolute inset-0 bg-black/60" />
+
+            {/* panel */}
+            <div
+                className="relative w-full max-w-sm sm:max-w-md rounded-2xl bg-[#1e1e1e] shadow-2xl border border-white/10
+                            p-4 sm:p-6 max-h-[85vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()} // prevent bubbling to backdrop
+            >
+                <h3 id="confirm-title" className="text-lg font-bold mb-2 sm:mb-3">{title}</h3>
+
+                {children ? (
+                    children
+                ) : (
+                    <p className="text-sm sm:text-base mb-4 sm:mb-6">{message}</p>
+                )}
 
                 <div className="flex justify-end gap-3">
                     <button

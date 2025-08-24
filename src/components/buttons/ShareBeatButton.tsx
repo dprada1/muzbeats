@@ -14,7 +14,7 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
 	const shareTitle = title ?? document.title;
 
 	const handleClick = () => {
-		// open our custom share dialog
+		// Open custom share dialog
 		setDialogOpen(true);
 	};
 
@@ -22,7 +22,9 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
 		<>
 		<button
 			onClick={handleClick}
-			className="inline-flex items-center space-x-1 px-2 py-1 rounded-full bg-gray-800 hover:bg-gray-700 cursor-pointer text-gray-100 text-sm"
+			className="inline-flex items-center space-x-1 px-2 py-1 rounded-full
+					bg-gray-800 hover:bg-gray-700 cursor-pointer
+					text-gray-100 text-sm no-ring"
 		>
 			<Share2 className="w-4 h-4" />
 			<span>Share</span>

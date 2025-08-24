@@ -22,6 +22,13 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
 }) => {
     const [copied, setCopied] = useState(false);
 
+    // Close on Esc
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
 	// Prevent background scrolling while the dialog is open
     useEffect(() => {
         const originalOverflow = document.body.style.overflow;
@@ -64,16 +71,19 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             label: 'E-mail',
             href: `mailto:?subject=${encodedText}&body=${encodedUrl}`,
         },
-        // Removed "More" button since it was non-functional
     ];
 
     return (
         <div
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/60 flex items-center
+                        justify-center z-50 p-4 sm:p-6"
             onClick={onClose}
         >
             <div
-                className="bg-[#1a1a1a] bg-opacity-95 rounded-lg p-6 w-full max-w-sm relative text-gray-100"
+                className="bg-[#1a1a1a] bg-opacity-95 rounded-lg p-4
+                            sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg
+                            relative text-gray-100 max-h-[85vh]
+                            overflow-y-auto border border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -81,7 +91,8 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                     <h2 className="text-lg font-semibold">Share with</h2>
                     <button
                         onClick={onClose}
-                        className="p-1 text-gray-400 hover:text-white cursor-pointer focus:outline-none"
+                        className="p-1 text-gray-400 hover:text-white
+                                    cursor-pointer focus:outline-none"
                     >
                         <FiX size={20} />
                     </button>
