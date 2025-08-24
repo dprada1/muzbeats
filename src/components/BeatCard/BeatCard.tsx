@@ -58,11 +58,8 @@ export default function BeatCard({ beat }: Props) {
                     </div>
                 </div>
 
-                {/* Price + Cart + Share*/}
+                {/* Cart + Share */}
                 <div className="flex items-center gap-3 mt-2">
-                    <span className="text-sm font-medium">
-                        ${beat.price.toFixed(2)}
-                    </span>
                     <AddToCartButton beat={beat} />
                     <ShareBeatButton
                         url={`${window.location.origin}/store/beat/${beat.id}`}
