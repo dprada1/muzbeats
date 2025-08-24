@@ -81,35 +81,34 @@ export default function CartPage() {
                                         </div>
 
                                         {/* RIGHT column */}
-                                        <div className="min-w-0 flex-1">
-                                            {/* title */}
-                                            <h3 className="text-sm sm:text-lg font-semibold truncate">
+                                        <div className="min-w-0 flex-1 grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-2">
+                                            {/* title (row 1, col 1) */}
+                                            <h3 className="col-start-1 row-start-1 min-w-0 text-sm sm:text-lg font-semibold truncate">
                                                 {beat.title}
                                             </h3>
 
-                                            {/* meta + price on the left, Remove on the right */}
-                                            <div className="grid grid-cols-[1fr_auto] items-center gap-1 sm:gap-2">
-                                                <div className="min-w-0 leading-tight">
-                                                    <p className="text-xs sm:text-sm text-zinc-400 truncate">
-                                                        {beat.key} · {beat.bpm} BPM
-                                                    </p>
-                                                    {/* tiny separation but keeps the stack vertically compact */}
-                                                    <p className="text-sm sm:text-lg font-semibold mt-[2px]">
-                                                        ${beat.price?.toFixed(2)}
-                                                    </p>
-                                                </div>
-
-                                                <button
-                                                    onClick={() => removeFromCart(beat.id)}
-                                                    className="cursor-pointer inline-flex items-center gap-1
-                                                            px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400
-                                                            hover:bg-[#353535] hover:text-red-300 transition no-ring"
-                                                    aria-label="Remove from cart"
-                                                >
-                                                    <FaTrash className="text-sm" />
-                                                    <span className="text-sm sm:text-base">Remove</span>
-                                                </button>
+                                            {/* meta + price (row 2, col 1) */}
+                                            <div className="col-start-1 row-start-2 min-w-0 leading-tight">
+                                                <p className="text-xs sm:text-sm text-zinc-400 truncate">
+                                                {beat.key} · {beat.bpm} BPM
+                                                </p>
+                                                <p className="text-sm sm:text-lg font-semibold mt-[2px]">
+                                                ${beat.price?.toFixed(2)}
+                                                </p>
                                             </div>
+
+                                            {/* Remove button spans both rows; perfectly centered */}
+                                            <button
+                                                onClick={() => removeFromCart(beat.id)}
+                                                className="col-start-2 row-span-2 self-center translate-y-[1px]
+                                                        cursor-pointer inline-flex items-center gap-1
+                                                        px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400
+                                                        hover:bg-[#353535] hover:text-red-300 transition no-ring"
+                                                aria-label="Remove from cart"
+                                            >
+                                                <FaTrash className="text-sm" />
+                                                <span className="text-sm sm:text-base">Remove</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
