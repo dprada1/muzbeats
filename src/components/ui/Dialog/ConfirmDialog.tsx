@@ -29,14 +29,14 @@ export default function ConfirmDialog({
         return () => window.removeEventListener('keydown', esc);
     }, [isOpen, onCancel]);
 
-    // Prevent background scrolling while the dialog is open
-        useEffect(() => {
-            const originalOverflow = document.body.style.overflow;
-            document.body.style.overflow = 'hidden';
-            return () => {
-                document.body.style.overflow = originalOverflow;
-            };
-        }, []);
+    // Disable background scrolling when dialog box is open
+    useEffect(() => {
+        const html = document.documentElement;
+        const prev = html.style.overflow;
+        if (!isOpen) return;
+        html.style.overflow = 'hidden';
+        return () => { html.style.overflow = prev; };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 

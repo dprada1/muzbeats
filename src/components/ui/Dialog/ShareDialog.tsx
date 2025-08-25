@@ -29,12 +29,13 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
 
-	// Prevent background scrolling while the dialog is open
+    // Disable background scrolling when dialog box is open
     useEffect(() => {
-        const originalOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
+        const html = document.documentElement;
+        const prev = html.style.overflow;
+        html.style.overflow = 'hidden';
         return () => {
-            document.body.style.overflow = originalOverflow;
+            html.style.overflow = prev;
         };
     }, []);
 
