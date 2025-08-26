@@ -162,18 +162,19 @@ export default function CartPage() {
             )}
 
             {/* confirm dialog */}
-            <ConfirmDialog
-                isOpen={showConfirm}
-                title="Clear cart"
-                message="Are you sure you want to remove all items? This cannot be undone."
-                confirmLabel="Clear"
-                cancelLabel="Keep"
-                onConfirm={() => {
-                    clearCart();
-                    setShowConfirm(false);
-                }}
-                onCancel={() => setShowConfirm(false)}
-            />
+            {showConfirm && (
+                <ConfirmDialog
+                    title="Clear cart"
+                    message="Are you sure you want to remove all items? This cannot be undone."
+                    confirmLabel="Clear"
+                    cancelLabel="Keep"
+                    onConfirm={() => {
+                        clearCart();
+                        setShowConfirm(false);
+                    }}
+                    onCancel={() => setShowConfirm(false)}
+                />
+            )}
         </div>
     );
 }

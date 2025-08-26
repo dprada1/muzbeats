@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 
 interface ConfirmDialogProps {
-    isOpen: boolean;
     title: string;
     message: string;
     confirmLabel?: string;
@@ -13,7 +12,6 @@ interface ConfirmDialogProps {
 }
 
 export default function ConfirmDialog({
-    isOpen,
     title,
     message,
     confirmLabel = 'Yes',
@@ -24,21 +22,20 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
     // Close on Esc
     useEffect(() => {
-        const esc = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
-        if (isOpen) window.addEventListener('keydown', esc);
-        return () => window.removeEventListener('keydown', esc);
-    }, [isOpen, onCancel]);
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCancel();
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onCancel]);
 
     // Disable background scrolling when dialog box is open
     useEffect(() => {
         const html = document.documentElement;
         const prev = html.style.overflow;
-        if (!isOpen) return;
         html.style.overflow = 'hidden';
-        return () => { html.style.overflow = prev; };
-    }, [isOpen]);
-
-    if (!isOpen) return null;
+        return () => {
+            html.style.overflow = prev;
+        };
+    }, []);
 
     return (
         <div

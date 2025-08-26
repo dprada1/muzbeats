@@ -32,9 +32,9 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
 
 		{dialogOpen && (
 			<ShareDialog
-			url={shareUrl}
-			title={shareTitle}
-			onClose={() => setDialogOpen(false)}
+				url={shareUrl}
+				title={shareTitle}
+				onClose={() => setDialogOpen(false)}
 			/>
 		)}
 		</>
