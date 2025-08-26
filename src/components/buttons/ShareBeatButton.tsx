@@ -21,10 +21,12 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
             aria-expanded={dialogOpen}
 			className="inline-flex items-center space-x-1 px-2 py-1 rounded-full
 					bg-gray-800 hover:bg-gray-700 cursor-pointer
-					text-gray-100 text-sm no-ring"
+					text-gray-100 text-sm no-ring active:scale-[1.02]"
 		>
 			<Share2 className="w-4 h-4" />
-			<span>Share</span>
+			<span className="pointer-events-none">
+				Share
+			</span>
 		</button>
 
 		{dialogOpen && (

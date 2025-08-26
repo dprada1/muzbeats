@@ -101,7 +101,7 @@ export default function CartPage() {
                                             <button
                                                 onClick={() => removeFromCart(beat.id)}
                                                 className="col-start-2 row-span-2 self-center translate-y-[1px]
-                                                        cursor-pointer inline-flex items-center gap-1
+                                                        cursor-pointer inline-flex items-center gap-1 active:scale-[1.02]
                                                         px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400
                                                         hover:bg-[#353535] hover:text-red-300 transition no-ring"
                                                 aria-label="Remove from cart"
@@ -144,7 +144,7 @@ export default function CartPage() {
                 <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
                     <div className="pointer-events-auto backdrop-blur-md bg-[#111]/80 border border-white/10 rounded-2xl p-4 shadow-xl flex items-center justify-between">
                         <div className="text-base font-semibold">
-                            Total <span className="text-zinc-400 font-normal">(${total})</span>
+                            Total: <span className="text-zinc-400 font-normal">${total}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
