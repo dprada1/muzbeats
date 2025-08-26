@@ -13,15 +13,12 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
 	const shareUrl = url ?? window.location.href;
 	const shareTitle = title ?? document.title;
 
-	const handleClick = () => {
-		// Open custom share dialog
-		setDialogOpen(true);
-	};
-
 	return (
 		<>
 		<button
-			onClick={handleClick}
+			onClick={() => setDialogOpen(true)}
+			aria-haspopup="dialog"
+            aria-expanded={dialogOpen}
 			className="inline-flex items-center space-x-1 px-2 py-1 rounded-full
 					bg-gray-800 hover:bg-gray-700 cursor-pointer
 					text-gray-100 text-sm no-ring"
