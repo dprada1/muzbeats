@@ -58,7 +58,7 @@ export default function StorePage() {
                 </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:gap-4 pb-[64px]">
+            <div className="flex flex-col gap-3 sm:gap-4">
                 {filteredBeats.map((beat) => (
                     <BeatCard key={beat.id} beat={beat} />
                 ))}

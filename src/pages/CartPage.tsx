@@ -46,7 +46,7 @@ export default function CartPage() {
             )}
 
             {cartItems.length > 0 && (
-                <div className="grid lg:grid-cols-[1fr_280px] gap-3 sm:gap-4 pb-[120px]">
+                <div className="grid lg:grid-cols-[1fr_280px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
                     {/* list */}
                     <div className="flex flex-col gap-4 sm:gap-6">
                         {cartItems.map((beat) => {
