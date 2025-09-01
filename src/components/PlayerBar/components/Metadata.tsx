@@ -4,7 +4,7 @@ export default function Metadata() {
     const { currentBeat } = usePlayerBarContext();
 
     return (
-        <div className="pointer-events-none flex items-center gap-4 overflow-hidden">
+        <div className="pointer-events-none flex items-center gap-4">
             {currentBeat?.cover && (
                 <img
                     src={currentBeat.cover}
@@ -13,7 +13,7 @@ export default function Metadata() {
                 />
             )}
             <div className="min-w-0">
-                <div className="truncate font-semibold">
+                <div className="font-semibold truncate lg:text-clip lg:overflow-visible">
                     {currentBeat ? currentBeat.title : 'No track loaded'}
                 </div>
                 {currentBeat && (
