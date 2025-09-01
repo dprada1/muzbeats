@@ -3,7 +3,9 @@ import { usePlayerBarContext } from '@/components/PlayerBar/PlayerBarContext';
 import AddToCartButton from '@/components/buttons/AddToCartButton';
 
 const iconButton =
-    'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow cursor-pointer';
+    `p-1 transition no-ring cursor-pointer
+    enabled:hover:text-brand-yellow
+    disabled:cursor-not-allowed disabled:opacity-40`;
 
 export default function VolumeCart() {
     const {

@@ -4,7 +4,9 @@ import { FaRepeat } from "react-icons/fa6";
 import { formatTime } from '@/utils/formatTime';
 
 const iconButton =
-    'p-1 transition no-ring disabled:opacity-40 disabled:pointer-events-none hover:text-brand-yellow cursor-pointer';
+    `p-1 transition no-ring cursor-pointer
+    enabled:hover:text-brand-yellow
+    disabled:cursor-not-allowed disabled:opacity-40`;
 
 export default function PlaybackControls() {
     const {
