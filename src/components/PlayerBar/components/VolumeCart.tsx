@@ -17,10 +17,6 @@ export default function VolumeCart() {
         noTrackLoaded,
     } = usePlayerBarContext();
 
-    const applyVolume = (val: number) => {
-        setVolume(val);
-    };
-
     return (
         <div className="flex items-center gap-2 sm:gap-3 justify-end">
             <button
@@ -42,7 +38,7 @@ export default function VolumeCart() {
                 max={1}
                 step={0.01}
                 value={volume}
-                onChange={e => applyVolume(parseFloat(e.target.value))}
+                onChange={e => setVolume(parseFloat(e.target.value))}
                 disabled={noTrackLoaded}
                 className={`range-thumb accent-white w-24 no-ring hidden sm:block ${
                     noTrackLoaded
