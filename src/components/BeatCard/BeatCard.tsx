@@ -25,7 +25,7 @@ export default function BeatCard({ beat }: Props) {
     };
 
     return (
-        <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto">
+        <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto overflow-hidden">
             {/* LEFT: Cover Art */}
             <img
                 src={beat.cover}
@@ -34,7 +34,7 @@ export default function BeatCard({ beat }: Props) {
             />
 
             {/* RIGHT: Content */}
-            <div className="flex flex-col justify-between flex-1">
+            <div className="flex flex-col justify-between flex-1 min-w-0">
                 {/* Title & Key/BPM */}
                 <div className="min-w-0">
                     <h3 className="text-base sm:text-lg font-semibold text-white leading-snug truncate">
