@@ -1,4 +1,3 @@
-// src/components/SearchBar/useSearchBar.ts
 import { useState, useRef, useEffect } from 'react';
 import { useSearch } from '@/context/SearchContext';
 import { useNavigate, createSearchParams } from 'react-router-dom';
@@ -6,9 +5,9 @@ import NProgress from 'nprogress';
 
 /**
  * Drives the search flow:
- *  • local `input` state  
- *  • URL via navigate(...)  
- *  • context.searchQuery updated by the SearchContext effect on URL change
+ *  - local `input` state  
+ *  - URL via navigate(...)  
+ *  - context.searchQuery updated by the SearchContext effect on URL change
  */
 export function useSearchBar() {
     const { searchQuery } = useSearch();
@@ -17,13 +16,15 @@ export function useSearchBar() {
     const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
-    // Mirror the URL‐derived context into our local input
     useEffect(() => {
+        // if /store?q=something changes (back/forward, deep link), mirror it into the text box
         setInput(searchQuery);
     }, [searchQuery]);
 
     const handleClear = () => {
+        // navigate to /store without ?q
         navigate('/store');
+        // put the cursor back into the field
         inputRef.current?.focus();
     };
 
@@ -42,8 +43,7 @@ export function useSearchBar() {
             navigate('/store');
         }
 
-        // finish the bar after a short delay
-        setTimeout(() => NProgress.done(), 300);
+        NProgress.done();
     };
 
     const onFocus = () => setIsFocused(true);

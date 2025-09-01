@@ -26,9 +26,7 @@ html, body {
 	box-shadow: none !important;
 }
 
-/* =========================================================================
-   Range knob (used by volume + progress sliders)
-	====================================================================== */
+/* Range knob (used by volume + progress sliders) */
 input[type='range'].range-thumb::-webkit-slider-thumb {
     -webkit-appearance: none;
     height: 12px;
@@ -38,7 +36,7 @@ input[type='range'].range-thumb::-webkit-slider-thumb {
     transition: transform 0.15s ease;
 }
 
-/* progress bar — hide the track, keep the thumb visible */
+/* Progress bar — hide the track, keep the thumb visible */
 input[type='range'].progress::-webkit-slider-runnable-track {
     background: transparent;
 }
@@ -79,4 +77,21 @@ input[type='range'].range-thumb:active::-moz-range-thumb {
     body {
         padding-bottom: max(var(--playerbar-h), env(safe-area-inset-bottom));
     }
+}
+
+/* NProgress — red, slightly thicker, no spinner */
+#nprogress { pointer-events: none; }
+
+#nprogress .bar {
+    height: 3px !important;
+    background: #ff0000 !important;
+    z-index: 9999 !important;
+}
+
+#nprogress .peg {
+    box-shadow: 0 0 10px #ef4444, 0 0 5px #ef4444 !important;
+}
+
+#nprogress .spinner {
+    display: none !important;
 }

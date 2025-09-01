@@ -6,6 +6,7 @@ import { filterBeats } from "@/utils/search/filterBeats";
 import { parseSearchQuery } from "@/utils/search/searchParser";
 import SearchCluster from "@/components/SearchBar/SearchCluster";
 import NProgress from "nprogress";
+import 'nprogress/nprogress.css';
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
@@ -23,6 +24,7 @@ export default function StorePage() {
     }, []);
 
     useEffect(() => {
+        NProgress.start();
         const searchParamsResult = parseSearchQuery(searchQuery);
         const filtered = filterBeats(beats, searchParamsResult);
         setFilteredBeats(filtered);

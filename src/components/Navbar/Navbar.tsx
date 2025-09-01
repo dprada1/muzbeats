@@ -18,7 +18,7 @@ export default function Navbar() {
                 <Link
                     to="/store"
                     className="flex items-center gap-2 group no-ring"
-                    onClick={() => NProgress.start()}
+                    onClick={() => { NProgress.start(); (NProgress.done()); }}
                 >
                     <img src="/assets/images/skimask.png" alt="Logo" className="w-10 h-10 object-cover" />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
