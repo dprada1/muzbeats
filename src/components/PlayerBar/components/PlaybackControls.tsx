@@ -24,8 +24,8 @@ export default function PlaybackControls() {
     } = usePlayerBarContext();
 
     return (
-        <div className="flex items-center justify-center gap-2 sm:gap-4">
-            <span className="pointer-events-none text-sm tabular-nums w-[48px] text-right hidden md:inline">
+        <div className="flex items-center justify-center gap-3 sm:gap-4">
+            <span className="pointer-events-none text-sm tabular-nums text-right hidden md:inline">
                 {formatTime(currentTime)}
             </span>
             <button
@@ -49,7 +49,7 @@ export default function PlaybackControls() {
             >
                 <FaStepForward size={24} />
             </button>
-            <span className="pointer-events-none text-sm tabular-nums w-[48px] hidden md:inline">
+            <span className="pointer-events-none text-sm tabular-nums hidden md:inline">
                 {formatTime(duration)}
             </span>
             <button

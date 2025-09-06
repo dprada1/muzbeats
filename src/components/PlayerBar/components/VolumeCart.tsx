@@ -18,11 +18,11 @@ export default function VolumeCart() {
     } = usePlayerBarContext();
 
     return (
-        <div className="flex items-center gap-2 sm:gap-3 justify-end">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
             <button
                 onClick={toggleMute}
                 disabled={noTrackLoaded}
-                className={iconButton + " hidden sm:flex"}
+                className={iconButton + " hidden sm:inline-flex"}
             >
                 {isMuted || volume === 0 ? (
                     <MdVolumeOff size={28} />
@@ -40,7 +40,7 @@ export default function VolumeCart() {
                 value={volume}
                 onChange={e => setVolume(parseFloat(e.target.value))}
                 disabled={noTrackLoaded}
-                className={`range-thumb accent-white w-24 no-ring hidden sm:block ${
+                className={`range-thumb accent-white w-24 no-ring hidden lg:block ${
                     noTrackLoaded
                         ? 'cursor-not-allowed opacity-40'
                         : 'cursor-pointer'
