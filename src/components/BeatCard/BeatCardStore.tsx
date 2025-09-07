@@ -46,7 +46,7 @@ export default function BeatCard({ beat }: Props) {
                 </div>
 
                 {/* Play + Waveform */}
-                <div className="min-w-0 flex items-center gap-3 sm:gap-4 sm:mt-1">
+                <div className="min-w-0 flex items-center gap-3 sm:gap-4 mt-2">
                     <button
                         onClick={handleTogglePlay}
                         className="text-card-bg bg-white hover:opacity-90 rounded-full w-11 h-11 sm:w-12 sm:h-12 transition cursor-pointer no-ring min-w-[44px] min-h-[44px] flex items-center justify-center self-center"
