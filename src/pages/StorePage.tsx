@@ -41,7 +41,7 @@ export default function StorePage() {
                 })
                 .catch(console.error)
                 .finally(() => setIsLoading(false));
-        }, 200000);
+        }, 2000);
 
         return () => clearTimeout(timer);
     }, []);

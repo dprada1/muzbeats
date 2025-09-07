@@ -13,10 +13,26 @@ export default function BeatCardSkeleton() {
 
                 {/* RIGHT */}
                 <div className="flex flex-col justify-between flex-1 min-w-0">
-                    {/* Title & Key/BPM — no extra margin under title */}
+                    {/* Title & Key/BPM (mobile = full width title, no extra gap) */}
                     <div className="min-w-0">
-                        <Skeleton height={20} width="60%" />
-                        <Skeleton height={14} width={100} />
+                        {/* Title: 16 (mobile, 100% width) / 20 (desktop, 60% width) */}
+                        <div className="sm:hidden">
+                            <Skeleton height={16} /> {/* no width => 100% */}
+                        </div>
+                        <div className="hidden sm:block">
+                            <Skeleton height={20} width="60%" />
+                        </div>
+
+                        {/* Key + BPM: 12 (mobile) / 14 (desktop) */}
+                        {/* Remove spacing on mobile; keep a tiny bump on desktop only */}
+                        <div className="sm:mt-1">
+                            <div className="sm:hidden">
+                                <Skeleton height={12} width={100} />
+                            </div>
+                            <div className="hidden sm:block">
+                                <Skeleton height={14} width={120} />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Play + Waveform — single row */}
