@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import BeatCard from "@/components/BeatCard/BeatCard";
+import BeatCard from "@/components/BeatCard/BeatCardStore";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
 import { filterBeats } from "@/utils/search/filterBeats";

@@ -1,15 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FaTrash, FaPlay, FaPause } from 'react-icons/fa6';
 import { useCart } from '@/context/CartContext';
-import { usePlayer } from '@/context/PlayerContext';
 import { useSearch } from '@/context/SearchContext';
 import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
+import BeatCardCart from '@/components/BeatCard/BeatCardCart';
 
 export default function CartPage() {
-    const { cartItems, removeFromCart, clearCart } = useCart();
-
-    const { play, pause, isPlaying, currentBeat } = usePlayer();
+    const { cartItems, clearCart } = useCart();
     const { setBeats } = useSearch();
 
     useEffect(() => {
@@ -48,72 +45,10 @@ export default function CartPage() {
             {cartItems.length > 0 && (
                 <div className="grid lg:grid-cols-[1fr_280px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
                     {/* list */}
-                    <div className="flex flex-col gap-4 sm:gap-6">
-                        {cartItems.map((beat) => {
-                            const active = currentBeat?.id === beat.id && isPlaying;
-                            return (
-                                <div
-                                    key={beat.id}
-                                    className="w-full max-w-full overflow-hidden rounded-2xl bg-[#1e1e1e] p-3 sm:p-4"
-                                >
-                                    {/* LEFT: cover | RIGHT: title + meta/price + remove */}
-                                    <div className="flex items-start gap-3 sm:gap-4">
-                                        {/* cover + overlay play */}
-                                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
-                                            <img
-                                                src={beat.cover}
-                                                alt={beat.title}
-                                                className="w-full h-full rounded-xl object-cover"
-                                            />
-                                            <button
-                                                aria-label={active ? 'Pause preview' : 'Play preview'}
-                                                onClick={active ? pause : () => play(beat)}
-                                                className="absolute inset-0 grid place-items-center rounded-xl bg-black/0 hover:bg-black/20 focus:bg-black/20 transition cursor-pointer"
-                                            >
-                                                <span className="grid place-items-center rounded-full p-2 bg-black/60 opacity-70 hover:opacity-100 focus:opacity-100 transition">
-                                                    {active ? (
-                                                        <FaPause className="text-white text-sm" />
-                                                    ) : (
-                                                        <FaPlay className="text-white text-sm" />
-                                                    )}
-                                                </span>
-                                            </button>
-                                        </div>
-
-                                        {/* RIGHT column */}
-                                        <div className="min-w-0 flex-1 grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-2">
-                                            {/* title (row 1, col 1) */}
-                                            <h3 className="col-start-1 row-start-1 min-w-0 text-sm sm:text-lg font-semibold truncate">
-                                                {beat.title}
-                                            </h3>
-
-                                            {/* meta + price (row 2, col 1) */}
-                                            <div className="col-start-1 row-start-2 min-w-0 leading-tight">
-                                                <p className="text-xs sm:text-sm text-zinc-400 truncate">
-                                                {beat.key} · {beat.bpm} BPM
-                                                </p>
-                                                <p className="text-sm sm:text-lg font-semibold mt-[2px]">
-                                                ${beat.price?.toFixed(2)}
-                                                </p>
-                                            </div>
-
-                                            {/* Remove button spans both rows; perfectly centered */}
-                                            <button
-                                                onClick={() => removeFromCart(beat.id)}
-                                                className="col-start-2 row-span-2 self-center translate-y-[1px]
-                                                        cursor-pointer inline-flex items-center gap-1 active:scale-[1.02]
-                                                        px-2.5 py-2 rounded-full bg-[#2a2a2a] text-red-400
-                                                        hover:bg-[#353535] hover:text-red-300 transition no-ring"
-                                                aria-label="Remove from cart"
-                                            >
-                                                <FaTrash className="text-sm" />
-                                                <span className="text-sm sm:text-base">Remove</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
+                        {cartItems.map((beat) => (
+                            <BeatCardCart beat={beat}/>
+                        ))}
                     </div>
 
                     {/* sidebar summary (desktop/tablet) */}

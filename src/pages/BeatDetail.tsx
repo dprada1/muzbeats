@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import type { Beat } from '@/types/Beat';
-import BeatCard from '@/components/BeatCard/BeatCard';
+import BeatCard from '@/components/BeatCard/BeatCardStore';
 
 export default function BeatDetail() {
 	const { beatId } = useParams<{ beatId: string }>();
