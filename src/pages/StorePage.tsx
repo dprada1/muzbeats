@@ -7,20 +7,43 @@ import { parseSearchQuery } from "@/utils/search/searchParser";
 import SearchCluster from "@/components/SearchBar/SearchCluster";
 import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
+import BeatCardSkeleton from "@/components/BeatCard/BeatCardSkeleton";
+import { SkeletonTheme } from "react-loading-skeleton";
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
     const [filteredBeats, setFilteredBeats] = useState<Beat[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const { searchQuery, setBeats: setVisibleBeats } = useSearch();
 
     useEffect(() => {
+        setIsLoading(true);
+        /*
         fetch("/assets/data.json")
             .then((res) => res.json())
             .then((data) => {
-                setBeats(data);
-                setFilteredBeats(data);
+                window.setTimeout(() => {
+                    setBeats(data);
+                    setFilteredBeats(data);
+                }, 3000);
             })
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => setIsLoading(false));
+        */
+        
+        const timer = setTimeout(() => {
+            fetch("/assets/data.json")
+                .then((res) => res.json())
+                .then((data: Beat[]) => {
+                    setBeats(data);
+                    setFilteredBeats(data);
+                    setVisibleBeats(data);
+                })
+                .catch(console.error)
+                .finally(() => setIsLoading(false));
+        }, 200000);
+
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -31,6 +54,10 @@ export default function StorePage() {
         setVisibleBeats(filtered);
         NProgress.done();
     }, [searchQuery, beats]);
+
+    const showSkeletons = isLoading;
+    const showEmpty =
+        !isLoading && filteredBeats.length === 0 && (searchQuery?.trim()?.length ?? 0) > 0;
 
     return (
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
@@ -54,16 +81,28 @@ export default function StorePage() {
                     Beat Store
                 </h1>
                 <p className="text-base sm:text-lg text-zinc-400">
-                    {searchQuery
-                        ? `Showing ${filteredBeats.length} result${filteredBeats.length !== 1 ? "s" : ""} for "${searchQuery}"`
+                    {showSkeletons
+                        ? "Loading…"
+                        : searchQuery
+                        ? `Showing ${filteredBeats.length} result${
+                              filteredBeats.length !== 1 ? "s" : ""
+                          } for "${searchQuery}"`
                         : `All beats (${beats.length})`}
                 </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:gap-4">
-                {filteredBeats.map((beat) => (
-                    <BeatCard key={beat.id} beat={beat} />
-                ))}
+                <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
+                    {showSkeletons
+                        ? Array.from({ length: 8 }).map((_, i) => <BeatCardSkeleton key={i} />)
+                        : showEmpty
+                        ? (
+                            <div className="text-zinc-400 py-8 text-center">
+                                No beats found for “{searchQuery}”.
+                            </div>
+                        )
+                        : filteredBeats.map((beat) => <BeatCard key={beat.id} beat={beat} />)}
+                </SkeletonTheme>
             </div>
         </div>
     );
