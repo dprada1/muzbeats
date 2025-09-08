@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
 import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
-import BeatCardCart from '@/components/BeatCard/BeatCardCart';
+import BeatCardCart from '@/components/beatcards/cart/BeatCardCart';
+import BeatCardCartSkeleton from '@/components/beatcards/cart/BeatCardCartSkeleton';
+import { SkeletonTheme } from 'react-loading-skeleton';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
@@ -16,8 +18,16 @@ export default function CartPage() {
 
     useEffect(() => window.scrollTo({ top: 0 }), []);
 
+    const [showSkeletons, setShowSkeletons] = useState(true);
+    useEffect(() => {
+        const t = setTimeout(() => setShowSkeletons(false), 2000);
+        return () => clearTimeout(t);
+    }, []);
+
     const [showConfirm, setShowConfirm] = useState(false);
     const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
+
+    const skeletonCount = cartItems.length > 0 ? cartItems.length : 3;
 
     return (
         <div className="pt-12 max-w-3xl mx-auto">
@@ -46,9 +56,15 @@ export default function CartPage() {
                 <div className="grid lg:grid-cols-[1fr_280px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
                     {/* list */}
                     <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
-                        {cartItems.map((beat) => (
-                            <BeatCardCart key={beat.id} beat={beat}/>
-                        ))}
+                        <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
+                        {showSkeletons
+                            ? Array.from({ length: skeletonCount }).map((_, i) => (
+                                <BeatCardCartSkeleton key={i} />
+                                ))
+                            : cartItems.map((beat) => (
+                                <BeatCardCart key={beat.id} beat={beat} />
+                                ))}
+                        </SkeletonTheme>
                     </div>
 
                     {/* sidebar summary (desktop/tablet) */}

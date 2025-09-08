@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import BeatCard from "@/components/BeatCard/BeatCardStore";
+import BeatCard from "@/components/beatcards/store/BeatCardStore";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
 import { filterBeats } from "@/utils/search/filterBeats";
@@ -7,7 +7,7 @@ import { parseSearchQuery } from "@/utils/search/searchParser";
 import SearchCluster from "@/components/SearchBar/SearchCluster";
 import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
-import BeatCardSkeleton from "@/components/BeatCard/BeatCardSkeleton";
+import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
 import { SkeletonTheme } from "react-loading-skeleton";
 
 export default function StorePage() {
