@@ -4,14 +4,14 @@ import "react-loading-skeleton/dist/skeleton.css";
 export default function BeatCardSkeleton() {
     return (
         <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
-            <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto overflow-hidden h-[186.75px]">
+            <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto overflow-hidden h-[156px] sm:h-[186.75px]">
                 {/* LEFT: Cover — same as real card */}
                 <div className="aspect-square w-20 h-20 md:w-36 md:h-36 rounded-lg object-cover">
                     <Skeleton className="w-full h-full" />
                 </div>
 
                 {/* RIGHT */}
-                <div className="flex flex-col justify-between flex-1 min-w-0 h-[154.75px]">
+                <div className="flex flex-col justify-between flex-1 min-w-0 h-[132px] sm:h-[154.75px]">
                     {/* Title + Key/BPM — EXACT 38px on mobile */}
                     <div className="min-w-0 h-[38px] sm:h-[44.75px] flex flex-col justify-between">
                         {/* Title: 16 (mobile, full width) / 20 (desktop, 60% width) */}
