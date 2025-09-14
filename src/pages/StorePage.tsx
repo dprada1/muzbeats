@@ -82,7 +82,7 @@ export default function StorePage() {
                 </h1>
                 <p className="text-base sm:text-lg text-zinc-400">
                     {showSkeletons
-                        ? "Loading…"
+                        ? "Loading..."
                         : searchQuery
                         ? `Showing ${filteredBeats.length} result${
                               filteredBeats.length !== 1 ? "s" : ""

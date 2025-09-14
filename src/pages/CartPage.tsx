@@ -77,7 +77,7 @@ export default function CartPage() {
                                 <span className="text-white font-bold">Total: ${total}</span>
                             </div>
                             <button
-                                className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
+                                className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] active:scale-[1.02] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
                             >
                                 Proceed to Checkout
                             </button>
@@ -106,7 +106,7 @@ export default function CartPage() {
                             >
                                 Clear
                             </button>
-                            <button className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring">
+                            <button className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring active:scale-[1.02] transition">
                                 Checkout
                             </button>
                         </div>
