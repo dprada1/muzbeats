@@ -46,7 +46,9 @@ export default function CartPage() {
             {cartItems.length === 0 && (
                 <Link
                     to="/store"
-                    className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300] transition no-ring"
+                    className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
+                    bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                    active:scale-[1.02] transition no-ring"
                 >
                     ← Continue Shopping
                 </Link>
