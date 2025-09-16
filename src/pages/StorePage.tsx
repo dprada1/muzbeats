@@ -18,19 +18,6 @@ export default function StorePage() {
 
     useEffect(() => {
         setIsLoading(true);
-        /*
-        fetch("/assets/data.json")
-            .then((res) => res.json())
-            .then((data) => {
-                window.setTimeout(() => {
-                    setBeats(data);
-                    setFilteredBeats(data);
-                }, 3000);
-            })
-            .catch(console.error)
-            .finally(() => setIsLoading(false));
-        */
-        
         const timer = setTimeout(() => {
             fetch("/assets/data.json")
                 .then((res) => res.json())
@@ -56,8 +43,6 @@ export default function StorePage() {
     }, [searchQuery, beats]);
 
     const showSkeletons = isLoading;
-    const showEmpty =
-        !isLoading && filteredBeats.length === 0 && (searchQuery?.trim()?.length ?? 0) > 0;
 
     return (
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
@@ -95,12 +80,6 @@ export default function StorePage() {
                 <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
                     {showSkeletons
                         ? Array.from({ length: 8 }).map((_, i) => <BeatCardSkeleton key={i} />)
-                        : showEmpty
-                        ? (
-                            <div className="text-zinc-400 py-8 text-center">
-                                No beats found for “{searchQuery}”.
-                            </div>
-                        )
                         : filteredBeats.map((beat) => <BeatCard key={beat.id} beat={beat} />)}
                 </SkeletonTheme>
             </div>

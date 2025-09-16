@@ -6,6 +6,8 @@ import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 import BeatCardCart from '@/components/beatcards/cart/BeatCardCart';
 import BeatCardCartSkeleton from '@/components/beatcards/cart/BeatCardCartSkeleton';
 import { SkeletonTheme } from 'react-loading-skeleton';
+import CartSummarySkeleton from '@/components/beatcards/cart/CartSummarySkeleton';
+import CartSummaryStickySkeleton from '@/components/beatcards/cart/CartSummaryStickySkeleton';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
@@ -71,48 +73,56 @@ export default function CartPage() {
 
                     {/* sidebar summary (desktop/tablet) */}
                     <div className="hidden lg:block">
-                        <div className="bg-[#1e1e1e] rounded-2xl p-5">
-                            <h2 className="text-xl font-semibold mb-3">Cart Summary</h2>
-                            <div className="flex items-center justify-between text-lg mb-4">
-                                <span className="text-white font-bold">Total: ${total}</span>
-                            </div>
-                            <button
-                                className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] active:scale-[1.02] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
-                            >
-                                Proceed to Checkout
-                            </button>
-                            <button
-                                onClick={() => setShowConfirm(true)}
-                                className="mt-3 block w-full text-center text-red-400 hover:text-red-300 text-sm underline no-ring cursor-pointer"
-                            >
-                                Clear Cart
-                            </button>
-                        </div>
+                        {showSkeletons
+                            ? <CartSummarySkeleton />
+                            : (cartItems.length > 0 &&
+                                <div className="bg-[#1e1e1e] rounded-2xl p-5">
+                                    <h2 className="text-xl font-semibold mb-3">Cart Summary</h2>
+                                    <div className="flex items-center justify-between text-lg mb-4">
+                                        <span className="text-white font-bold">Total: ${total}</span>
+                                    </div>
+                                    <button
+                                        className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] active:scale-[1.02] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
+                                    >
+                                        Proceed to Checkout
+                                    </button>
+                                    <button
+                                        onClick={() => setShowConfirm(true)}
+                                        className="mt-3 block w-full text-center text-red-400 hover:text-red-300 text-sm underline no-ring cursor-pointer"
+                                    >
+                                        Clear Cart
+                                    </button>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
             )}
 
             {/* sticky checkout bar for mobile */}
-            {cartItems.length > 0 && (
-                <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
-                    <div className="pointer-events-auto backdrop-blur-md bg-[#111]/80 border border-white/10 rounded-2xl p-4 shadow-xl flex items-center justify-between">
-                        <div className="text-base font-semibold">
-                            Total: <span className="text-zinc-400 font-normal">${total}</span>
+            {showSkeletons
+                ? <CartSummaryStickySkeleton />
+                :   (cartItems.length > 0 && (
+                        <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
+                            <div className="pointer-events-auto backdrop-blur-md bg-[#111]/80 border border-white/10 rounded-2xl p-4 shadow-xl flex items-center justify-between">
+                                <div className="text-base font-semibold">
+                                    Total: <span className="text-zinc-400 font-normal">${total}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setShowConfirm(true)}
+                                        className="text-sm text-red-400 underline hover:text-red-300 no-ring"
+                                    >
+                                        Clear
+                                    </button>
+                                    <button className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring active:scale-[1.02] transition">
+                                        Checkout
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setShowConfirm(true)}
-                                className="text-sm text-red-400 underline hover:text-red-300 no-ring"
-                            >
-                                Clear
-                            </button>
-                            <button className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring active:scale-[1.02] transition">
-                                Checkout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                    ))
+            }
 
             {/* confirm dialog */}
             {showConfirm && (
