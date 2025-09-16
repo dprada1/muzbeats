@@ -27,25 +27,27 @@ export default function CartPage() {
     }, []);
 
     const [showConfirm, setShowConfirm] = useState(false);
-    const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
 
-    const skeletonCount = cartItems.length > 0 ? cartItems.length : 3;
+    const count = cartItems.length;
+    const isEmpty = count === 0;
+    const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
+    const skeletonCount = Math.max(count, 3);
 
     return (
         <div className="pt-12 max-w-3xl mx-auto">
             {/* header */}
             <div className="space-y-1 sm:space-y-1.5 mb-4">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Your Cart</h1>
-                {cartItems.length === 0 ? (
-                    <p className="text-zinc-400 text-lg">Your cart is empty.</p>
-                ) : (
-                    <p className="text-base sm:text-lg text-zinc-400">
-                        {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart.
-                    </p>
-                )}
+                <p className="text-base sm:text-lg text-zinc-400">
+                    {showSkeletons
+                    ? 'Loading…'
+                    : isEmpty
+                    ? 'Your cart is empty.'
+                    : `${count} ${count === 1 ? 'item' : 'items'} in your cart.`}
+                </p>
             </div>
 
-            {cartItems.length === 0 && (
+            {!showSkeletons && isEmpty && (
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
@@ -56,17 +58,17 @@ export default function CartPage() {
                 </Link>
             )}
 
-            {cartItems.length > 0 && (
+            {(showSkeletons || !isEmpty) && (
                 <div className="grid lg:grid-cols-[1fr_280px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
                     {/* list */}
                     <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
                         <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
                         {showSkeletons
                             ? Array.from({ length: skeletonCount }).map((_, i) => (
-                                <BeatCardCartSkeleton key={i} />
+                                    <BeatCardCartSkeleton key={i} />
                                 ))
                             : cartItems.map((beat) => (
-                                <BeatCardCart key={beat.id} beat={beat} />
+                                    <BeatCardCart key={beat.id} beat={beat} />
                                 ))}
                         </SkeletonTheme>
                     </div>
@@ -75,7 +77,7 @@ export default function CartPage() {
                     <div className="hidden lg:block">
                         {showSkeletons
                             ? <CartSummarySkeleton />
-                            : (cartItems.length > 0 &&
+                            : (!isEmpty &&
                                 <div className="bg-[#1e1e1e] rounded-2xl p-5">
                                     <h2 className="text-xl font-semibold mb-3">Cart Summary</h2>
                                     <div className="flex items-center justify-between text-lg mb-4">
@@ -102,7 +104,7 @@ export default function CartPage() {
             {/* sticky checkout bar for mobile */}
             {showSkeletons
                 ? <CartSummaryStickySkeleton />
-                :   (cartItems.length > 0 && (
+                :   (!isEmpty && (
                         <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
                             <div className="pointer-events-auto backdrop-blur-md bg-[#111]/80 border border-white/10 rounded-2xl p-4 shadow-xl flex items-center justify-between">
                                 <div className="text-base font-semibold">
