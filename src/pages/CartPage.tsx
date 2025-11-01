@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
 import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
-import BeatCardCart from '@/components/beatcards/cart/BeatCardCart';
+import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
 import BeatCardCartSkeleton from '@/components/beatcards/cart/BeatCardCartSkeleton';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import CartSummarySkeleton from '@/components/beatcards/cart/CartSummarySkeleton';
@@ -22,8 +22,9 @@ export default function CartPage() {
 
     const [showSkeletons, setShowSkeletons] = useState(true);
     useEffect(() => {
-        const t = setTimeout(() => setShowSkeletons(false), 2000);
-        return () => clearTimeout(t);
+        // Show skeletons only while cart items are being loaded
+        // LazyBeatCardCart will handle individual card loading
+        setShowSkeletons(false);
     }, []);
 
     const [showConfirm, setShowConfirm] = useState(false);
@@ -68,7 +69,7 @@ export default function CartPage() {
                                     <BeatCardCartSkeleton key={i} />
                                 ))
                             : cartItems.map((beat) => (
-                                    <BeatCardCart key={beat.id} beat={beat} />
+                                    <LazyBeatCardCart key={beat.id} beat={beat} />
                                 ))}
                         </SkeletonTheme>
                     </div>

@@ -1,9 +1,31 @@
 import useWaveform, { type UseWaveformResult } from './useWaveform';
 import { formatTime } from '@/utils/formatTime';
 import type { Beat } from '@/types/Beat';
+import { useEffect, useRef } from 'react';
 
-export default function Waveform(props: { beat: Beat }) {
-    const { wrapperRef, startTime, duration }: UseWaveformResult = useWaveform(props.beat);
+export type WaveformProps = {
+    beat: Beat;
+    isVisible?: boolean;
+    onReady?: () => void;
+};
+
+export default function Waveform({ beat, isVisible = true, onReady }: WaveformProps) {
+    const { wrapperRef, startTime, duration }: UseWaveformResult = useWaveform(beat, isVisible);
+    const hasCalledReady = useRef(false);
+    
+    // Call onReady when waveform has loaded (duration > 0 indicates it's ready)
+    // Only call once per beat
+    useEffect(() => {
+        if (duration > 0 && onReady && !hasCalledReady.current) {
+            hasCalledReady.current = true;
+            onReady();
+        }
+    }, [duration, onReady, beat.id]);
+    
+    // Reset when beat changes
+    useEffect(() => {
+        hasCalledReady.current = false;
+    }, [beat.id]);
 
     return (
         <div

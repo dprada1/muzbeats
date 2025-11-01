@@ -3,7 +3,6 @@ import { usePlayer } from '@/context/PlayerContext';
 import { useWaveformCache } from '@/context/WaveformContext';
 import type { Beat } from '@/types/Beat';
 
-import { useVisibilityGate } from './internal/useVisibilityGate';
 import { useWaveSurferInit } from './internal/useWaveSurferInit';
 import { useWaveSurferSync } from './internal/useWaveSurferSync';
 import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
@@ -19,7 +18,6 @@ export interface UseWaveformResult {
  * Orchestrates the Waveform component by composing focused internal hooks.
  *
  * Hooks (why each exists):
- * - Visibility gate (IO): lazily marks the card visible via IntersectionObserver so heavy work is deferred.
  * - WS init/reuse + restore: creates WaveSurfer when visible, reuses cached AudioBuffer, and restores playhead.
  * - Sync with <audio>: mirrors the global <audio> time into the visual cursor and caches the resume position.
  * - Interaction to seek/start: clicking/dragging the waveform seeks the global player (and starts if inactive).
@@ -27,13 +25,15 @@ export interface UseWaveformResult {
  *
  * @param {Beat} beat
  *   The beat whose waveform should render; used for ids, audio URL, and cache lookups.
+ * @param {boolean} isVisible
+ *   Whether the waveform should be visible/loaded (controlled by parent component).
  *
  * @returns {{ wrapperRef: React.RefObject<HTMLDivElement|null>, time: number, dur: number }}
  *   - wrapperRef: attach to the waveform container div.
  *   - time: current time (seconds) for the left badge.
  *   - dur: total duration (seconds) for the right badge.
  */
-export default function useWaveform(beat: Beat): UseWaveformResult {
+export default function useWaveform(beat: Beat, isVisible: boolean = true): UseWaveformResult {
     const { audio, currentBeat, play } = usePlayer();
     const { buffers, setBuffer, positions, setPosition } = useWaveformCache();
 
@@ -42,16 +42,17 @@ export default function useWaveform(beat: Beat): UseWaveformResult {
     const [duration, setDur] = useState(0);
 
     const isActive = currentBeat?.id === beat.id;
-
-    // ① visibility
-    const isVisible = useVisibilityGate(isActive, wrapperRef);
+    
+    // Use isVisible prop (parent controls visibility via IntersectionObserver)
+    // Always consider active beats visible
+    const shouldLoad = isVisible || isActive;
 
     // Derive a coarse layout key from the wrapper's width; used to remount WS on breakpoint changes.
     const containerSize = useViewportContainerSize();
 
     // ② init/reuse WS; rebuild when layoutKey changes
     const wsRef = useWaveSurferInit({
-        isVisible,
+        isVisible: shouldLoad,
         wrapperRef,
         beat,
         isActive,

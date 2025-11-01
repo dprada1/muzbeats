@@ -33,10 +33,9 @@ export function useWaveSurferInit({
 
     useEffect(() => {
         // Skip WS instantiation if not visible or instance already exists
-        if (!isVisible || wsRef.current) { console.log("Skipped waveform creation for", beat.title); return; }
+        if (!isVisible || wsRef.current) return;
 
         // Instantiate WS
-        console.log("Creating waveform for", beat.title);
         const wrapperEl = wrapperRef.current;
         if (!wrapperEl) return;
 
@@ -86,7 +85,6 @@ export function useWaveSurferInit({
         ws.load(beat.audio);
 
         return () => {
-            console.log("cleanup for", beat.title);
             ws.un('ready', handleReady);
             wsRef.current?.destroy();
             wsRef.current = null;

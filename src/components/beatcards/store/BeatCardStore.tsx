@@ -8,9 +8,10 @@ import { useWaveformCache } from '@/context/WaveformContext';
 
 type Props = {
     beat: Beat;
+    onWaveformReady?: () => void;
 };
 
-export default function BeatCard({ beat }: Props) {
+export default function BeatCard({ beat, onWaveformReady }: Props) {
     const { currentBeat, isPlaying, play, pause } = usePlayer();
     const { positions } = useWaveformCache();
     const isThisPlaying = currentBeat?.id === beat.id && isPlaying;
@@ -54,7 +55,7 @@ export default function BeatCard({ beat }: Props) {
                         {isThisPlaying ? <FaPause /> : <FaPlay />}
                     </button>
                     <div className="min-w-0 flex-1 overflow-hidden">
-                        <Waveform beat={beat} />
+                        <Waveform beat={beat} onReady={onWaveformReady} />
                     </div>
                 </div>
 

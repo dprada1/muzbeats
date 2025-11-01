@@ -24,7 +24,5 @@ export function useViewportContainerSize(): ContainerSize {
         return () => mq.removeEventListener('change', onChange);
     }, []);
 
-    console.log(size);
-
     return size;
 }
