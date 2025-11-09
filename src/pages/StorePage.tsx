@@ -4,7 +4,7 @@ import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
 import { filterBeats } from "@/utils/search/filterBeats";
 import { parseSearchQuery } from "@/utils/search/searchParser";
-import SearchCluster from "@/components/SearchBar/SearchCluster";
+import PageHeader from "@/components/PageHeader/PageHeader";
 import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
 import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
@@ -80,39 +80,19 @@ export default function StorePage() {
 
     const showSkeletons = isLoading || !hasVisibleCards;
 
+    const subtitle = showSkeletons
+        ? "Loading..."
+        : searchQuery
+        ? filteredBeats.length === 0
+            ? `No results found for "${searchQuery}"`
+            : `Showing ${filteredBeats.length} result${
+                  filteredBeats.length !== 1 ? "s" : ""
+              } for "${searchQuery}"`
+        : `All beats (${beats.length})`;
+
     return (
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
-            {/* Mobile: tight sticky search under the fixed NavBar */}
-            <div
-                className="fixed inset-x-0 z-40 md:hidden bg-[#111111] px-4 top-1 pt-3"
-                style={{ top: "calc(64px + env(safe-area-inset-top))" }}
-            >
-                <SearchCluster className="pb-0.5"/>
-
-                {/* push the fade OUTSIDE the bar so it shows */}
-                <div
-                    className="pointer-events-none absolute left-0 right-0 pt-1
-                                h-4 bg-gradient-to-b from-[#111111]/60 via-[#111111]/25 to-transparent"
-                    aria-hidden
-                />
-            </div>
-
-            <div className="mt-[48px] md:mt-0">
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-0.5 sm:mb-1">
-                    Beat Store
-                </h1>
-                <p className="text-base sm:text-lg text-zinc-400">
-                    {showSkeletons
-                        ? "Loading..."
-                        : searchQuery
-                        ? filteredBeats.length === 0
-                            ? `No results found for "${searchQuery}"`
-                            : `Showing ${filteredBeats.length} result${
-                                  filteredBeats.length !== 1 ? "s" : ""
-                              } for "${searchQuery}"`
-                        : `All beats (${beats.length})`}
-                </p>
-            </div>
+            <PageHeader title="Beat Store" subtitle={subtitle} />
 
             <div className="flex flex-col gap-3 sm:gap-4">
                 <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
