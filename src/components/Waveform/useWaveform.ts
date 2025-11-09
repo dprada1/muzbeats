@@ -70,6 +70,7 @@ export default function useWaveform(beat: Beat, isVisible: boolean = true): UseW
         audio: audio ?? null,
         isActive,
         beatId: beat.id,
+        beatAudioUrl: beat.audio,
         positions,
         setPosition,
         duration,
