@@ -22,3 +22,32 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Audio files (should not be in public repo)
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.m4a
+
+# Large media files
+*.mov
+*.mp4
+*.avi
+*.mkv
+
+# Sensitive data
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+.secrets
