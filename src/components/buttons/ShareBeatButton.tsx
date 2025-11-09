@@ -19,9 +19,9 @@ export function ShareBeatButton({ url, title }: ShareBeatButtonProps) {
 			onClick={() => setDialogOpen(true)}
 			aria-haspopup="dialog"
             aria-expanded={dialogOpen}
-			className="inline-flex items-center space-x-1 px-2 h-[30px] rounded-full
+			className="flex items-center gap-2 px-3 py-1 rounded-full border border-gray-700
 					bg-gray-800 hover:bg-gray-700 cursor-pointer
-					text-gray-100 text-sm no-ring active:scale-[1.02]"
+					text-gray-100 text-sm no-ring active:scale-[1.02] w-[6rem] sm:w-[8rem] justify-center transition"
 		>
 			<Share2 className="w-4 h-4" />
 			<span className="pointer-events-none">

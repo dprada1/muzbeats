@@ -64,12 +64,12 @@ export default function BeatCardSkeleton() {
                             <Skeleton height={32} width={128} borderRadius={9999} />
                         </div>
 
-                        {/* Share: pill */}
+                        {/* Share: pill - matches AddToCart exactly */}
                         <div className="sm:hidden">
-                            <Skeleton height={30} width={80} borderRadius={9999} />
+                            <Skeleton height={30} width={96} borderRadius={9999} />
                         </div>
                         <div className="hidden sm:block">
-                            <Skeleton height={32} width={92} borderRadius={9999} />
+                            <Skeleton height={32} width={128} borderRadius={9999} />
                         </div>
                     </div>
                 </div>
