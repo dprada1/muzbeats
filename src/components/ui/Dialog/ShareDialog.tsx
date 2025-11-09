@@ -56,21 +56,25 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             icon: <FiMessageSquare />,
             label: 'Chat',
             href: `sms:?&body=${encodedText}%20${encodedUrl}`,
+            color: 'bg-green-500 hover:bg-green-600',
         },
         {
             icon: <FiSend />,
             label: 'Telegram',
             href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+            color: 'bg-[#0088cc] hover:bg-[#0077b3]',
         },
         {
             icon: <FiTwitter />,
             label: 'Twitter',
             href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`,
+            color: 'bg-[#1DA1F2] hover:bg-[#1a91da]',
         },
         {
             icon: <FiMail />,
             label: 'E-mail',
             href: `mailto:?subject=${encodedText}&body=${encodedUrl}`,
+            color: 'bg-red-500 hover:bg-red-600',
         },
     ];
 
@@ -88,7 +92,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-3">
                     <h2 className="text-lg font-semibold">Share with</h2>
                     <button
                         onClick={onClose}
@@ -100,19 +104,19 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
 
                 {/* Icon links */}
-                <div className="flex justify-between mb-6">
-                    {shareLinks.map(({ icon, label, href }) => (
+                <div className="flex justify-around mb-4">
+                    {shareLinks.map(({ icon, label, href, color }) => (
                         <a
                             key={label}
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-col items-center space-y-1 text-gray-300 hover:text-white focus:outline-none"
+                            className="flex flex-col items-center gap-2 text-gray-300 hover:text-white focus:outline-none transition-colors cursor-pointer group"
                         >
-                            <div className="p-3 bg-[#2a2a2a] rounded-full">
+                            <div className={`p-3 ${color} rounded-full text-white transition-colors shadow-lg group-hover:scale-110`}>
                                 {icon}
                             </div>
-                            <span className="text-xs">{label}</span>
+                            <span className="text-xs font-medium">{label}</span>
                         </a>
                     ))}
                 </div>
@@ -121,25 +125,27 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 <div className="text-center text-gray-400 text-xs mb-2">
                     Or share with link
                 </div>
-                <div className="flex items-center">
-                    <FiLink className="text-gray-400"/>
-                    <input
-                        type="text"
-                        readOnly
-                        value={url}
-                        className="flex-grow p-2 bg-[#2a2a2a] border border-[#3a3a3a] rounded-l-md text-sm text-gray-100 overflow-x-auto focus:outline-none"
-                    />
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <FiLink className="text-gray-400 flex-shrink-0"/>
+                        <input
+                            type="text"
+                            readOnly
+                            value={url}
+                            className="flex-grow p-2.5 bg-[#2a2a2a] border border-[#3a3a3a] rounded-md text-sm text-gray-100 overflow-x-auto focus:outline-none focus:border-gray-500 transition-colors"
+                        />
+                    </div>
                     <button
                         onClick={handleCopy}
-                        className={`flex items-center justify-center space-x-1 p-2 bg-[#2a2a2a] border-l-0 border border-[#3a3a3a] rounded-r-md hover:bg-[#3a3a3a] cursor-pointer focus:outline-none -ml-px w-22`}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all focus:outline-none cursor-pointer ${
+                            copied
+                                ? 'bg-green-600/80 hover:bg-green-600 text-white'
+                                : 'bg-[#0b84ff] hover:bg-[#0a74d1] text-white'
+                        } shadow-lg active:scale-[0.98]`}
                     >
-                        <MdContentCopy className="text-gray-300 w-5 h-5" />
-                        <span
-                            className={`text-sm ${
-                                copied ? 'text-green-500' : 'text-gray-300'
-                            }`}
-                        >
-                            {copied ? 'Copied!' : 'Copy'}
+                        <MdContentCopy className="w-5 h-5" />
+                        <span className="text-sm">
+                            {copied ? 'Copied!' : 'Copy Link'}
                         </span>
                     </button>
                 </div>
