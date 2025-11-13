@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getAllBeats, getBeatById } from '../services/beatsService.js';
+import { getAllBeats, getBeatById } from '@/services/beatsService.js';
 
 /**
  * GET /api/beats

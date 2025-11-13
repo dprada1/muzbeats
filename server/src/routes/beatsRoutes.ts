@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllBeatsHandler, getBeatByIdHandler } from '../controllers/beatsController.js';
+import { getAllBeatsHandler, getBeatByIdHandler } from '@/controllers/beatsController.js';
 
 const router = Router();
 

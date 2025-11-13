@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import beatsRoutes from './routes/beatsRoutes.js';
+import beatsRoutes from '@/routes/beatsRoutes.js';
 
 // Load environment variables
 dotenv.config();
