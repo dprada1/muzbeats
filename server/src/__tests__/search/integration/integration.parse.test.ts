@@ -1,4 +1,5 @@
-import { parseSearchQuery } from '@/utils/search/searchParser';
+import { describe, expect, it, afterEach } from 'vitest';
+import { parseSearchQuery } from '@/utils/searchParser.js';
 
 type Params = ReturnType<typeof parseSearchQuery>;
 
@@ -9,7 +10,6 @@ afterEach(() => {
 interface Case {
     description: string;
     inputs: string[];
-    //expected: Pick<Params, 'bpmValues' | 'bpmRanges' | 'keys' | 'queryTokens'>;
     expected: Params;
 }
 
@@ -114,3 +114,4 @@ describe('parseSearchQuery integration: BPM + key + keywords', () => {
         });
     });
 });
+

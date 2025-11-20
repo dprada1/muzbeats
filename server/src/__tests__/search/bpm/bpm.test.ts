@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { parseSearchQuery } from "@/utils/search/searchParser";
+import { parseSearchQuery } from "@/utils/searchParser.js";
 
 interface BpmCase {
     input:     string;
@@ -7,10 +7,10 @@ interface BpmCase {
     bpmRanges: [number, number][];
 }
 
-// Clear Vitest’s module cache before loading the JSON
+// Clear Vitest's module cache before loading the JSON
 vi.resetModules();
 
-// Synchronously require the JSON so it’s fresh on each run
+// Synchronously require the JSON so it's fresh on each run
 const bpmCases: BpmCase[] = require("./bpm_test_cases.json");
 
 describe("parseSearchQuery - BPM parsing", () => {
@@ -24,3 +24,4 @@ describe("parseSearchQuery - BPM parsing", () => {
         });
     });
 });
+

@@ -1,4 +1,5 @@
-import { parseSearchQuery } from "@/utils/search/searchParser";
+import { describe, expect, it } from "vitest";
+import { parseSearchQuery } from "@/utils/searchParser.js";
 import generalKeywordCases from "./general_keywords_cases.json";
 
 describe("parseSearchQuery - General keywords only", () => {
@@ -9,3 +10,4 @@ describe("parseSearchQuery - General keywords only", () => {
         });
     });
 });
+

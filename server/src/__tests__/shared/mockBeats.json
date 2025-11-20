@@ -1,0 +1,65 @@
+[
+    {
+		"id": "mock-001",
+		"title": "Space Dreams",
+		"key": "D♯ min",
+		"bpm": 120,
+		"price": 10,
+		"audio": "/beats/mock-001.mp3",
+		"cover": "/images/mock-001.webp"
+    },
+    {
+		"id": "mock-002",
+		"title": "Aggro Pulse",
+		"key": "F♭ min",
+		"bpm": 160,
+		"price": 12,
+		"audio": "/beats/mock-002.mp3",
+		"cover": "/images/mock-002.webp"
+    },
+    {
+		"id": "mock-003",
+		"title": "Lo-Fi Afternoon",
+		"key": "C maj",
+		"bpm": 85,
+		"price": 8,
+		"audio": "/beats/mock-003.mp3",
+		"cover": "/images/mock-003.webp"
+    },
+    {
+		"id": "mock-004",
+		"title": "808 Bounce",
+		"key": "A min",
+		"bpm": 140,
+		"price": 9,
+		"audio": "/beats/mock-004.mp3",
+		"cover": "/images/mock-004.webp"
+    },
+    {
+		"id": "mock-005",
+		"title": "Empty Fields",
+		"key": "G min",
+		"bpm": 105,
+		"price": 7,
+		"audio": "/beats/mock-005.mp3",
+		"cover": "/images/mock-005.webp"
+    },
+    {
+		"id": "mock-006",
+		"title": "Hyperpop Overload",
+		"key": "B maj",
+		"bpm": 180,
+		"price": 11,
+		"audio": "/beats/mock-006.mp3",
+		"cover": "/images/mock-006.webp"
+    },
+    {
+		"id": "mock-007",
+		"title": "Kickless Void",
+		"key": "E min",
+		"bpm": 90,
+		"price": 8,
+		"audio": "/beats/mock-007.mp3",
+		"cover": "/images/mock-007.webp"
+    }
+]

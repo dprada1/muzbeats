@@ -23,8 +23,12 @@ Comprehensive documentation for the MuzBeats project, covering architecture, API
 - **[BACKUP_STRATEGY.md](./BACKUP_STRATEGY.md)** - Database backup procedures
 
 ### Specialized Topics
-- **audio-system/** - Audio player and waveform system documentation (future)
-- **search-parser/** - Search parser algorithm details (future)
+- **audio-system/** - Audio player and waveform system documentation
+  - [Overview](./audio-system/OVERVIEW.md) - Architecture and design
+  - [Component Reference](./audio-system/COMPONENT_REFERENCE.md) - API reference
+- **search-parser/** - Search parser algorithm and implementation
+  - [Overview](./search-parser/OVERVIEW.md) - Architecture and processing flow
+  - [Query Syntax](./search-parser/QUERY_SYNTAX.md) - Complete syntax reference
 
 ## 🎯 Quick Navigation
 
