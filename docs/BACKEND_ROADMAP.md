@@ -35,20 +35,67 @@
 4. **Beats API (Basic)**
    - `GET /api/beats` - Get all beats
    - `GET /api/beats/:id` - Get single beat by ID
-   - File-based data loading with caching
+   - ~~File-based data loading with caching~~ ✅ **Now using PostgreSQL**
+
+5. **Database Setup (PostgreSQL)** ✅
+   - PostgreSQL connection pool configured
+   - Database connection via `pg` (node-postgres)
+   - Environment variables for DB connection (`.env`)
+   - `beats` table created with proper schema:
+     - id (UUID), title, key, bpm, price, audio_path, cover_path
+     - created_at, updated_at timestamps
+     - Indexes on bpm, key, and price
+   - Migration script to import `data.json` → PostgreSQL
+   - All 63 beats successfully migrated to database
+   - `beatsService.ts` now queries PostgreSQL instead of JSON file
+   - `data.json` kept as backup only (not used in production)
 
 ---
 
 ## 🚧 In Progress / Next Steps
 
-### Phase 1: Database Setup (PostgreSQL)
+### Phase 2: Stripe Payment Integration
 
-#### 1.1 Database Schema Design
-- **Beats Table**
-  - Store beat metadata (id, title, key, bpm, price, etc.)
-  - Replace file-based `data.json` with database
-  - Migration script to import existing beats
+#### 2.1 Stripe Setup
+- Install `stripe` package
+- Add Stripe API keys to `.env`:
+  - `STRIPE_SECRET_KEY` (server-side)
+  - `STRIPE_PUBLISHABLE_KEY` (client-side, optional)
+- Create Stripe account and get test keys
 
+#### 2.2 Payment Flow
+- **Create Payment Intent**
+  - `POST /api/checkout/create-payment-intent`
+  - Receives cart items from client
+  - Calculates total
+  - Creates Stripe PaymentIntent
+  - Returns client secret
+
+- **Confirm Payment**
+  - `POST /api/checkout/confirm`
+  - Webhook handler for Stripe events
+  - Updates order status in database
+  - Generates download links/tokens
+
+#### 2.3 Webhook Handler
+- `POST /api/webhooks/stripe`
+  - Handles `payment_intent.succeeded`
+  - Handles `payment_intent.payment_failed`
+  - Handles `charge.refunded`
+  - Updates order status accordingly
+  - Webhook signature verification
+
+#### 2.4 Download System
+- Generate secure download tokens after payment
+- `GET /api/downloads/:token`
+  - Validates token
+  - Serves WAV file (or MP3)
+  - Tracks download count
+  - Expires after X days/downloads
+
+### Phase 3: Order Management
+
+#### 3.1 Database Schema
 - **Orders Table**
   - Order ID (UUID)
   - Customer email (for guest checkout)
@@ -69,18 +116,6 @@
   - Download token (for secure file access)
   - Expiration date
   - Download count
-
-#### 1.2 Database Setup
-- Install PostgreSQL
-- Install `pg` (node-postgres) or `prisma` (ORM)
-- Create database connection pool
-- Environment variables for DB connection
-- Migration system (e.g., `node-pg-migrate` or Prisma migrations)
-
-#### 1.3 Data Migration
-- Script to migrate `data.json` → PostgreSQL
-- Verify all beats imported correctly
-- Keep `data.json` as backup/fallback
 
 ---
 
@@ -314,11 +349,12 @@ server/
 1. ✅ Basic server setup
 2. ✅ Static file serving
 3. ✅ Beats API
-4. 🔄 PostgreSQL setup
-5. 🔄 Database schema & migrations
-6. 🔄 Stripe payment integration
-7. 🔄 Order creation & management
-8. 🔄 Download token system
+4. ✅ PostgreSQL setup
+5. ✅ Database schema & migrations
+6. ✅ Data migration (JSON → PostgreSQL)
+7. 🔄 Stripe payment integration
+8. 🔄 Order creation & management
+9. 🔄 Download token system
 
 ### Medium Priority
 9. Email service

@@ -1,4 +1,46 @@
-# React + TypeScript + Vite
+# MuzBeats
+
+A music beats store application with React frontend and Express backend.
+
+## Quick Start
+
+### Starting the Services
+
+**Server** (Terminal 1):
+```bash
+cd server
+npm run dev
+```
+Server runs on: http://localhost:3000
+
+**Client** (Terminal 2):
+```bash
+cd client
+npm run dev
+```
+Client runs on: http://localhost:5173
+
+### Stopping the Services
+
+**In each terminal**: Press `Ctrl + C` (press twice if needed)
+
+**Force kill by port** (if Ctrl+C doesn't work):
+```bash
+# Kill server
+lsof -ti :3000 | xargs kill -9
+
+# Kill client
+lsof -ti :5173 | xargs kill -9
+
+# Kill both at once
+lsof -ti :3000 :5173 | xargs kill -9
+```
+
+📖 **For detailed start/stop instructions, see [START_STOP.md](./START_STOP.md)**
+
+---
+
+## Original Template Info
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

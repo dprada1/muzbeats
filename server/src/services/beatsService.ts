@@ -1,56 +1,54 @@
-import { readFile } from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Path to data.json
-const DATA_FILE_PATH = path.join(__dirname, '../../public/assets/data.json');
-
-// Cache for beats data (loaded once on first request)
-let beatsCache: Beat[] | null = null;
-
 /**
- * Load beats from data.json file
- * Uses caching to avoid reading file on every request
+ * Map database row to Beat type
+ * Converts audio_path -> audio, cover_path -> cover
  */
-async function loadBeats(): Promise<Beat[]> {
-  if (beatsCache !== null) {
-    return beatsCache;
-  }
-
-  try {
-    const fileContent = await readFile(DATA_FILE_PATH, 'utf-8');
-    const beats: Beat[] = JSON.parse(fileContent);
-    beatsCache = beats;
-    return beats;
-  } catch (error) {
-    console.error('Error loading beats:', error);
-    throw new Error('Failed to load beats data');
-  }
+function mapDbRowToBeat(row: any): Beat {
+  return {
+    id: row.id,
+    title: row.title,
+    key: row.key,
+    bpm: row.bpm,
+    price: parseFloat(row.price),
+    audio: row.audio_path,
+    cover: row.cover_path,
+  };
 }
 
 /**
- * Get all beats
+ * Get all beats from PostgreSQL
  */
 export async function getAllBeats(): Promise<Beat[]> {
-  return loadBeats();
+  try {
+    const result = await pool.query(
+      'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats ORDER BY created_at DESC'
+    );
+    return result.rows.map(mapDbRowToBeat);
+  } catch (error) {
+    console.error('Error fetching all beats from database:', error);
+    throw new Error('Failed to fetch beats from database');
+  }
 }
 
 /**
- * Get a single beat by ID
+ * Get a single beat by ID from PostgreSQL
  */
 export async function getBeatById(id: string): Promise<Beat | null> {
-  const beats = await loadBeats();
-  return beats.find(beat => beat.id === id) || null;
-}
+  try {
+    const result = await pool.query(
+      'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats WHERE id = $1',
+      [id]
+    );
 
-/**
- * Clear the beats cache (useful for development/testing)
- */
-export function clearBeatsCache(): void {
-  beatsCache = null;
-}
+    if (result.rows.length === 0) {
+      return null;
+    }
 
+    return mapDbRowToBeat(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching beat by ID from database:', error);
+    throw new Error('Failed to fetch beat from database');
+  }
+}
