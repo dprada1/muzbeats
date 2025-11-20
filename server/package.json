@@ -11,6 +11,7 @@
     "lint": "echo \"Linting not configured yet\"",
     "migrate": "tsx src/db/migrate-json-to-db.ts",
     "test-db": "tsx src/test-db.ts",
+    "update-prices": "tsx src/db/update-prices.ts",
     "test": "vitest --ui",
     "test:run": "vitest --run"
   },

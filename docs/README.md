@@ -21,6 +21,7 @@ Comprehensive documentation for the MuzBeats project, covering architecture, API
 ### Development
 - **[BACKEND_ROADMAP.md](./BACKEND_ROADMAP.md)** - Development roadmap and progress tracking
 - **[BACKUP_STRATEGY.md](./BACKUP_STRATEGY.md)** - Database backup procedures
+- **[PRICING.md](./PRICING.md)** - Price management and optimization strategies
 
 ### Specialized Topics
 - **audio-system/** - Audio player and waveform system documentation
