@@ -50,6 +50,22 @@
    - `beatsService.ts` now queries PostgreSQL instead of JSON file
    - `data.json` kept as backup only (not used in production)
 
+6. **Backend Search & Filtering** ✅
+   - Query parser for natural language search (`searchParser.ts`)
+   - SQL query builder with enharmonic key matching (`searchQueryBuilder.ts`)
+   - Key utilities with enharmonic equivalent mapping (`keyUtils.ts`)
+   - Support for:
+     - BPM filtering (exact values and ranges)
+     - Key filtering with enharmonic/relative equivalents
+     - Keyword search in titles
+     - Combined queries
+   - Case-sensitive key matching (CM = major, Cm = minor)
+   - Symbol normalization (# vs ♯)
+   - Space handling (C min vs Cmin)
+   - Frontend updated to use backend search
+   - All search logic moved from client to server
+   - Database-level filtering for performance
+
 ---
 
 ## 🚧 In Progress / Next Steps
@@ -352,9 +368,10 @@ server/
 4. ✅ PostgreSQL setup
 5. ✅ Database schema & migrations
 6. ✅ Data migration (JSON → PostgreSQL)
-7. 🔄 Stripe payment integration
-8. 🔄 Order creation & management
-9. 🔄 Download token system
+7. ✅ Backend search & filtering
+8. 🔄 Stripe payment integration
+9. 🔄 Order creation & management
+10. 🔄 Download token system
 
 ### Medium Priority
 9. Email service
@@ -367,7 +384,8 @@ server/
 14. Analytics
 15. Admin dashboard
 16. User accounts (if moving away from guest checkout)
-17. Advanced search/filtering in database
+17. Full-text search improvements (PostgreSQL full-text search)
+18. Search result ranking and relevance scoring
 
 ---
 
