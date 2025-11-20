@@ -1,5 +1,7 @@
 import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
+import type { SearchParams } from '@/types/SearchParams.js';
+import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 
 /**
  * Map database row to Beat type
@@ -18,13 +20,24 @@ function mapDbRowToBeat(row: any): Beat {
 }
 
 /**
- * Get all beats from PostgreSQL
+ * Get all beats from PostgreSQL with optional search/filtering
  */
-export async function getAllBeats(): Promise<Beat[]> {
+export async function getAllBeats(searchParams?: SearchParams): Promise<Beat[]> {
   try {
-    const result = await pool.query(
-      'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats ORDER BY created_at DESC'
-    );
+    let query = 'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats';
+    let params: any[] = [];
+
+    // Apply search filters if provided
+    if (searchParams) {
+      const { whereClause, params: queryParams } = buildSearchQuery(searchParams);
+      query += ` ${whereClause}`;
+      params = queryParams;
+    }
+
+    // Always order by created_at DESC
+    query += ' ORDER BY created_at DESC';
+
+    const result = await pool.query(query, params);
     return result.rows.map(mapDbRowToBeat);
   } catch (error) {
     console.error('Error fetching all beats from database:', error);
