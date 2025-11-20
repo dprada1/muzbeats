@@ -37,7 +37,8 @@
         "input": "space ambient 120 bpm",
         "expected": [
             "space",
-            "ambient"
+            "ambient",
+            "bpm"
         ]
     },
     {

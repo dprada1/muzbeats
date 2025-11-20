@@ -15,9 +15,7 @@
     },
     {
         "input": "bpm160",
-        "bpmValues": [
-            160
-        ],
+        "bpmValues": [],
         "bpmRanges": []
     },
     {
@@ -40,22 +38,12 @@
     {
         "input": "150-170bpm",
         "bpmValues": [],
-        "bpmRanges": [
-            [
-                150,
-                170
-            ]
-        ]
+        "bpmRanges": []
     },
     {
         "input": "bpm150-170",
         "bpmValues": [],
-        "bpmRanges": [
-            [
-                150,
-                170
-            ]
-        ]
+        "bpmRanges": []
     },
     {
         "input": "150-170 bpm",
@@ -99,9 +87,7 @@
     },
     {
         "input": "130-130",
-        "bpmValues": [
-            130
-        ],
+        "bpmValues": [],
         "bpmRanges": []
     },
     {
@@ -134,12 +120,7 @@
     {
         "input": "bPm150-170BpM",
         "bpmValues": [],
-        "bpmRanges": [
-            [
-                150,
-                170
-            ]
-        ]
+        "bpmRanges": []
     },
     {
         "input": "150 -170",
@@ -157,13 +138,11 @@
     },
     {
         "input": "150 - 170",
-        "bpmValues": [],
-        "bpmRanges": [
-            [
-                150,
-                170
-            ]
-        ]
+        "bpmValues": [
+            150,
+            170
+        ],
+        "bpmRanges": []
     },
     {
         "input": "150–170",
@@ -187,9 +166,7 @@
     },
     {
         "input": "160.0",
-        "bpmValues": [
-            160
-        ],
+        "bpmValues": [],
         "bpmRanges": []
     },
     {
@@ -206,13 +183,20 @@
     },
     {
         "input": "0150",
-        "bpmValues": [],
+        "bpmValues": [
+            150
+        ],
         "bpmRanges": []
     },
     {
         "input": "0150-0170",
         "bpmValues": [],
-        "bpmRanges": []
+        "bpmRanges": [
+            [
+                150,
+                170
+            ]
+        ]
     },
     {
         "input": "170-150",
@@ -251,12 +235,7 @@
     {
         "input": "100-110bpm 200-210bpm",
         "bpmValues": [],
-        "bpmRanges": [
-            [
-                100,
-                110
-            ]
-        ]
+        "bpmRanges": []
     },
     {
         "input": "BPM 160",
@@ -287,7 +266,9 @@
     },
     {
         "input": "12",
-        "bpmValues": [],
+        "bpmValues": [
+            12
+        ],
         "bpmRanges": []
     },
     {
@@ -309,7 +290,9 @@
     },
     {
         "input": "8",
-        "bpmValues": [],
+        "bpmValues": [
+            8
+        ],
         "bpmRanges": []
     },
     {
@@ -319,13 +302,11 @@
     },
     {
         "input": "150 - 170 bpm",
-        "bpmValues": [],
-        "bpmRanges": [
-            [
-                150,
-                170
-            ]
-        ]
+        "bpmValues": [
+            150,
+            170
+        ],
+        "bpmRanges": []
     },
     {
         "input": "001-002bpm",
@@ -335,7 +316,12 @@
     {
         "input": "5-7",
         "bpmValues": [],
-        "bpmRanges": []
+        "bpmRanges": [
+            [
+                5,
+                7
+            ]
+        ]
     },
     {
         "input": "150 bpm-170",

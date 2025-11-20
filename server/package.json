@@ -11,8 +11,8 @@
     "lint": "echo \"Linting not configured yet\"",
     "migrate": "tsx src/db/migrate-json-to-db.ts",
     "test-db": "tsx src/test-db.ts",
-    "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test": "vitest --ui",
+    "test:run": "vitest --run"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,7 @@
     "nodemon": "^3.1.10",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@vitest/ui": "^3.2.4"
   }
 }

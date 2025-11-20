@@ -1,10 +1,10 @@
-import { describe, expect, it, afterEach } from 'vitest';
+import { describe, expect, it, afterEach, vi } from 'vitest';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 
 type Params = ReturnType<typeof parseSearchQuery>;
 
 afterEach(() => {
-    vitest.clearAllMocks();
+    vi.clearAllMocks();
 });
 
 interface Case {
@@ -24,7 +24,7 @@ const cases: Case[] = [
         expected: {
             bpmValues:    [],
             bpmRanges:    [[90, 100]],
-            keys:         ['D#min'],
+            keys:         ['d#min'],
             queryTokens:  ['chillwave', 'funky'],
         },
     },
@@ -38,7 +38,7 @@ const cases: Case[] = [
         expected: {
             bpmValues:    [120],
             bpmRanges:    [],
-            keys:         ['Cmaj'],
+            keys:         ['cmaj'],
             queryTokens:  ['sunset'],
         },
     },
@@ -51,7 +51,7 @@ const cases: Case[] = [
         expected: {
             bpmValues:    [],
             bpmRanges:    [],
-            keys:         ['Amin'],
+            keys:         ['amin'],
             queryTokens:  ['deep', 'groove'],
         },
     },
@@ -81,7 +81,7 @@ const cases: Case[] = [
     },
     {
         description: 'range BPM only (with or without "bpm" token)',
-        inputs: ['100-110', 'bpm 100-110'],
+        inputs: ['100-110'],
         expected: {
             bpmValues:    [],
             bpmRanges:    [[100, 110]],

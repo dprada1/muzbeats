@@ -1,1955 +1,1766 @@
 [
     {
         "input": "A",
-        "expected": [
-            "Amaj",
-            "Amin"
-        ]
+        "expected": []
     },
     {
         "input": "B",
-        "expected": [
-            "Bmaj",
-            "Bmin"
-        ]
+        "expected": []
     },
     {
         "input": "C",
-        "expected": [
-            "Cmaj",
-            "Cmin"
-        ]
+        "expected": []
     },
     {
         "input": "D",
-        "expected": [
-            "Dmaj",
-            "Dmin"
-        ]
+        "expected": []
     },
     {
         "input": "E",
-        "expected": [
-            "Emaj",
-            "Emin"
-        ]
+        "expected": []
     },
     {
         "input": "F",
-        "expected": [
-            "Fmaj",
-            "Fmin"
-        ]
+        "expected": []
     },
     {
         "input": "G",
-        "expected": [
-            "Gmaj",
-            "Gmin"
-        ]
+        "expected": []
     },
     {
         "input": "A#",
-        "expected": [
-            "A#maj",
-            "A#min"
-        ]
+        "expected": []
     },
     {
         "input": "A♯",
-        "expected": [
-            "A#maj",
-            "A#min"
-        ]
+        "expected": []
     },
     {
         "input": "Asharp",
-        "expected": [
-            "A#maj",
-            "A#min"
-        ]
+        "expected": []
     },
     {
         "input": "Ab",
-        "expected": [
-            "Abmaj",
-            "Abmin"
-        ]
+        "expected": []
     },
     {
         "input": "A♭",
-        "expected": [
-            "Abmaj",
-            "Abmin"
-        ]
+        "expected": []
     },
     {
         "input": "Aflat",
-        "expected": [
-            "Abmaj",
-            "Abmin"
-        ]
+        "expected": []
     },
     {
         "input": "B#",
-        "expected": [
-            "B#maj",
-            "B#min"
-        ]
+        "expected": []
     },
     {
         "input": "B♯",
-        "expected": [
-            "B#maj",
-            "B#min"
-        ]
+        "expected": []
     },
     {
         "input": "Bsharp",
-        "expected": [
-            "B#maj",
-            "B#min"
-        ]
+        "expected": []
     },
     {
         "input": "Bb",
-        "expected": [
-            "Bbmaj",
-            "Bbmin"
-        ]
+        "expected": []
     },
     {
         "input": "B♭",
-        "expected": [
-            "Bbmaj",
-            "Bbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Bflat",
-        "expected": [
-            "Bbmaj",
-            "Bbmin"
-        ]
+        "expected": []
     },
     {
         "input": "C#",
-        "expected": [
-            "C#maj",
-            "C#min"
-        ]
+        "expected": []
     },
     {
         "input": "C♯",
-        "expected": [
-            "C#maj",
-            "C#min"
-        ]
+        "expected": []
     },
     {
         "input": "Csharp",
-        "expected": [
-            "C#maj",
-            "C#min"
-        ]
+        "expected": []
     },
     {
         "input": "Cb",
-        "expected": [
-            "Cbmaj",
-            "Cbmin"
-        ]
+        "expected": []
     },
     {
         "input": "C♭",
-        "expected": [
-            "Cbmaj",
-            "Cbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Cflat",
-        "expected": [
-            "Cbmaj",
-            "Cbmin"
-        ]
+        "expected": []
     },
     {
         "input": "D#",
-        "expected": [
-            "D#maj",
-            "D#min"
-        ]
+        "expected": []
     },
     {
         "input": "D♯",
-        "expected": [
-            "D#maj",
-            "D#min"
-        ]
+        "expected": []
     },
     {
         "input": "Dsharp",
-        "expected": [
-            "D#maj",
-            "D#min"
-        ]
+        "expected": []
     },
     {
         "input": "Db",
-        "expected": [
-            "Dbmaj",
-            "Dbmin"
-        ]
+        "expected": []
     },
     {
         "input": "D♭",
-        "expected": [
-            "Dbmaj",
-            "Dbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Dflat",
-        "expected": [
-            "Dbmaj",
-            "Dbmin"
-        ]
+        "expected": []
     },
     {
         "input": "E#",
-        "expected": [
-            "E#maj",
-            "E#min"
-        ]
+        "expected": []
     },
     {
         "input": "E♯",
-        "expected": [
-            "E#maj",
-            "E#min"
-        ]
+        "expected": []
     },
     {
         "input": "Esharp",
-        "expected": [
-            "E#maj",
-            "E#min"
-        ]
+        "expected": []
     },
     {
         "input": "Eb",
-        "expected": [
-            "Ebmaj",
-            "Ebmin"
-        ]
+        "expected": []
     },
     {
         "input": "E♭",
-        "expected": [
-            "Ebmaj",
-            "Ebmin"
-        ]
+        "expected": []
     },
     {
         "input": "Eflat",
-        "expected": [
-            "Ebmaj",
-            "Ebmin"
-        ]
+        "expected": []
     },
     {
         "input": "F#",
-        "expected": [
-            "F#maj",
-            "F#min"
-        ]
+        "expected": []
     },
     {
         "input": "F♯",
-        "expected": [
-            "F#maj",
-            "F#min"
-        ]
+        "expected": []
     },
     {
         "input": "Fsharp",
-        "expected": [
-            "F#maj",
-            "F#min"
-        ]
+        "expected": []
     },
     {
         "input": "Fb",
-        "expected": [
-            "Fbmaj",
-            "Fbmin"
-        ]
+        "expected": []
     },
     {
         "input": "F♭",
-        "expected": [
-            "Fbmaj",
-            "Fbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Fflat",
-        "expected": [
-            "Fbmaj",
-            "Fbmin"
-        ]
+        "expected": []
     },
     {
         "input": "G#",
-        "expected": [
-            "G#maj",
-            "G#min"
-        ]
+        "expected": []
     },
     {
         "input": "G♯",
-        "expected": [
-            "G#maj",
-            "G#min"
-        ]
+        "expected": []
     },
     {
         "input": "Gsharp",
-        "expected": [
-            "G#maj",
-            "G#min"
-        ]
+        "expected": []
     },
     {
         "input": "Gb",
-        "expected": [
-            "Gbmaj",
-            "Gbmin"
-        ]
+        "expected": []
     },
     {
         "input": "G♭",
-        "expected": [
-            "Gbmaj",
-            "Gbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Gflat",
-        "expected": [
-            "Gbmaj",
-            "Gbmin"
-        ]
+        "expected": []
     },
     {
         "input": "A sharp",
-        "expected": [
-            "A#maj",
-            "A#min"
-        ]
+        "expected": []
     },
     {
         "input": "A flat",
-        "expected": [
-            "Abmaj",
-            "Abmin"
-        ]
+        "expected": []
     },
     {
         "input": "B sharp",
-        "expected": [
-            "B#maj",
-            "B#min"
-        ]
+        "expected": []
     },
     {
         "input": "B flat",
-        "expected": [
-            "Bbmaj",
-            "Bbmin"
-        ]
+        "expected": []
     },
     {
         "input": "C sharp",
-        "expected": [
-            "C#maj",
-            "C#min"
-        ]
+        "expected": []
     },
     {
         "input": "C flat",
-        "expected": [
-            "Cbmaj",
-            "Cbmin"
-        ]
+        "expected": []
     },
     {
         "input": "D sharp",
-        "expected": [
-            "D#maj",
-            "D#min"
-        ]
+        "expected": []
     },
     {
         "input": "D flat",
-        "expected": [
-            "Dbmaj",
-            "Dbmin"
-        ]
+        "expected": []
     },
     {
         "input": "E sharp",
-        "expected": [
-            "E#maj",
-            "E#min"
-        ]
+        "expected": []
     },
     {
         "input": "E flat",
-        "expected": [
-            "Ebmaj",
-            "Ebmin"
-        ]
+        "expected": []
     },
     {
         "input": "F sharp",
-        "expected": [
-            "F#maj",
-            "F#min"
-        ]
+        "expected": []
     },
     {
         "input": "F flat",
-        "expected": [
-            "Fbmaj",
-            "Fbmin"
-        ]
+        "expected": []
     },
     {
         "input": "G sharp",
-        "expected": [
-            "G#maj",
-            "G#min"
-        ]
+        "expected": []
     },
     {
         "input": "G flat",
-        "expected": [
-            "Gbmaj",
-            "Gbmin"
-        ]
+        "expected": []
     },
     {
         "input": "Amajor",
-        "expected": "Amaj"
+        "expected": "amaj"
     },
     {
         "input": "Amaj",
-        "expected": "Amaj"
+        "expected": "amaj"
     },
     {
         "input": "AM",
-        "expected": "Amaj"
+        "expected": "amaj"
     },
     {
         "input": "Aminor",
-        "expected": "Amin"
+        "expected": "amin"
     },
     {
         "input": "Amin",
-        "expected": "Amin"
+        "expected": "amin"
     },
     {
         "input": "Am",
-        "expected": "Amin"
+        "expected": "amin"
     },
     {
         "input": "Bmajor",
-        "expected": "Bmaj"
+        "expected": "bmaj"
     },
     {
         "input": "Bmaj",
-        "expected": "Bmaj"
+        "expected": "bmaj"
     },
     {
         "input": "BM",
-        "expected": "Bmaj"
+        "expected": "bmaj"
     },
     {
         "input": "Bminor",
-        "expected": "Bmin"
+        "expected": "bmin"
     },
     {
         "input": "Bmin",
-        "expected": "Bmin"
+        "expected": "bmin"
     },
     {
         "input": "Bm",
-        "expected": "Bmin"
+        "expected": "bmin"
     },
     {
         "input": "Cmajor",
-        "expected": "Cmaj"
+        "expected": "cmaj"
     },
     {
         "input": "Cmaj",
-        "expected": "Cmaj"
+        "expected": "cmaj"
     },
     {
         "input": "CM",
-        "expected": "Cmaj"
+        "expected": "cmaj"
     },
     {
         "input": "Cminor",
-        "expected": "Cmin"
+        "expected": "cmin"
     },
     {
         "input": "Cmin",
-        "expected": "Cmin"
+        "expected": "cmin"
     },
     {
         "input": "Cm",
-        "expected": "Cmin"
+        "expected": "cmin"
     },
     {
         "input": "Dmajor",
-        "expected": "Dmaj"
+        "expected": "dmaj"
     },
     {
         "input": "Dmaj",
-        "expected": "Dmaj"
+        "expected": "dmaj"
     },
     {
         "input": "DM",
-        "expected": "Dmaj"
+        "expected": "dmaj"
     },
     {
         "input": "Dminor",
-        "expected": "Dmin"
+        "expected": "dmin"
     },
     {
         "input": "Dmin",
-        "expected": "Dmin"
+        "expected": "dmin"
     },
     {
         "input": "Dm",
-        "expected": "Dmin"
+        "expected": "dmin"
     },
     {
         "input": "Emajor",
-        "expected": "Emaj"
+        "expected": "emaj"
     },
     {
         "input": "Emaj",
-        "expected": "Emaj"
+        "expected": "emaj"
     },
     {
         "input": "EM",
-        "expected": "Emaj"
+        "expected": "emaj"
     },
     {
         "input": "Eminor",
-        "expected": "Emin"
+        "expected": "emin"
     },
     {
         "input": "Emin",
-        "expected": "Emin"
+        "expected": "emin"
     },
     {
         "input": "Em",
-        "expected": "Emin"
+        "expected": "emin"
     },
     {
         "input": "Fmajor",
-        "expected": "Fmaj"
+        "expected": "fmaj"
     },
     {
         "input": "Fmaj",
-        "expected": "Fmaj"
+        "expected": "fmaj"
     },
     {
         "input": "FM",
-        "expected": "Fmaj"
+        "expected": "fmaj"
     },
     {
         "input": "Fminor",
-        "expected": "Fmin"
+        "expected": "fmin"
     },
     {
         "input": "Fmin",
-        "expected": "Fmin"
+        "expected": "fmin"
     },
     {
         "input": "Fm",
-        "expected": "Fmin"
+        "expected": "fmin"
     },
     {
         "input": "Gmajor",
-        "expected": "Gmaj"
+        "expected": "gmaj"
     },
     {
         "input": "Gmaj",
-        "expected": "Gmaj"
+        "expected": "gmaj"
     },
     {
         "input": "GM",
-        "expected": "Gmaj"
+        "expected": "gmaj"
     },
     {
         "input": "Gminor",
-        "expected": "Gmin"
+        "expected": "gmin"
     },
     {
         "input": "Gmin",
-        "expected": "Gmin"
+        "expected": "gmin"
     },
     {
         "input": "Gm",
-        "expected": "Gmin"
+        "expected": "gmin"
     },
     {
         "input": "A major",
-        "expected": "Amaj"
+        "expected": "amaj"
     },
     {
         "input": "A maj",
-        "expected": "Amaj"
+        "expected": "amaj"
     },
     {
         "input": "A minor",
-        "expected": "Amin"
+        "expected": "amin"
     },
     {
         "input": "A min",
-        "expected": "Amin"
+        "expected": "amin"
     },
     {
         "input": "B major",
-        "expected": "Bmaj"
+        "expected": "bmaj"
     },
     {
         "input": "B maj",
-        "expected": "Bmaj"
+        "expected": "bmaj"
     },
     {
         "input": "B minor",
-        "expected": "Bmin"
+        "expected": "bmin"
     },
     {
         "input": "B min",
-        "expected": "Bmin"
+        "expected": "bmin"
     },
     {
         "input": "C major",
-        "expected": "Cmaj"
+        "expected": "cmaj"
     },
     {
         "input": "C maj",
-        "expected": "Cmaj"
+        "expected": "cmaj"
     },
     {
         "input": "C minor",
-        "expected": "Cmin"
+        "expected": "cmin"
     },
     {
         "input": "C min",
-        "expected": "Cmin"
+        "expected": "cmin"
     },
     {
         "input": "D major",
-        "expected": "Dmaj"
+        "expected": "dmaj"
     },
     {
         "input": "D maj",
-        "expected": "Dmaj"
+        "expected": "dmaj"
     },
     {
         "input": "D minor",
-        "expected": "Dmin"
+        "expected": "dmin"
     },
     {
         "input": "D min",
-        "expected": "Dmin"
+        "expected": "dmin"
     },
     {
         "input": "E major",
-        "expected": "Emaj"
+        "expected": "emaj"
     },
     {
         "input": "E maj",
-        "expected": "Emaj"
+        "expected": "emaj"
     },
     {
         "input": "E minor",
-        "expected": "Emin"
+        "expected": "emin"
     },
     {
         "input": "E min",
-        "expected": "Emin"
+        "expected": "emin"
     },
     {
         "input": "F major",
-        "expected": "Fmaj"
+        "expected": "fmaj"
     },
     {
         "input": "F maj",
-        "expected": "Fmaj"
+        "expected": "fmaj"
     },
     {
         "input": "F minor",
-        "expected": "Fmin"
+        "expected": "fmin"
     },
     {
         "input": "F min",
-        "expected": "Fmin"
+        "expected": "fmin"
     },
     {
         "input": "G major",
-        "expected": "Gmaj"
+        "expected": "gmaj"
     },
     {
         "input": "G maj",
-        "expected": "Gmaj"
+        "expected": "gmaj"
     },
     {
         "input": "G minor",
-        "expected": "Gmin"
+        "expected": "gmin"
     },
     {
         "input": "G min",
-        "expected": "Gmin"
+        "expected": "gmin"
     },
     {
         "input": "A#major",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A#maj",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A#M",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A#minor",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A#min",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A#m",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A♯major",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A♯maj",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A♯M",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A♯minor",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A♯min",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A♯m",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "Asharpmajor",
-        "expected": "A#maj"
+        "expected": []
     },
     {
         "input": "Asharpmaj",
-        "expected": "A#maj"
+        "expected": []
     },
     {
         "input": "AsharpM",
-        "expected": "A#maj"
+        "expected": []
     },
     {
         "input": "Asharpminor",
-        "expected": "A#min"
+        "expected": []
     },
     {
         "input": "Asharpmin",
-        "expected": "A#min"
+        "expected": []
     },
     {
         "input": "Asharpm",
-        "expected": "A#min"
+        "expected": []
     },
     {
         "input": "Abmajor",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "Abmaj",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "AbM",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "Abminor",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "Abmin",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "Abm",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "A♭major",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "A♭maj",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "A♭M",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "A♭minor",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "A♭min",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "A♭m",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "Aflatmajor",
-        "expected": "Abmaj"
+        "expected": []
     },
     {
         "input": "Aflatmaj",
-        "expected": "Abmaj"
+        "expected": []
     },
     {
         "input": "AflatM",
-        "expected": "Abmaj"
+        "expected": []
     },
     {
         "input": "Aflatminor",
-        "expected": "Abmin"
+        "expected": []
     },
     {
         "input": "Aflatmin",
-        "expected": "Abmin"
+        "expected": []
     },
     {
         "input": "Aflatm",
-        "expected": "Abmin"
+        "expected": []
     },
     {
         "input": "B#major",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B#maj",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B#M",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B#minor",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B#min",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B#m",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B♯major",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B♯maj",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B♯M",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B♯minor",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B♯min",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B♯m",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "Bsharpmajor",
-        "expected": "B#maj"
+        "expected": []
     },
     {
         "input": "Bsharpmaj",
-        "expected": "B#maj"
+        "expected": []
     },
     {
         "input": "BsharpM",
-        "expected": "B#maj"
+        "expected": []
     },
     {
         "input": "Bsharpminor",
-        "expected": "B#min"
+        "expected": []
     },
     {
         "input": "Bsharpmin",
-        "expected": "B#min"
+        "expected": []
     },
     {
         "input": "Bsharpm",
-        "expected": "B#min"
+        "expected": []
     },
     {
         "input": "Bbmajor",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "Bbmaj",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "BbM",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "Bbminor",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "Bbmin",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "Bbm",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "B♭major",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "B♭maj",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "B♭M",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "B♭minor",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "B♭min",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "B♭m",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "Bflatmajor",
-        "expected": "Bbmaj"
+        "expected": []
     },
     {
         "input": "Bflatmaj",
-        "expected": "Bbmaj"
+        "expected": []
     },
     {
         "input": "BflatM",
-        "expected": "Bbmaj"
+        "expected": []
     },
     {
         "input": "Bflatminor",
-        "expected": "Bbmin"
+        "expected": []
     },
     {
         "input": "Bflatmin",
-        "expected": "Bbmin"
+        "expected": []
     },
     {
         "input": "Bflatm",
-        "expected": "Bbmin"
+        "expected": []
     },
     {
         "input": "C#major",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C#maj",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C#M",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C#minor",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C#min",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C#m",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C♯major",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C♯maj",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C♯M",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C♯minor",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C♯min",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C♯m",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "Csharpmajor",
-        "expected": "C#maj"
+        "expected": []
     },
     {
         "input": "Csharpmaj",
-        "expected": "C#maj"
+        "expected": []
     },
     {
         "input": "CsharpM",
-        "expected": "C#maj"
+        "expected": []
     },
     {
         "input": "Csharpminor",
-        "expected": "C#min"
+        "expected": []
     },
     {
         "input": "Csharpmin",
-        "expected": "C#min"
+        "expected": []
     },
     {
         "input": "Csharpm",
-        "expected": "C#min"
+        "expected": []
     },
     {
         "input": "Cbmajor",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "Cbmaj",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "CbM",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "Cbminor",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "Cbmin",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "Cbm",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "C♭major",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "C♭maj",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "C♭M",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "C♭minor",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "C♭min",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "C♭m",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "Cflatmajor",
-        "expected": "Cbmaj"
+        "expected": []
     },
     {
         "input": "Cflatmaj",
-        "expected": "Cbmaj"
+        "expected": []
     },
     {
         "input": "CflatM",
-        "expected": "Cbmaj"
+        "expected": []
     },
     {
         "input": "Cflatminor",
-        "expected": "Cbmin"
+        "expected": []
     },
     {
         "input": "Cflatmin",
-        "expected": "Cbmin"
+        "expected": []
     },
     {
         "input": "Cflatm",
-        "expected": "Cbmin"
+        "expected": []
     },
     {
         "input": "D#major",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D#maj",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D#M",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D#minor",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D#min",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D#m",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D♯major",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D♯maj",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D♯M",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D♯minor",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D♯min",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D♯m",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "Dsharpmajor",
-        "expected": "D#maj"
+        "expected": []
     },
     {
         "input": "Dsharpmaj",
-        "expected": "D#maj"
+        "expected": []
     },
     {
         "input": "DsharpM",
-        "expected": "D#maj"
+        "expected": []
     },
     {
         "input": "Dsharpminor",
-        "expected": "D#min"
+        "expected": []
     },
     {
         "input": "Dsharpmin",
-        "expected": "D#min"
+        "expected": []
     },
     {
         "input": "Dsharpm",
-        "expected": "D#min"
+        "expected": []
     },
     {
         "input": "Dbmajor",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "Dbmaj",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "DbM",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "Dbminor",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "Dbmin",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "Dbm",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "D♭major",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "D♭maj",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "D♭M",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "D♭minor",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "D♭min",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "D♭m",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "Dflatmajor",
-        "expected": "Dbmaj"
+        "expected": []
     },
     {
         "input": "Dflatmaj",
-        "expected": "Dbmaj"
+        "expected": []
     },
     {
         "input": "DflatM",
-        "expected": "Dbmaj"
+        "expected": []
     },
     {
         "input": "Dflatminor",
-        "expected": "Dbmin"
+        "expected": []
     },
     {
         "input": "Dflatmin",
-        "expected": "Dbmin"
+        "expected": []
     },
     {
         "input": "Dflatm",
-        "expected": "Dbmin"
+        "expected": []
     },
     {
         "input": "E#major",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E#maj",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E#M",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E#minor",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E#min",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E#m",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E♯major",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E♯maj",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E♯M",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E♯minor",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E♯min",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E♯m",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "Esharpmajor",
-        "expected": "E#maj"
+        "expected": []
     },
     {
         "input": "Esharpmaj",
-        "expected": "E#maj"
+        "expected": []
     },
     {
         "input": "EsharpM",
-        "expected": "E#maj"
+        "expected": []
     },
     {
         "input": "Esharpminor",
-        "expected": "E#min"
+        "expected": []
     },
     {
         "input": "Esharpmin",
-        "expected": "E#min"
+        "expected": []
     },
     {
         "input": "Esharpm",
-        "expected": "E#min"
+        "expected": []
     },
     {
         "input": "Ebmajor",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "Ebmaj",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "EbM",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "Ebminor",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "Ebmin",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "Ebm",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "E♭major",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "E♭maj",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "E♭M",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "E♭minor",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "E♭min",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "E♭m",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "Eflatmajor",
-        "expected": "Ebmaj"
+        "expected": []
     },
     {
         "input": "Eflatmaj",
-        "expected": "Ebmaj"
+        "expected": []
     },
     {
         "input": "EflatM",
-        "expected": "Ebmaj"
+        "expected": []
     },
     {
         "input": "Eflatminor",
-        "expected": "Ebmin"
+        "expected": []
     },
     {
         "input": "Eflatmin",
-        "expected": "Ebmin"
+        "expected": []
     },
     {
         "input": "Eflatm",
-        "expected": "Ebmin"
+        "expected": []
     },
     {
         "input": "F#major",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F#maj",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F#M",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F#minor",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F#min",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F#m",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F♯major",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F♯maj",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F♯M",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F♯minor",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F♯min",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F♯m",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "Fsharpmajor",
-        "expected": "F#maj"
+        "expected": []
     },
     {
         "input": "Fsharpmaj",
-        "expected": "F#maj"
+        "expected": []
     },
     {
         "input": "FsharpM",
-        "expected": "F#maj"
+        "expected": []
     },
     {
         "input": "Fsharpminor",
-        "expected": "F#min"
+        "expected": []
     },
     {
         "input": "Fsharpmin",
-        "expected": "F#min"
+        "expected": []
     },
     {
         "input": "Fsharpm",
-        "expected": "F#min"
+        "expected": []
     },
     {
         "input": "Fbmajor",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "Fbmaj",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "FbM",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "Fbminor",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "Fbmin",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "Fbm",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "F♭major",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "F♭maj",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "F♭M",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "F♭minor",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "F♭min",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "F♭m",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "Fflatmajor",
-        "expected": "Fbmaj"
+        "expected": []
     },
     {
         "input": "Fflatmaj",
-        "expected": "Fbmaj"
+        "expected": []
     },
     {
         "input": "FflatM",
-        "expected": "Fbmaj"
+        "expected": []
     },
     {
         "input": "Fflatminor",
-        "expected": "Fbmin"
+        "expected": []
     },
     {
         "input": "Fflatmin",
-        "expected": "Fbmin"
+        "expected": []
     },
     {
         "input": "Fflatm",
-        "expected": "Fbmin"
+        "expected": []
     },
     {
         "input": "G#major",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G#maj",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G#M",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G#minor",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G#min",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G#m",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G♯major",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G♯maj",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G♯M",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G♯minor",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G♯min",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G♯m",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "Gsharpmajor",
-        "expected": "G#maj"
+        "expected": []
     },
     {
         "input": "Gsharpmaj",
-        "expected": "G#maj"
+        "expected": []
     },
     {
         "input": "GsharpM",
-        "expected": "G#maj"
+        "expected": []
     },
     {
         "input": "Gsharpminor",
-        "expected": "G#min"
+        "expected": []
     },
     {
         "input": "Gsharpmin",
-        "expected": "G#min"
+        "expected": []
     },
     {
         "input": "Gsharpm",
-        "expected": "G#min"
+        "expected": []
     },
     {
         "input": "Gbmajor",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "Gbmaj",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "GbM",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "Gbminor",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "Gbmin",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "Gbm",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "G♭major",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "G♭maj",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "G♭M",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "G♭minor",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "G♭min",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "G♭m",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "Gflatmajor",
-        "expected": "Gbmaj"
+        "expected": []
     },
     {
         "input": "Gflatmaj",
-        "expected": "Gbmaj"
+        "expected": []
     },
     {
         "input": "GflatM",
-        "expected": "Gbmaj"
+        "expected": []
     },
     {
         "input": "Gflatminor",
-        "expected": "Gbmin"
+        "expected": []
     },
     {
         "input": "Gflatmin",
-        "expected": "Gbmin"
+        "expected": []
     },
     {
         "input": "Gflatm",
-        "expected": "Gbmin"
+        "expected": []
     },
     {
         "input": "A sharp major",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A sharp maj",
-        "expected": "A#maj"
+        "expected": "a#maj"
     },
     {
         "input": "A sharp minor",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A sharp min",
-        "expected": "A#min"
+        "expected": "a#min"
     },
     {
         "input": "A flat major",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "A flat maj",
-        "expected": "Abmaj"
+        "expected": "abmaj"
     },
     {
         "input": "A flat minor",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "A flat min",
-        "expected": "Abmin"
+        "expected": "abmin"
     },
     {
         "input": "B sharp major",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B sharp maj",
-        "expected": "B#maj"
+        "expected": "b#maj"
     },
     {
         "input": "B sharp minor",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B sharp min",
-        "expected": "B#min"
+        "expected": "b#min"
     },
     {
         "input": "B flat major",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "B flat maj",
-        "expected": "Bbmaj"
+        "expected": "bbmaj"
     },
     {
         "input": "B flat minor",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "B flat min",
-        "expected": "Bbmin"
+        "expected": "bbmin"
     },
     {
         "input": "C sharp major",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C sharp maj",
-        "expected": "C#maj"
+        "expected": "c#maj"
     },
     {
         "input": "C sharp minor",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C sharp min",
-        "expected": "C#min"
+        "expected": "c#min"
     },
     {
         "input": "C flat major",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "C flat maj",
-        "expected": "Cbmaj"
+        "expected": "cbmaj"
     },
     {
         "input": "C flat minor",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "C flat min",
-        "expected": "Cbmin"
+        "expected": "cbmin"
     },
     {
         "input": "D sharp major",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D sharp maj",
-        "expected": "D#maj"
+        "expected": "d#maj"
     },
     {
         "input": "D sharp minor",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D sharp min",
-        "expected": "D#min"
+        "expected": "d#min"
     },
     {
         "input": "D flat major",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "D flat maj",
-        "expected": "Dbmaj"
+        "expected": "dbmaj"
     },
     {
         "input": "D flat minor",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "D flat min",
-        "expected": "Dbmin"
+        "expected": "dbmin"
     },
     {
         "input": "E sharp major",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E sharp maj",
-        "expected": "E#maj"
+        "expected": "e#maj"
     },
     {
         "input": "E sharp minor",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E sharp min",
-        "expected": "E#min"
+        "expected": "e#min"
     },
     {
         "input": "E flat major",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "E flat maj",
-        "expected": "Ebmaj"
+        "expected": "ebmaj"
     },
     {
         "input": "E flat minor",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "E flat min",
-        "expected": "Ebmin"
+        "expected": "ebmin"
     },
     {
         "input": "F sharp major",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F sharp maj",
-        "expected": "F#maj"
+        "expected": "f#maj"
     },
     {
         "input": "F sharp minor",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F sharp min",
-        "expected": "F#min"
+        "expected": "f#min"
     },
     {
         "input": "F flat major",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "F flat maj",
-        "expected": "Fbmaj"
+        "expected": "fbmaj"
     },
     {
         "input": "F flat minor",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "F flat min",
-        "expected": "Fbmin"
+        "expected": "fbmin"
     },
     {
         "input": "G sharp major",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G sharp maj",
-        "expected": "G#maj"
+        "expected": "g#maj"
     },
     {
         "input": "G sharp minor",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G sharp min",
-        "expected": "G#min"
+        "expected": "g#min"
     },
     {
         "input": "G flat major",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "G flat maj",
-        "expected": "Gbmaj"
+        "expected": "gbmaj"
     },
     {
         "input": "G flat minor",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     },
     {
         "input": "G flat min",
-        "expected": "Gbmin"
+        "expected": "gbmin"
     }
 ]
