@@ -11,6 +11,38 @@ import { useCart } from '@/context/CartContext';
 import type { Beat } from '@/types/Beat';
 import CheckoutFormSkeleton from '@/components/checkout/CheckoutFormSkeleton';
 
+/**
+ * Back to Cart button component
+ * @param variant - 'button' for prominent yellow button, 'link' for subtle text link
+ */
+function BackToCartButton({ variant = 'link' }: { variant?: 'button' | 'link' }) {
+    const navigate = useNavigate();
+    
+    const handleClick = () => navigate('/store/cart');
+    
+    if (variant === 'button') {
+        return (
+            <button
+                onClick={handleClick}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full
+                bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                active:scale-[1.02] cursor-pointer transition no-ring"
+            >
+                ← Back to Cart
+            </button>
+        );
+    }
+    
+    return (
+        <button
+            onClick={handleClick}
+            className="mt-6 text-zinc-400 hover:text-white underline text-sm hover:cursor-pointer no-ring"
+        >
+            ← Back to Cart
+        </button>
+    );
+}
+
 // Initialize Stripe with publishable key
 // In production, you'd get this from environment variables
 const stripePromise = loadStripe(
@@ -220,12 +252,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="bg-red-500/20 border border-red-500 rounded-2xl p-8">
                     <p className="text-zinc-300 mb-4">{error}</p>
-                    <button
-                        onClick={() => navigate('/store/cart')}
-                        className="bg-[#f3c000] hover:bg-[#e4b300] text-black font-semibold py-2 px-6 rounded-full transition"
-                    >
-                        Back to Cart
-                    </button>
+                    <BackToCartButton variant="button" />
                 </div>
             </div>
         );
@@ -275,12 +302,7 @@ export default function CheckoutPage() {
                 )}
             </div>
 
-            <button
-                onClick={() => navigate('/store/cart')}
-                className="mt-6 text-zinc-400 hover:text-white underline text-sm"
-            >
-                ← Back to Cart
-            </button>
+            <BackToCartButton variant="link" />
         </div>
     );
 }
