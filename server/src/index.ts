@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import beatsRoutes from '@/routes/beatsRoutes.js';
+import checkoutRoutes from '@/routes/checkoutRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +31,7 @@ app.get('/health', (_req, res) => {
 
 // API routes
 app.use('/api/beats', beatsRoutes);
+app.use('/api/checkout', checkoutRoutes);
 
 // Start server
 app.listen(PORT, () => {

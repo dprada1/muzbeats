@@ -11,6 +11,8 @@
     "test": "vitest --ui"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "@tailwindcss/vite": "^4.1.11",
     "lucide-react": "^0.534.0",
     "nprogress": "^0.2.0",

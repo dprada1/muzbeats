@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
@@ -12,6 +12,7 @@ import CartSummaryStickySkeleton from '@/components/beatcards/cart/CartSummarySt
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
     const { setBeats } = useSearch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         setBeats(cartItems);
@@ -84,11 +85,12 @@ export default function CartPage() {
                                     <div className="flex items-center justify-between text-lg mb-4">
                                         <span className="text-white font-bold">Total: ${total}</span>
                                     </div>
-                                    <button
-                                        className="block w-full bg-[#0b84ff] hover:bg-[#0a74d1] active:scale-[1.02] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
+                                    <Link
+                                        to="/store/checkout"
+                                        className="block w-full text-center bg-[#0b84ff] hover:bg-[#0a74d1] active:scale-[1.02] transition rounded-full px-5 py-3 font-semibold no-ring cursor-pointer"
                                     >
                                         Proceed to Checkout
-                                    </button>
+                                    </Link>
                                     <button
                                         onClick={() => setShowConfirm(true)}
                                         className="mt-3 block w-full text-center text-red-400 hover:text-red-300 text-sm underline no-ring cursor-pointer"
@@ -118,7 +120,10 @@ export default function CartPage() {
                                     >
                                         Clear
                                     </button>
-                                    <button className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring active:scale-[1.02] transition">
+                                    <button
+                                        onClick={() => navigate('/store/checkout')}
+                                        className="px-4 py-2 rounded-full bg-[#0b84ff] hover:bg-[#0a74d1] font-semibold no-ring active:scale-[1.02] transition"
+                                    >
                                         Checkout
                                     </button>
                                 </div>
