@@ -44,6 +44,12 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                 confirmParams: {
                     return_url: `${window.location.origin}/store/checkout/success`,
                     receipt_email: email,
+                    payment_method_data: {
+                        billing_details: {
+                            email: email,
+                            phone: '', // Empty string since we don't collect phone
+                        },
+                    },
                 },
                 redirect: 'if_required', // Only redirect if required (3D Secure, etc.)
             });
@@ -61,9 +67,13 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                 return;
             }
 
+            console.log('Payment Intent Status:', paymentIntent.status);
+            console.log('Payment Intent ID:', paymentIntent.id);
+
             // Handle different payment statuses
             switch (paymentIntent.status) {
                 case 'succeeded':
+                    console.log('Payment succeeded! Redirecting to success page...');
                     // Pass payment intent ID to success page for verification
                     onSuccess(paymentIntent.id);
                     break;
@@ -188,10 +198,16 @@ export default function CheckoutPage() {
     }, [cartItems, navigate]);
 
     const handlePaymentSuccess = (paymentIntentId: string) => {
-        clearCart();
-        // Redirect immediately to success page with payment intent ID
-        // Success page will show loading state and verify payment
-        navigate(`/store/checkout/success?payment_intent=${paymentIntentId}`);
+        console.log('handlePaymentSuccess called with paymentIntentId:', paymentIntentId);
+        // Navigate FIRST, then clear cart
+        // This prevents the useEffect from redirecting us back to cart when cart becomes empty
+        const successUrl = `/store/checkout/success?payment_intent=${paymentIntentId}`;
+        console.log('Navigating to:', successUrl);
+        navigate(successUrl, { replace: true });
+        // Clear cart after a brief delay to ensure navigation completes
+        setTimeout(() => {
+            clearCart();
+        }, 50);
     };
 
     if (error) {

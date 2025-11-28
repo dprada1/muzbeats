@@ -7,6 +7,8 @@ export default function CheckoutSuccessPage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log('CheckoutSuccessPage: Component mounted/updated');
+        console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
         window.scrollTo({ top: 0 });
         
         // Verify payment intent status if we have a payment_intent in URL
@@ -58,8 +60,10 @@ export default function CheckoutSuccessPage() {
             }
 
             const data = await response.json();
+            console.log('CheckoutSuccessPage: Payment verification response:', data);
             
             if (data.status === 'succeeded') {
+                console.log('CheckoutSuccessPage: Payment succeeded! Setting status to success');
                 setPaymentStatus('success');
             } else if (data.status === 'canceled' || data.status === 'requires_payment_method') {
                 setPaymentStatus('failed');
