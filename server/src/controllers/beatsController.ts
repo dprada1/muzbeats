@@ -16,59 +16,59 @@ import type { SearchParams } from '@/types/SearchParams.js';
 * - search: Keyword search in title (e.g., "pierre")
 */
 export async function getAllBeatsHandler(req: Request, res: Response): Promise<void> {
-	try {
-		const { q, bpm, bpmMin, bpmMax, key, search } = req.query;
+    try {
+        const { q, bpm, bpmMin, bpmMax, key, search } = req.query;
 
-		let searchParams: SearchParams | undefined;
+        let searchParams: SearchParams | undefined;
 
-		// If 'q' parameter is provided, parse it as a full search query
-		if (q && typeof q === 'string') {
-			searchParams = parseSearchQuery(q);
-		} 
-		// Otherwise, build SearchParams from individual query parameters
-		else if (bpm || bpmMin || bpmMax || key || search) {
-			searchParams = {
-				bpmRanges: [],
-				bpmValues: [],
-				keys: [],
-				queryTokens: []
-			};
+        // If 'q' parameter is provided, parse it as a full search query
+        if (q && typeof q === 'string') {
+            searchParams = parseSearchQuery(q);
+        } 
+        // Otherwise, build SearchParams from individual query parameters
+        else if (bpm || bpmMin || bpmMax || key || search) {
+            searchParams = {
+                bpmRanges: [],
+                bpmValues: [],
+                keys: [],
+                queryTokens: []
+            };
 
-			// BPM filtering
-			if (bpm && typeof bpm === 'string') {
-				const bpmValue = parseInt(bpm);
-				if (!isNaN(bpmValue) && bpmValue > 0 && bpmValue < 300) {
-					searchParams.bpmValues.push(bpmValue);
-				}
-			}
+            // BPM filtering
+            if (bpm && typeof bpm === 'string') {
+                const bpmValue = parseInt(bpm);
+                if (!isNaN(bpmValue) && bpmValue > 0 && bpmValue < 300) {
+                    searchParams.bpmValues.push(bpmValue);
+                }
+            }
 
-			if (bpmMin && bpmMax && typeof bpmMin === 'string' && typeof bpmMax === 'string') {
-				const min = parseInt(bpmMin);
-				const max = parseInt(bpmMax);
-				if (!isNaN(min) && !isNaN(max) && min > 0 && max > min && max < 300) {
-					searchParams.bpmRanges.push([min, max]);
-				}
-			}
+            if (bpmMin && bpmMax && typeof bpmMin === 'string' && typeof bpmMax === 'string') {
+                const min = parseInt(bpmMin);
+                const max = parseInt(bpmMax);
+                if (!isNaN(min) && !isNaN(max) && min > 0 && max > min && max < 300) {
+                    searchParams.bpmRanges.push([min, max]);
+                }
+            }
 
-			// Key filtering
-			if (key && typeof key === 'string') {
-				searchParams.keys.push(key);
-			}
+            // Key filtering
+            if (key && typeof key === 'string') {
+                searchParams.keys.push(key);
+            }
 
-			// Keyword search
-			if (search && typeof search === 'string') {
-				// Split search into tokens
-				const tokens = search.split(/\s+/).filter(Boolean);
-				searchParams.queryTokens.push(...tokens);
-			}
-		}
+            // Keyword search
+            if (search && typeof search === 'string') {
+                // Split search into tokens
+                const tokens = search.split(/\s+/).filter(Boolean);
+                searchParams.queryTokens.push(...tokens);
+            }
+        }
 
-		const beats = await getAllBeats(searchParams);
-		res.json(beats);
-	} catch (error) {
-		console.error('Error fetching all beats:', error);
-		res.status(500).json({ error: 'Failed to fetch beats' });
-	}
+        const beats = await getAllBeats(searchParams);
+        res.json(beats);
+    } catch (error) {
+        console.error('Error fetching all beats:', error);
+        res.status(500).json({ error: 'Failed to fetch beats' });
+    }
 }
 
 /**
@@ -76,24 +76,24 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
 * Get a single beat by ID
 */
 export async function getBeatByIdHandler(req: Request, res: Response): Promise<void> {
-	try {
-		const { id } = req.params;
-		
-		if (!id) {
-			res.status(400).json({ error: 'Beat ID is required' });
-			return;
-		}
+    try {
+        const { id } = req.params;
+        
+        if (!id) {
+            res.status(400).json({ error: 'Beat ID is required' });
+            return;
+        }
 
-		const beat = await getBeatById(id);
-		
-		if (!beat) {
-			res.status(404).json({ error: 'Beat not found' });
-			return;
-		}
+        const beat = await getBeatById(id);
+        
+        if (!beat) {
+            res.status(404).json({ error: 'Beat not found' });
+            return;
+        }
 
-		res.json(beat);
-	} catch (error) {
-		console.error('Error fetching beat by ID:', error);
-		res.status(500).json({ error: 'Failed to fetch beat' });
-	}
+        res.json(beat);
+    } catch (error) {
+        console.error('Error fetching beat by ID:', error);
+        res.status(500).json({ error: 'Failed to fetch beat' });
+    }
 }

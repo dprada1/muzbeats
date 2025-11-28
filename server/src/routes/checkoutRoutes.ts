@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
-	createPaymentIntentHandler,
-	getPaymentIntentHandler,
+    createPaymentIntentHandler,
+    getPaymentIntentHandler,
 } from '@/controllers/checkoutController.js';
 
 const router = Router();

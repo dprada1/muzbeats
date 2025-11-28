@@ -9,17 +9,17 @@ import { BrowserRouter } from 'react-router-dom'
 import { WaveformCacheProvider } from './context/WaveformContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-	<React.StrictMode>
-		<BrowserRouter>
-			<WaveformCacheProvider>
-				<CartProvider>
-					<PlayerProvider>
-						<SearchProvider>
-							<App />
-						</SearchProvider>
-					</PlayerProvider>
-				</CartProvider>
-			</WaveformCacheProvider>
-		</BrowserRouter>
-	</React.StrictMode>
+    <React.StrictMode>
+        <BrowserRouter>
+            <WaveformCacheProvider>
+                <CartProvider>
+                    <PlayerProvider>
+                        <SearchProvider>
+                            <App />
+                        </SearchProvider>
+                    </PlayerProvider>
+                </CartProvider>
+            </WaveformCacheProvider>
+        </BrowserRouter>
+    </React.StrictMode>
 )
