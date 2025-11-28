@@ -10,4 +10,3 @@ router.get('/', getAllBeatsHandler);
 router.get('/:id', getBeatByIdHandler);
 
 export default router;
-

@@ -5,9 +5,9 @@ import NProgress from 'nprogress';
 
 /**
  * Drives the search flow:
- *  - local `input` state  
- *  - URL via navigate(...)  
- *  - context.searchQuery updated by the SearchContext effect on URL change
+ * - local `input` state  
+ * - URL via navigate(...)  
+ * - context.searchQuery updated by the SearchContext effect on URL change
  */
 export function useSearchBar() {
     const { searchQuery } = useSearch();

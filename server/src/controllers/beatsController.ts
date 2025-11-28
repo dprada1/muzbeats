@@ -4,16 +4,16 @@ import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 
 /**
-* GET /api/beats
-* Get all beats with optional search/filtering
-* 
-* Query parameters:
-* - q: Raw search query string (e.g., "pierre 160 C#min")
-* - bpm: Exact BPM value (e.g., "160")
-* - bpmMin: Minimum BPM for range (e.g., "150")
-* - bpmMax: Maximum BPM for range (e.g., "170")
-* - key: Musical key (e.g., "C#min", "A maj")
-* - search: Keyword search in title (e.g., "pierre")
+ * GET /api/beats
+ * Get all beats with optional search/filtering
+ *
+ * Query parameters:
+ * - q: Raw search query string (e.g., "pierre 160 C#min")
+ * - bpm: Exact BPM value (e.g., "160")
+ * - bpmMin: Minimum BPM for range (e.g., "150")
+ * - bpmMax: Maximum BPM for range (e.g., "170")
+ * - key: Musical key (e.g., "C#min", "A maj")
+ * - search: Keyword search in title (e.g., "pierre")
 */
 export async function getAllBeatsHandler(req: Request, res: Response): Promise<void> {
     try {
@@ -72,8 +72,8 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
 }
 
 /**
-* GET /api/beats/:id
-* Get a single beat by ID
+ * GET /api/beats/:id
+ * Get a single beat by ID
 */
 export async function getBeatByIdHandler(req: Request, res: Response): Promise<void> {
     try {

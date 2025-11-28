@@ -1,13 +1,13 @@
 /**
-* Utility functions for musical key normalization and enharmonic equivalents
-* Ported from client/src/utils/search/keyUtils.ts
+ * Utility functions for musical key normalization and enharmonic equivalents
+ * Ported from client/src/utils/search/keyUtils.ts
 */
 
 /**
-* Map of enharmonic and relative key equivalents.
-*
-* Keys sharing the same pitches but different spellings
-* or tonal centers are listed here for broader matching.
+ * Map of enharmonic and relative key equivalents.
+ *
+ * Keys sharing the same pitches but different spellings
+ * or tonal centers are listed here for broader matching.
 */
 const ENHARMONIC_MAP: Record<string, string[]> = {
     "cmaj": ["b#maj", "amin"],
@@ -44,8 +44,8 @@ const ENHARMONIC_MAP: Record<string, string[]> = {
 };
 
 /**
-* Normalize a key string to a consistent format
-* Converts: "C# min" -> "c#min", "A flat major" -> "abmaj", etc.
+ * Normalize a key string to a consistent format
+ * Converts: "C# min" -> "c#min", "A flat major" -> "abmaj", etc.
 */
 export function normalizeKeyNotation(input: string): string {
     // First normalize accidentals and full words
@@ -70,19 +70,19 @@ export function normalizeKeyNotation(input: string): string {
 }
 
 /**
-* Given a normalized key, return its enharmonic and relative equivalents.
-*
-* - "Enharmonic" keys name the same pitches differently (C♯maj ↔ D♭maj)
-* - "Relative" keys share the same notes but different tonal centers
-*   (e.g. C major ↔ A minor)
-*
-* @param key A normalized key string, e.g. "ebmin"
-* @returns Array of normalized equivalent key tokens
-*
-* @example
-* getEnharmonicEquivalents("ebmin") // ["f#maj","d#min"]
-* getEnharmonicEquivalents("cmaj") // ["b#maj","amin"]
-* getEnharmonicEquivalents("amin") // ["cmaj","b#maj"]
+ * Given a normalized key, return its enharmonic and relative equivalents.
+ *
+ * - "Enharmonic" keys name the same pitches differently (C♯maj ↔ D♭maj)
+ * - "Relative" keys share the same notes but different tonal centers
+ * (e.g. C major ↔ A minor)
+ *
+ * @param key A normalized key string, e.g. "ebmin"
+ * @returns Array of normalized equivalent key tokens
+ *
+ * @example
+ * getEnharmonicEquivalents("ebmin") // ["f#maj","d#min"]
+ * getEnharmonicEquivalents("cmaj") // ["b#maj","amin"]
+ * getEnharmonicEquivalents("amin") // ["cmaj","b#maj"]
 */
 export function getEnharmonicEquivalents(key: string): string[] {
     return ENHARMONIC_MAP[key] ?? [];

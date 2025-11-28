@@ -5,7 +5,7 @@ import { PlayerProvider, usePlayer } from '@/context/PlayerContext';
 import type { Beat } from '@/types/Beat';
 
 /**
-* Flush pending useEffect calls by awaiting a resolved promise in act.
+ * Flush pending useEffect calls by awaiting a resolved promise in act.
 */
 const flushEffects = async (): Promise<void> => {
     await act(async () => Promise.resolve());

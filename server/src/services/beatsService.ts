@@ -4,8 +4,8 @@ import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 
 /**
-* Map database row to Beat type
-* Converts audio_path -> audio, cover_path -> cover
+ * Map database row to Beat type
+ * Converts audio_path -> audio, cover_path -> cover
 */
 function mapDbRowToBeat(row: any): Beat {
     return {
@@ -20,7 +20,7 @@ function mapDbRowToBeat(row: any): Beat {
 }
 
 /**
-* Get all beats from PostgreSQL with optional search/filtering
+ * Get all beats from PostgreSQL with optional search/filtering
 */
 export async function getAllBeats(searchParams?: SearchParams): Promise<Beat[]> {
     try {
@@ -46,7 +46,7 @@ export async function getAllBeats(searchParams?: SearchParams): Promise<Beat[]> 
 }
 
 /**
-* Get a single beat by ID from PostgreSQL
+ * Get a single beat by ID from PostgreSQL
 */
 export async function getBeatById(id: string): Promise<Beat | null> {
     try {

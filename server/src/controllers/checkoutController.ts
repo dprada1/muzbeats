@@ -5,11 +5,11 @@ import type { CartItem } from '@/services/checkoutService.js';
 /**
  * POST /api/checkout/create-payment-intent
  * Create a Stripe Payment Intent for the cart
- * 
+ *
  * Request body:
  * {
- *   items: [{ beatId: "uuid", quantity: 1 }],
- *   customerEmail?: "email@example.com"
+ * items: [{ beatId: "uuid", quantity: 1 }],
+ * customerEmail?: "email@example.com"
  * }
  */
 export async function createPaymentIntentHandler(

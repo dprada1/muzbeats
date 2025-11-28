@@ -77,4 +77,3 @@ async function setupTable() {
 }
 
 setupTable();
-

@@ -3,11 +3,11 @@
  *
  * @param seconds  number of seconds (may be fractional)
  * @returns        time string, e.g. 75 → "1:15"
- * 
+ *
  * Edge-case handling:
- *  - Negative or NaN returns "0:00"
- *  - Large values roll minutes naturally (e.g. 3601 -> "60:01")
- *  - Fractional seconds are rounded to the nearest whole
+ * - Negative or NaN returns "0:00"
+ * - Large values roll minutes naturally (e.g. 3601 -> "60:01")
+ * - Fractional seconds are rounded to the nearest whole
  */
 export function formatTime(seconds: number = 0): string {
     if (!Number.isFinite(seconds) || seconds < 0) {

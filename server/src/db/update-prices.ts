@@ -1,15 +1,15 @@
 /**
-* Script to update prices for all beats in the database
-* 
-* Usage:
-*   npx tsx src/db/update-prices.ts <price>
-* 
-* Example:
-*   npx tsx src/db/update-prices.ts 20.00
-*   npx tsx src/db/update-prices.ts 19.99
-* 
-* This will update ALL beats to the specified price.
-* Use with caution in production!
+ * Script to update prices for all beats in the database
+ *
+ * Usage:
+ * npx tsx src/db/update-prices.ts <price>
+ *
+ * Example:
+ * npx tsx src/db/update-prices.ts 20.00
+ * npx tsx src/db/update-prices.ts 19.99
+ *
+ * This will update ALL beats to the specified price.
+ * Use with caution in production!
 */
 
 import dotenv from 'dotenv';
@@ -95,4 +95,3 @@ if (!priceArg) {
 
 const newPrice = parseFloat(priceArg);
 updatePrices(newPrice);
-

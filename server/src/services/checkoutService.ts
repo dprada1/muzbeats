@@ -12,7 +12,7 @@ export interface CartItem {
 
 /**
  * Create a Stripe Payment Intent for the cart
- * 
+ *
  * @param items - Array of cart items (beat IDs)
  * @param customerEmail - Optional customer email for guest checkout
  * @returns Payment Intent with client secret

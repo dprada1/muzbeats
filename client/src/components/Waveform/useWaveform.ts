@@ -24,14 +24,14 @@ export interface UseWaveformResult {
  * - Resize sync: handled by breakpoint-driven remount via layoutKey (no separate redraw hook needed).
  *
  * @param {Beat} beat
- *   The beat whose waveform should render; used for ids, audio URL, and cache lookups.
+ * The beat whose waveform should render; used for ids, audio URL, and cache lookups.
  * @param {boolean} isVisible
- *   Whether the waveform should be visible/loaded (controlled by parent component).
+ * Whether the waveform should be visible/loaded (controlled by parent component).
  *
  * @returns {{ wrapperRef: React.RefObject<HTMLDivElement|null>, time: number, dur: number }}
- *   - wrapperRef: attach to the waveform container div.
- *   - time: current time (seconds) for the left badge.
- *   - dur: total duration (seconds) for the right badge.
+ * - wrapperRef: attach to the waveform container div.
+ * - time: current time (seconds) for the left badge.
+ * - dur: total duration (seconds) for the right badge.
  */
 export default function useWaveform(beat: Beat, isVisible: boolean = true): UseWaveformResult {
     const { audio, currentBeat, play } = usePlayer();

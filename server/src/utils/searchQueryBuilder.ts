@@ -2,8 +2,8 @@ import type { SearchParams } from '../types/SearchParams.js';
 import { normalizeKeyNotation, getEnharmonicEquivalents } from './keyUtils.js';
 
 /**
-* Builds a SQL WHERE clause and parameters from search criteria
-* Returns the WHERE clause string and parameter values array
+ * Builds a SQL WHERE clause and parameters from search criteria
+ * Returns the WHERE clause string and parameter values array
 */
 export function buildSearchQuery(searchParams: SearchParams): {
     whereClause: string;

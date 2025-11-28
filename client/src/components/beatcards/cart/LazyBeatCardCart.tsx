@@ -44,4 +44,3 @@ export default function LazyBeatCardCart({ beat, rootMargin = "600px 0px" }: Pro
         </div>
     );
 }
-

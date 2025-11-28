@@ -3,7 +3,7 @@ import { SearchProvider, useSearch } from '@/context/SearchContext';
 import type { Beat } from '@/types/Beat';
 
 /**
-* Unit tests for SearchContext: verifies default state and setter behavior.
+ * Unit tests for SearchContext: verifies default state and setter behavior.
 */
 describe('SearchContext', () => {
     // Wrapper component to provide context

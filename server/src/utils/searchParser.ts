@@ -1,19 +1,19 @@
 /**
-* Simple search parser for backend
-* Parses query string into SearchParams
-* 
-* Supports:
-* - BPM: "160", "160bpm", "150-170"
-* - Keys: "C#min", "A flat major", "G"
-* - Keywords: any other text (searches in title)
+ * Simple search parser for backend
+ * Parses query string into SearchParams
+ *
+ * Supports:
+ * - BPM: "160", "160bpm", "150-170"
+ * - Keys: "C#min", "A flat major", "G"
+ * - Keywords: any other text (searches in title)
 */
 
 import type { SearchParams } from '../types/SearchParams.js';
 
 /**
-* Parse a raw search query string into SearchParams
-* This is a simplified version - for full parsing, you might want to
-* port the frontend parser or use a shared library
+ * Parse a raw search query string into SearchParams
+ * This is a simplified version - for full parsing, you might want to
+ * port the frontend parser or use a shared library
 */
 export function parseSearchQuery(rawQuery: string): SearchParams {
     if (!rawQuery || rawQuery.trim() === '') {
@@ -123,8 +123,8 @@ export function parseSearchQuery(rawQuery: string): SearchParams {
 }
 
 /**
-* Normalize key notation for search
-* Handles: "Cm" -> "cmin", "CM" -> "cmaj", "C min" -> "cmin", etc.
+ * Normalize key notation for search
+ * Handles: "Cm" -> "cmin", "CM" -> "cmaj", "C min" -> "cmin", etc.
 */
 function normalizeKey(key: string): string {
     // First normalize accidentals and full words

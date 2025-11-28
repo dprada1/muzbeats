@@ -84,9 +84,9 @@ function metaSync(
  * Keeps the visual waveform and UI labels in sync with the global <audio> element.
  * - Inactive: seeks to the last cached position and exits (only if duration is valid).
  * - Active: on every `timeupdate`, updates the current time label, caches the resume
- *   point, and seeks the (muted) WaveSurfer cursor to match <audio>.
+ * point, and seeks the (muted) WaveSurfer cursor to match <audio>.
  * - Also sets the total duration on `loadedmetadata`.
- * 
+ *
  * IMPORTANT: When a beat becomes inactive, we only seek to its cached position if:
  * 1. The duration is valid (> 0)
  * 2. The cached position is valid (>= 0 and <= duration)

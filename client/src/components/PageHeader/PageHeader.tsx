@@ -9,7 +9,7 @@ type PageHeaderProps = {
 /**
  * PageHeader component that provides consistent header and search bar layout
  * across store and shared beat pages.
- * 
+ *
  * Includes:
  * - Mobile sticky search bar
  * - Page title and subtitle
@@ -44,4 +44,3 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
         </>
     );
 }
-
