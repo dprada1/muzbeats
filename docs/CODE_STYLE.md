@@ -38,5 +38,48 @@ This document outlines the coding standards and formatting conventions for the M
 
 ---
 
+## JSDoc Comments
+
+**Format:** JSDoc comments must use aligned asterisks with proper spacing.
+
+**Example:**
+```typescript
+/**
+ * Function description that explains what the function does.
+ * 
+ * @param param1 - Description of parameter
+ * @param param2 - Description of another parameter
+ * @returns Description of return value
+ */
+function example(param1: string, param2: number): boolean {
+    // ...
+}
+```
+
+**Rules:**
+- Opening `/**` on its own line
+- Each content line must start with ` * ` (space, asterisk, space)
+- Closing `*/` on its own line
+- Asterisks must be aligned vertically
+- Maintain proper indentation level matching the code block
+
+**Why this format?**
+- Consistent with standard JSDoc conventions
+- Better readability and alignment
+- Easier to maintain and review
+
+---
+
+## File Endings
+
+**Trailing Newlines:** All files must end with exactly **1 newline** (not 0, not 2).
+
+**Why?**
+- Consistent with POSIX standards
+- Prevents issues with some tools and git diffs
+- Standard practice in most codebases
+
+---
+
 **Last Updated:** November 2025
 
