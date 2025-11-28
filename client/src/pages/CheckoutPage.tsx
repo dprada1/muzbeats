@@ -189,6 +189,13 @@ export default function CheckoutPage() {
 
     const total = cartItems.reduce((acc, beat) => acc + (beat.price ?? 0), 0);
 
+    // Scroll to top when error occurs
+    useEffect(() => {
+        if (error) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [error]);
+
     useEffect(() => {
         if (cartItems.length === 0) {
             navigate('/store/cart');
