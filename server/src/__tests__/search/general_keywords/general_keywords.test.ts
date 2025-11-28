@@ -10,4 +10,3 @@ describe("parseSearchQuery - General keywords only", () => {
         });
     });
 });
-

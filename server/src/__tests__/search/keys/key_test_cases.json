@@ -1,1766 +1,1766 @@
 [
-    {
-        "input": "A",
-        "expected": []
-    },
-    {
-        "input": "B",
-        "expected": []
-    },
-    {
-        "input": "C",
-        "expected": []
-    },
-    {
-        "input": "D",
-        "expected": []
-    },
-    {
-        "input": "E",
-        "expected": []
-    },
-    {
-        "input": "F",
-        "expected": []
-    },
-    {
-        "input": "G",
-        "expected": []
-    },
-    {
-        "input": "A#",
-        "expected": []
-    },
-    {
-        "input": "A♯",
-        "expected": []
-    },
-    {
-        "input": "Asharp",
-        "expected": []
-    },
-    {
-        "input": "Ab",
-        "expected": []
-    },
-    {
-        "input": "A♭",
-        "expected": []
-    },
-    {
-        "input": "Aflat",
-        "expected": []
-    },
-    {
-        "input": "B#",
-        "expected": []
-    },
-    {
-        "input": "B♯",
-        "expected": []
-    },
-    {
-        "input": "Bsharp",
-        "expected": []
-    },
-    {
-        "input": "Bb",
-        "expected": []
-    },
-    {
-        "input": "B♭",
-        "expected": []
-    },
-    {
-        "input": "Bflat",
-        "expected": []
-    },
-    {
-        "input": "C#",
-        "expected": []
-    },
-    {
-        "input": "C♯",
-        "expected": []
-    },
-    {
-        "input": "Csharp",
-        "expected": []
-    },
-    {
-        "input": "Cb",
-        "expected": []
-    },
-    {
-        "input": "C♭",
-        "expected": []
-    },
-    {
-        "input": "Cflat",
-        "expected": []
-    },
-    {
-        "input": "D#",
-        "expected": []
-    },
-    {
-        "input": "D♯",
-        "expected": []
-    },
-    {
-        "input": "Dsharp",
-        "expected": []
-    },
-    {
-        "input": "Db",
-        "expected": []
-    },
-    {
-        "input": "D♭",
-        "expected": []
-    },
-    {
-        "input": "Dflat",
-        "expected": []
-    },
-    {
-        "input": "E#",
-        "expected": []
-    },
-    {
-        "input": "E♯",
-        "expected": []
-    },
-    {
-        "input": "Esharp",
-        "expected": []
-    },
-    {
-        "input": "Eb",
-        "expected": []
-    },
-    {
-        "input": "E♭",
-        "expected": []
-    },
-    {
-        "input": "Eflat",
-        "expected": []
-    },
-    {
-        "input": "F#",
-        "expected": []
-    },
-    {
-        "input": "F♯",
-        "expected": []
-    },
-    {
-        "input": "Fsharp",
-        "expected": []
-    },
-    {
-        "input": "Fb",
-        "expected": []
-    },
-    {
-        "input": "F♭",
-        "expected": []
-    },
-    {
-        "input": "Fflat",
-        "expected": []
-    },
-    {
-        "input": "G#",
-        "expected": []
-    },
-    {
-        "input": "G♯",
-        "expected": []
-    },
-    {
-        "input": "Gsharp",
-        "expected": []
-    },
-    {
-        "input": "Gb",
-        "expected": []
-    },
-    {
-        "input": "G♭",
-        "expected": []
-    },
-    {
-        "input": "Gflat",
-        "expected": []
-    },
-    {
-        "input": "A sharp",
-        "expected": []
-    },
-    {
-        "input": "A flat",
-        "expected": []
-    },
-    {
-        "input": "B sharp",
-        "expected": []
-    },
-    {
-        "input": "B flat",
-        "expected": []
-    },
-    {
-        "input": "C sharp",
-        "expected": []
-    },
-    {
-        "input": "C flat",
-        "expected": []
-    },
-    {
-        "input": "D sharp",
-        "expected": []
-    },
-    {
-        "input": "D flat",
-        "expected": []
-    },
-    {
-        "input": "E sharp",
-        "expected": []
-    },
-    {
-        "input": "E flat",
-        "expected": []
-    },
-    {
-        "input": "F sharp",
-        "expected": []
-    },
-    {
-        "input": "F flat",
-        "expected": []
-    },
-    {
-        "input": "G sharp",
-        "expected": []
-    },
-    {
-        "input": "G flat",
-        "expected": []
-    },
-    {
-        "input": "Amajor",
-        "expected": "amaj"
-    },
-    {
-        "input": "Amaj",
-        "expected": "amaj"
-    },
-    {
-        "input": "AM",
-        "expected": "amaj"
-    },
-    {
-        "input": "Aminor",
-        "expected": "amin"
-    },
-    {
-        "input": "Amin",
-        "expected": "amin"
-    },
-    {
-        "input": "Am",
-        "expected": "amin"
-    },
-    {
-        "input": "Bmajor",
-        "expected": "bmaj"
-    },
-    {
-        "input": "Bmaj",
-        "expected": "bmaj"
-    },
-    {
-        "input": "BM",
-        "expected": "bmaj"
-    },
-    {
-        "input": "Bminor",
-        "expected": "bmin"
-    },
-    {
-        "input": "Bmin",
-        "expected": "bmin"
-    },
-    {
-        "input": "Bm",
-        "expected": "bmin"
-    },
-    {
-        "input": "Cmajor",
-        "expected": "cmaj"
-    },
-    {
-        "input": "Cmaj",
-        "expected": "cmaj"
-    },
-    {
-        "input": "CM",
-        "expected": "cmaj"
-    },
-    {
-        "input": "Cminor",
-        "expected": "cmin"
-    },
-    {
-        "input": "Cmin",
-        "expected": "cmin"
-    },
-    {
-        "input": "Cm",
-        "expected": "cmin"
-    },
-    {
-        "input": "Dmajor",
-        "expected": "dmaj"
-    },
-    {
-        "input": "Dmaj",
-        "expected": "dmaj"
-    },
-    {
-        "input": "DM",
-        "expected": "dmaj"
-    },
-    {
-        "input": "Dminor",
-        "expected": "dmin"
-    },
-    {
-        "input": "Dmin",
-        "expected": "dmin"
-    },
-    {
-        "input": "Dm",
-        "expected": "dmin"
-    },
-    {
-        "input": "Emajor",
-        "expected": "emaj"
-    },
-    {
-        "input": "Emaj",
-        "expected": "emaj"
-    },
-    {
-        "input": "EM",
-        "expected": "emaj"
-    },
-    {
-        "input": "Eminor",
-        "expected": "emin"
-    },
-    {
-        "input": "Emin",
-        "expected": "emin"
-    },
-    {
-        "input": "Em",
-        "expected": "emin"
-    },
-    {
-        "input": "Fmajor",
-        "expected": "fmaj"
-    },
-    {
-        "input": "Fmaj",
-        "expected": "fmaj"
-    },
-    {
-        "input": "FM",
-        "expected": "fmaj"
-    },
-    {
-        "input": "Fminor",
-        "expected": "fmin"
-    },
-    {
-        "input": "Fmin",
-        "expected": "fmin"
-    },
-    {
-        "input": "Fm",
-        "expected": "fmin"
-    },
-    {
-        "input": "Gmajor",
-        "expected": "gmaj"
-    },
-    {
-        "input": "Gmaj",
-        "expected": "gmaj"
-    },
-    {
-        "input": "GM",
-        "expected": "gmaj"
-    },
-    {
-        "input": "Gminor",
-        "expected": "gmin"
-    },
-    {
-        "input": "Gmin",
-        "expected": "gmin"
-    },
-    {
-        "input": "Gm",
-        "expected": "gmin"
-    },
-    {
-        "input": "A major",
-        "expected": "amaj"
-    },
-    {
-        "input": "A maj",
-        "expected": "amaj"
-    },
-    {
-        "input": "A minor",
-        "expected": "amin"
-    },
-    {
-        "input": "A min",
-        "expected": "amin"
-    },
-    {
-        "input": "B major",
-        "expected": "bmaj"
-    },
-    {
-        "input": "B maj",
-        "expected": "bmaj"
-    },
-    {
-        "input": "B minor",
-        "expected": "bmin"
-    },
-    {
-        "input": "B min",
-        "expected": "bmin"
-    },
-    {
-        "input": "C major",
-        "expected": "cmaj"
-    },
-    {
-        "input": "C maj",
-        "expected": "cmaj"
-    },
-    {
-        "input": "C minor",
-        "expected": "cmin"
-    },
-    {
-        "input": "C min",
-        "expected": "cmin"
-    },
-    {
-        "input": "D major",
-        "expected": "dmaj"
-    },
-    {
-        "input": "D maj",
-        "expected": "dmaj"
-    },
-    {
-        "input": "D minor",
-        "expected": "dmin"
-    },
-    {
-        "input": "D min",
-        "expected": "dmin"
-    },
-    {
-        "input": "E major",
-        "expected": "emaj"
-    },
-    {
-        "input": "E maj",
-        "expected": "emaj"
-    },
-    {
-        "input": "E minor",
-        "expected": "emin"
-    },
-    {
-        "input": "E min",
-        "expected": "emin"
-    },
-    {
-        "input": "F major",
-        "expected": "fmaj"
-    },
-    {
-        "input": "F maj",
-        "expected": "fmaj"
-    },
-    {
-        "input": "F minor",
-        "expected": "fmin"
-    },
-    {
-        "input": "F min",
-        "expected": "fmin"
-    },
-    {
-        "input": "G major",
-        "expected": "gmaj"
-    },
-    {
-        "input": "G maj",
-        "expected": "gmaj"
-    },
-    {
-        "input": "G minor",
-        "expected": "gmin"
-    },
-    {
-        "input": "G min",
-        "expected": "gmin"
-    },
-    {
-        "input": "A#major",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A#maj",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A#M",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A#minor",
-        "expected": "a#min"
-    },
-    {
-        "input": "A#min",
-        "expected": "a#min"
-    },
-    {
-        "input": "A#m",
-        "expected": "a#min"
-    },
-    {
-        "input": "A♯major",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A♯maj",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A♯M",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A♯minor",
-        "expected": "a#min"
-    },
-    {
-        "input": "A♯min",
-        "expected": "a#min"
-    },
-    {
-        "input": "A♯m",
-        "expected": "a#min"
-    },
-    {
-        "input": "Asharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Asharpmaj",
-        "expected": []
-    },
-    {
-        "input": "AsharpM",
-        "expected": []
-    },
-    {
-        "input": "Asharpminor",
-        "expected": []
-    },
-    {
-        "input": "Asharpmin",
-        "expected": []
-    },
-    {
-        "input": "Asharpm",
-        "expected": []
-    },
-    {
-        "input": "Abmajor",
-        "expected": "abmaj"
-    },
-    {
-        "input": "Abmaj",
-        "expected": "abmaj"
-    },
-    {
-        "input": "AbM",
-        "expected": "abmaj"
-    },
-    {
-        "input": "Abminor",
-        "expected": "abmin"
-    },
-    {
-        "input": "Abmin",
-        "expected": "abmin"
-    },
-    {
-        "input": "Abm",
-        "expected": "abmin"
-    },
-    {
-        "input": "A♭major",
-        "expected": "abmaj"
-    },
-    {
-        "input": "A♭maj",
-        "expected": "abmaj"
-    },
-    {
-        "input": "A♭M",
-        "expected": "abmaj"
-    },
-    {
-        "input": "A♭minor",
-        "expected": "abmin"
-    },
-    {
-        "input": "A♭min",
-        "expected": "abmin"
-    },
-    {
-        "input": "A♭m",
-        "expected": "abmin"
-    },
-    {
-        "input": "Aflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Aflatmaj",
-        "expected": []
-    },
-    {
-        "input": "AflatM",
-        "expected": []
-    },
-    {
-        "input": "Aflatminor",
-        "expected": []
-    },
-    {
-        "input": "Aflatmin",
-        "expected": []
-    },
-    {
-        "input": "Aflatm",
-        "expected": []
-    },
-    {
-        "input": "B#major",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B#maj",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B#M",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B#minor",
-        "expected": "b#min"
-    },
-    {
-        "input": "B#min",
-        "expected": "b#min"
-    },
-    {
-        "input": "B#m",
-        "expected": "b#min"
-    },
-    {
-        "input": "B♯major",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B♯maj",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B♯M",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B♯minor",
-        "expected": "b#min"
-    },
-    {
-        "input": "B♯min",
-        "expected": "b#min"
-    },
-    {
-        "input": "B♯m",
-        "expected": "b#min"
-    },
-    {
-        "input": "Bsharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Bsharpmaj",
-        "expected": []
-    },
-    {
-        "input": "BsharpM",
-        "expected": []
-    },
-    {
-        "input": "Bsharpminor",
-        "expected": []
-    },
-    {
-        "input": "Bsharpmin",
-        "expected": []
-    },
-    {
-        "input": "Bsharpm",
-        "expected": []
-    },
-    {
-        "input": "Bbmajor",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "Bbmaj",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "BbM",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "Bbminor",
-        "expected": "bbmin"
-    },
-    {
-        "input": "Bbmin",
-        "expected": "bbmin"
-    },
-    {
-        "input": "Bbm",
-        "expected": "bbmin"
-    },
-    {
-        "input": "B♭major",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "B♭maj",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "B♭M",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "B♭minor",
-        "expected": "bbmin"
-    },
-    {
-        "input": "B♭min",
-        "expected": "bbmin"
-    },
-    {
-        "input": "B♭m",
-        "expected": "bbmin"
-    },
-    {
-        "input": "Bflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Bflatmaj",
-        "expected": []
-    },
-    {
-        "input": "BflatM",
-        "expected": []
-    },
-    {
-        "input": "Bflatminor",
-        "expected": []
-    },
-    {
-        "input": "Bflatmin",
-        "expected": []
-    },
-    {
-        "input": "Bflatm",
-        "expected": []
-    },
-    {
-        "input": "C#major",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C#maj",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C#M",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C#minor",
-        "expected": "c#min"
-    },
-    {
-        "input": "C#min",
-        "expected": "c#min"
-    },
-    {
-        "input": "C#m",
-        "expected": "c#min"
-    },
-    {
-        "input": "C♯major",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C♯maj",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C♯M",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C♯minor",
-        "expected": "c#min"
-    },
-    {
-        "input": "C♯min",
-        "expected": "c#min"
-    },
-    {
-        "input": "C♯m",
-        "expected": "c#min"
-    },
-    {
-        "input": "Csharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Csharpmaj",
-        "expected": []
-    },
-    {
-        "input": "CsharpM",
-        "expected": []
-    },
-    {
-        "input": "Csharpminor",
-        "expected": []
-    },
-    {
-        "input": "Csharpmin",
-        "expected": []
-    },
-    {
-        "input": "Csharpm",
-        "expected": []
-    },
-    {
-        "input": "Cbmajor",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "Cbmaj",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "CbM",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "Cbminor",
-        "expected": "cbmin"
-    },
-    {
-        "input": "Cbmin",
-        "expected": "cbmin"
-    },
-    {
-        "input": "Cbm",
-        "expected": "cbmin"
-    },
-    {
-        "input": "C♭major",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "C♭maj",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "C♭M",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "C♭minor",
-        "expected": "cbmin"
-    },
-    {
-        "input": "C♭min",
-        "expected": "cbmin"
-    },
-    {
-        "input": "C♭m",
-        "expected": "cbmin"
-    },
-    {
-        "input": "Cflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Cflatmaj",
-        "expected": []
-    },
-    {
-        "input": "CflatM",
-        "expected": []
-    },
-    {
-        "input": "Cflatminor",
-        "expected": []
-    },
-    {
-        "input": "Cflatmin",
-        "expected": []
-    },
-    {
-        "input": "Cflatm",
-        "expected": []
-    },
-    {
-        "input": "D#major",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D#maj",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D#M",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D#minor",
-        "expected": "d#min"
-    },
-    {
-        "input": "D#min",
-        "expected": "d#min"
-    },
-    {
-        "input": "D#m",
-        "expected": "d#min"
-    },
-    {
-        "input": "D♯major",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D♯maj",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D♯M",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D♯minor",
-        "expected": "d#min"
-    },
-    {
-        "input": "D♯min",
-        "expected": "d#min"
-    },
-    {
-        "input": "D♯m",
-        "expected": "d#min"
-    },
-    {
-        "input": "Dsharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Dsharpmaj",
-        "expected": []
-    },
-    {
-        "input": "DsharpM",
-        "expected": []
-    },
-    {
-        "input": "Dsharpminor",
-        "expected": []
-    },
-    {
-        "input": "Dsharpmin",
-        "expected": []
-    },
-    {
-        "input": "Dsharpm",
-        "expected": []
-    },
-    {
-        "input": "Dbmajor",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "Dbmaj",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "DbM",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "Dbminor",
-        "expected": "dbmin"
-    },
-    {
-        "input": "Dbmin",
-        "expected": "dbmin"
-    },
-    {
-        "input": "Dbm",
-        "expected": "dbmin"
-    },
-    {
-        "input": "D♭major",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "D♭maj",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "D♭M",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "D♭minor",
-        "expected": "dbmin"
-    },
-    {
-        "input": "D♭min",
-        "expected": "dbmin"
-    },
-    {
-        "input": "D♭m",
-        "expected": "dbmin"
-    },
-    {
-        "input": "Dflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Dflatmaj",
-        "expected": []
-    },
-    {
-        "input": "DflatM",
-        "expected": []
-    },
-    {
-        "input": "Dflatminor",
-        "expected": []
-    },
-    {
-        "input": "Dflatmin",
-        "expected": []
-    },
-    {
-        "input": "Dflatm",
-        "expected": []
-    },
-    {
-        "input": "E#major",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E#maj",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E#M",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E#minor",
-        "expected": "e#min"
-    },
-    {
-        "input": "E#min",
-        "expected": "e#min"
-    },
-    {
-        "input": "E#m",
-        "expected": "e#min"
-    },
-    {
-        "input": "E♯major",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E♯maj",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E♯M",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E♯minor",
-        "expected": "e#min"
-    },
-    {
-        "input": "E♯min",
-        "expected": "e#min"
-    },
-    {
-        "input": "E♯m",
-        "expected": "e#min"
-    },
-    {
-        "input": "Esharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Esharpmaj",
-        "expected": []
-    },
-    {
-        "input": "EsharpM",
-        "expected": []
-    },
-    {
-        "input": "Esharpminor",
-        "expected": []
-    },
-    {
-        "input": "Esharpmin",
-        "expected": []
-    },
-    {
-        "input": "Esharpm",
-        "expected": []
-    },
-    {
-        "input": "Ebmajor",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "Ebmaj",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "EbM",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "Ebminor",
-        "expected": "ebmin"
-    },
-    {
-        "input": "Ebmin",
-        "expected": "ebmin"
-    },
-    {
-        "input": "Ebm",
-        "expected": "ebmin"
-    },
-    {
-        "input": "E♭major",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "E♭maj",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "E♭M",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "E♭minor",
-        "expected": "ebmin"
-    },
-    {
-        "input": "E♭min",
-        "expected": "ebmin"
-    },
-    {
-        "input": "E♭m",
-        "expected": "ebmin"
-    },
-    {
-        "input": "Eflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Eflatmaj",
-        "expected": []
-    },
-    {
-        "input": "EflatM",
-        "expected": []
-    },
-    {
-        "input": "Eflatminor",
-        "expected": []
-    },
-    {
-        "input": "Eflatmin",
-        "expected": []
-    },
-    {
-        "input": "Eflatm",
-        "expected": []
-    },
-    {
-        "input": "F#major",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F#maj",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F#M",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F#minor",
-        "expected": "f#min"
-    },
-    {
-        "input": "F#min",
-        "expected": "f#min"
-    },
-    {
-        "input": "F#m",
-        "expected": "f#min"
-    },
-    {
-        "input": "F♯major",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F♯maj",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F♯M",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F♯minor",
-        "expected": "f#min"
-    },
-    {
-        "input": "F♯min",
-        "expected": "f#min"
-    },
-    {
-        "input": "F♯m",
-        "expected": "f#min"
-    },
-    {
-        "input": "Fsharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Fsharpmaj",
-        "expected": []
-    },
-    {
-        "input": "FsharpM",
-        "expected": []
-    },
-    {
-        "input": "Fsharpminor",
-        "expected": []
-    },
-    {
-        "input": "Fsharpmin",
-        "expected": []
-    },
-    {
-        "input": "Fsharpm",
-        "expected": []
-    },
-    {
-        "input": "Fbmajor",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "Fbmaj",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "FbM",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "Fbminor",
-        "expected": "fbmin"
-    },
-    {
-        "input": "Fbmin",
-        "expected": "fbmin"
-    },
-    {
-        "input": "Fbm",
-        "expected": "fbmin"
-    },
-    {
-        "input": "F♭major",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "F♭maj",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "F♭M",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "F♭minor",
-        "expected": "fbmin"
-    },
-    {
-        "input": "F♭min",
-        "expected": "fbmin"
-    },
-    {
-        "input": "F♭m",
-        "expected": "fbmin"
-    },
-    {
-        "input": "Fflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Fflatmaj",
-        "expected": []
-    },
-    {
-        "input": "FflatM",
-        "expected": []
-    },
-    {
-        "input": "Fflatminor",
-        "expected": []
-    },
-    {
-        "input": "Fflatmin",
-        "expected": []
-    },
-    {
-        "input": "Fflatm",
-        "expected": []
-    },
-    {
-        "input": "G#major",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G#maj",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G#M",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G#minor",
-        "expected": "g#min"
-    },
-    {
-        "input": "G#min",
-        "expected": "g#min"
-    },
-    {
-        "input": "G#m",
-        "expected": "g#min"
-    },
-    {
-        "input": "G♯major",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G♯maj",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G♯M",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G♯minor",
-        "expected": "g#min"
-    },
-    {
-        "input": "G♯min",
-        "expected": "g#min"
-    },
-    {
-        "input": "G♯m",
-        "expected": "g#min"
-    },
-    {
-        "input": "Gsharpmajor",
-        "expected": []
-    },
-    {
-        "input": "Gsharpmaj",
-        "expected": []
-    },
-    {
-        "input": "GsharpM",
-        "expected": []
-    },
-    {
-        "input": "Gsharpminor",
-        "expected": []
-    },
-    {
-        "input": "Gsharpmin",
-        "expected": []
-    },
-    {
-        "input": "Gsharpm",
-        "expected": []
-    },
-    {
-        "input": "Gbmajor",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "Gbmaj",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "GbM",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "Gbminor",
-        "expected": "gbmin"
-    },
-    {
-        "input": "Gbmin",
-        "expected": "gbmin"
-    },
-    {
-        "input": "Gbm",
-        "expected": "gbmin"
-    },
-    {
-        "input": "G♭major",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "G♭maj",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "G♭M",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "G♭minor",
-        "expected": "gbmin"
-    },
-    {
-        "input": "G♭min",
-        "expected": "gbmin"
-    },
-    {
-        "input": "G♭m",
-        "expected": "gbmin"
-    },
-    {
-        "input": "Gflatmajor",
-        "expected": []
-    },
-    {
-        "input": "Gflatmaj",
-        "expected": []
-    },
-    {
-        "input": "GflatM",
-        "expected": []
-    },
-    {
-        "input": "Gflatminor",
-        "expected": []
-    },
-    {
-        "input": "Gflatmin",
-        "expected": []
-    },
-    {
-        "input": "Gflatm",
-        "expected": []
-    },
-    {
-        "input": "A sharp major",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A sharp maj",
-        "expected": "a#maj"
-    },
-    {
-        "input": "A sharp minor",
-        "expected": "a#min"
-    },
-    {
-        "input": "A sharp min",
-        "expected": "a#min"
-    },
-    {
-        "input": "A flat major",
-        "expected": "abmaj"
-    },
-    {
-        "input": "A flat maj",
-        "expected": "abmaj"
-    },
-    {
-        "input": "A flat minor",
-        "expected": "abmin"
-    },
-    {
-        "input": "A flat min",
-        "expected": "abmin"
-    },
-    {
-        "input": "B sharp major",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B sharp maj",
-        "expected": "b#maj"
-    },
-    {
-        "input": "B sharp minor",
-        "expected": "b#min"
-    },
-    {
-        "input": "B sharp min",
-        "expected": "b#min"
-    },
-    {
-        "input": "B flat major",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "B flat maj",
-        "expected": "bbmaj"
-    },
-    {
-        "input": "B flat minor",
-        "expected": "bbmin"
-    },
-    {
-        "input": "B flat min",
-        "expected": "bbmin"
-    },
-    {
-        "input": "C sharp major",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C sharp maj",
-        "expected": "c#maj"
-    },
-    {
-        "input": "C sharp minor",
-        "expected": "c#min"
-    },
-    {
-        "input": "C sharp min",
-        "expected": "c#min"
-    },
-    {
-        "input": "C flat major",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "C flat maj",
-        "expected": "cbmaj"
-    },
-    {
-        "input": "C flat minor",
-        "expected": "cbmin"
-    },
-    {
-        "input": "C flat min",
-        "expected": "cbmin"
-    },
-    {
-        "input": "D sharp major",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D sharp maj",
-        "expected": "d#maj"
-    },
-    {
-        "input": "D sharp minor",
-        "expected": "d#min"
-    },
-    {
-        "input": "D sharp min",
-        "expected": "d#min"
-    },
-    {
-        "input": "D flat major",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "D flat maj",
-        "expected": "dbmaj"
-    },
-    {
-        "input": "D flat minor",
-        "expected": "dbmin"
-    },
-    {
-        "input": "D flat min",
-        "expected": "dbmin"
-    },
-    {
-        "input": "E sharp major",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E sharp maj",
-        "expected": "e#maj"
-    },
-    {
-        "input": "E sharp minor",
-        "expected": "e#min"
-    },
-    {
-        "input": "E sharp min",
-        "expected": "e#min"
-    },
-    {
-        "input": "E flat major",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "E flat maj",
-        "expected": "ebmaj"
-    },
-    {
-        "input": "E flat minor",
-        "expected": "ebmin"
-    },
-    {
-        "input": "E flat min",
-        "expected": "ebmin"
-    },
-    {
-        "input": "F sharp major",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F sharp maj",
-        "expected": "f#maj"
-    },
-    {
-        "input": "F sharp minor",
-        "expected": "f#min"
-    },
-    {
-        "input": "F sharp min",
-        "expected": "f#min"
-    },
-    {
-        "input": "F flat major",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "F flat maj",
-        "expected": "fbmaj"
-    },
-    {
-        "input": "F flat minor",
-        "expected": "fbmin"
-    },
-    {
-        "input": "F flat min",
-        "expected": "fbmin"
-    },
-    {
-        "input": "G sharp major",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G sharp maj",
-        "expected": "g#maj"
-    },
-    {
-        "input": "G sharp minor",
-        "expected": "g#min"
-    },
-    {
-        "input": "G sharp min",
-        "expected": "g#min"
-    },
-    {
-        "input": "G flat major",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "G flat maj",
-        "expected": "gbmaj"
-    },
-    {
-        "input": "G flat minor",
-        "expected": "gbmin"
-    },
-    {
-        "input": "G flat min",
-        "expected": "gbmin"
-    }
+  {
+    "input": "A",
+    "expected": []
+  },
+  {
+    "input": "B",
+    "expected": []
+  },
+  {
+    "input": "C",
+    "expected": []
+  },
+  {
+    "input": "D",
+    "expected": []
+  },
+  {
+    "input": "E",
+    "expected": []
+  },
+  {
+    "input": "F",
+    "expected": []
+  },
+  {
+    "input": "G",
+    "expected": []
+  },
+  {
+    "input": "A#",
+    "expected": []
+  },
+  {
+    "input": "A\u266f",
+    "expected": []
+  },
+  {
+    "input": "Asharp",
+    "expected": []
+  },
+  {
+    "input": "Ab",
+    "expected": []
+  },
+  {
+    "input": "A\u266d",
+    "expected": []
+  },
+  {
+    "input": "Aflat",
+    "expected": []
+  },
+  {
+    "input": "B#",
+    "expected": []
+  },
+  {
+    "input": "B\u266f",
+    "expected": []
+  },
+  {
+    "input": "Bsharp",
+    "expected": []
+  },
+  {
+    "input": "Bb",
+    "expected": []
+  },
+  {
+    "input": "B\u266d",
+    "expected": []
+  },
+  {
+    "input": "Bflat",
+    "expected": []
+  },
+  {
+    "input": "C#",
+    "expected": []
+  },
+  {
+    "input": "C\u266f",
+    "expected": []
+  },
+  {
+    "input": "Csharp",
+    "expected": []
+  },
+  {
+    "input": "Cb",
+    "expected": []
+  },
+  {
+    "input": "C\u266d",
+    "expected": []
+  },
+  {
+    "input": "Cflat",
+    "expected": []
+  },
+  {
+    "input": "D#",
+    "expected": []
+  },
+  {
+    "input": "D\u266f",
+    "expected": []
+  },
+  {
+    "input": "Dsharp",
+    "expected": []
+  },
+  {
+    "input": "Db",
+    "expected": []
+  },
+  {
+    "input": "D\u266d",
+    "expected": []
+  },
+  {
+    "input": "Dflat",
+    "expected": []
+  },
+  {
+    "input": "E#",
+    "expected": []
+  },
+  {
+    "input": "E\u266f",
+    "expected": []
+  },
+  {
+    "input": "Esharp",
+    "expected": []
+  },
+  {
+    "input": "Eb",
+    "expected": []
+  },
+  {
+    "input": "E\u266d",
+    "expected": []
+  },
+  {
+    "input": "Eflat",
+    "expected": []
+  },
+  {
+    "input": "F#",
+    "expected": []
+  },
+  {
+    "input": "F\u266f",
+    "expected": []
+  },
+  {
+    "input": "Fsharp",
+    "expected": []
+  },
+  {
+    "input": "Fb",
+    "expected": []
+  },
+  {
+    "input": "F\u266d",
+    "expected": []
+  },
+  {
+    "input": "Fflat",
+    "expected": []
+  },
+  {
+    "input": "G#",
+    "expected": []
+  },
+  {
+    "input": "G\u266f",
+    "expected": []
+  },
+  {
+    "input": "Gsharp",
+    "expected": []
+  },
+  {
+    "input": "Gb",
+    "expected": []
+  },
+  {
+    "input": "G\u266d",
+    "expected": []
+  },
+  {
+    "input": "Gflat",
+    "expected": []
+  },
+  {
+    "input": "A sharp",
+    "expected": []
+  },
+  {
+    "input": "A flat",
+    "expected": []
+  },
+  {
+    "input": "B sharp",
+    "expected": []
+  },
+  {
+    "input": "B flat",
+    "expected": []
+  },
+  {
+    "input": "C sharp",
+    "expected": []
+  },
+  {
+    "input": "C flat",
+    "expected": []
+  },
+  {
+    "input": "D sharp",
+    "expected": []
+  },
+  {
+    "input": "D flat",
+    "expected": []
+  },
+  {
+    "input": "E sharp",
+    "expected": []
+  },
+  {
+    "input": "E flat",
+    "expected": []
+  },
+  {
+    "input": "F sharp",
+    "expected": []
+  },
+  {
+    "input": "F flat",
+    "expected": []
+  },
+  {
+    "input": "G sharp",
+    "expected": []
+  },
+  {
+    "input": "G flat",
+    "expected": []
+  },
+  {
+    "input": "Amajor",
+    "expected": "amaj"
+  },
+  {
+    "input": "Amaj",
+    "expected": "amaj"
+  },
+  {
+    "input": "AM",
+    "expected": "amaj"
+  },
+  {
+    "input": "Aminor",
+    "expected": "amin"
+  },
+  {
+    "input": "Amin",
+    "expected": "amin"
+  },
+  {
+    "input": "Am",
+    "expected": "amin"
+  },
+  {
+    "input": "Bmajor",
+    "expected": "bmaj"
+  },
+  {
+    "input": "Bmaj",
+    "expected": "bmaj"
+  },
+  {
+    "input": "BM",
+    "expected": "bmaj"
+  },
+  {
+    "input": "Bminor",
+    "expected": "bmin"
+  },
+  {
+    "input": "Bmin",
+    "expected": "bmin"
+  },
+  {
+    "input": "Bm",
+    "expected": "bmin"
+  },
+  {
+    "input": "Cmajor",
+    "expected": "cmaj"
+  },
+  {
+    "input": "Cmaj",
+    "expected": "cmaj"
+  },
+  {
+    "input": "CM",
+    "expected": "cmaj"
+  },
+  {
+    "input": "Cminor",
+    "expected": "cmin"
+  },
+  {
+    "input": "Cmin",
+    "expected": "cmin"
+  },
+  {
+    "input": "Cm",
+    "expected": "cmin"
+  },
+  {
+    "input": "Dmajor",
+    "expected": "dmaj"
+  },
+  {
+    "input": "Dmaj",
+    "expected": "dmaj"
+  },
+  {
+    "input": "DM",
+    "expected": "dmaj"
+  },
+  {
+    "input": "Dminor",
+    "expected": "dmin"
+  },
+  {
+    "input": "Dmin",
+    "expected": "dmin"
+  },
+  {
+    "input": "Dm",
+    "expected": "dmin"
+  },
+  {
+    "input": "Emajor",
+    "expected": "emaj"
+  },
+  {
+    "input": "Emaj",
+    "expected": "emaj"
+  },
+  {
+    "input": "EM",
+    "expected": "emaj"
+  },
+  {
+    "input": "Eminor",
+    "expected": "emin"
+  },
+  {
+    "input": "Emin",
+    "expected": "emin"
+  },
+  {
+    "input": "Em",
+    "expected": "emin"
+  },
+  {
+    "input": "Fmajor",
+    "expected": "fmaj"
+  },
+  {
+    "input": "Fmaj",
+    "expected": "fmaj"
+  },
+  {
+    "input": "FM",
+    "expected": "fmaj"
+  },
+  {
+    "input": "Fminor",
+    "expected": "fmin"
+  },
+  {
+    "input": "Fmin",
+    "expected": "fmin"
+  },
+  {
+    "input": "Fm",
+    "expected": "fmin"
+  },
+  {
+    "input": "Gmajor",
+    "expected": "gmaj"
+  },
+  {
+    "input": "Gmaj",
+    "expected": "gmaj"
+  },
+  {
+    "input": "GM",
+    "expected": "gmaj"
+  },
+  {
+    "input": "Gminor",
+    "expected": "gmin"
+  },
+  {
+    "input": "Gmin",
+    "expected": "gmin"
+  },
+  {
+    "input": "Gm",
+    "expected": "gmin"
+  },
+  {
+    "input": "A major",
+    "expected": "amaj"
+  },
+  {
+    "input": "A maj",
+    "expected": "amaj"
+  },
+  {
+    "input": "A minor",
+    "expected": "amin"
+  },
+  {
+    "input": "A min",
+    "expected": "amin"
+  },
+  {
+    "input": "B major",
+    "expected": "bmaj"
+  },
+  {
+    "input": "B maj",
+    "expected": "bmaj"
+  },
+  {
+    "input": "B minor",
+    "expected": "bmin"
+  },
+  {
+    "input": "B min",
+    "expected": "bmin"
+  },
+  {
+    "input": "C major",
+    "expected": "cmaj"
+  },
+  {
+    "input": "C maj",
+    "expected": "cmaj"
+  },
+  {
+    "input": "C minor",
+    "expected": "cmin"
+  },
+  {
+    "input": "C min",
+    "expected": "cmin"
+  },
+  {
+    "input": "D major",
+    "expected": "dmaj"
+  },
+  {
+    "input": "D maj",
+    "expected": "dmaj"
+  },
+  {
+    "input": "D minor",
+    "expected": "dmin"
+  },
+  {
+    "input": "D min",
+    "expected": "dmin"
+  },
+  {
+    "input": "E major",
+    "expected": "emaj"
+  },
+  {
+    "input": "E maj",
+    "expected": "emaj"
+  },
+  {
+    "input": "E minor",
+    "expected": "emin"
+  },
+  {
+    "input": "E min",
+    "expected": "emin"
+  },
+  {
+    "input": "F major",
+    "expected": "fmaj"
+  },
+  {
+    "input": "F maj",
+    "expected": "fmaj"
+  },
+  {
+    "input": "F minor",
+    "expected": "fmin"
+  },
+  {
+    "input": "F min",
+    "expected": "fmin"
+  },
+  {
+    "input": "G major",
+    "expected": "gmaj"
+  },
+  {
+    "input": "G maj",
+    "expected": "gmaj"
+  },
+  {
+    "input": "G minor",
+    "expected": "gmin"
+  },
+  {
+    "input": "G min",
+    "expected": "gmin"
+  },
+  {
+    "input": "A#major",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A#maj",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A#M",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A#minor",
+    "expected": "a#min"
+  },
+  {
+    "input": "A#min",
+    "expected": "a#min"
+  },
+  {
+    "input": "A#m",
+    "expected": "a#min"
+  },
+  {
+    "input": "A\u266fmajor",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A\u266fmaj",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A\u266fM",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A\u266fminor",
+    "expected": "a#min"
+  },
+  {
+    "input": "A\u266fmin",
+    "expected": "a#min"
+  },
+  {
+    "input": "A\u266fm",
+    "expected": "a#min"
+  },
+  {
+    "input": "Asharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Asharpmaj",
+    "expected": []
+  },
+  {
+    "input": "AsharpM",
+    "expected": []
+  },
+  {
+    "input": "Asharpminor",
+    "expected": []
+  },
+  {
+    "input": "Asharpmin",
+    "expected": []
+  },
+  {
+    "input": "Asharpm",
+    "expected": []
+  },
+  {
+    "input": "Abmajor",
+    "expected": "abmaj"
+  },
+  {
+    "input": "Abmaj",
+    "expected": "abmaj"
+  },
+  {
+    "input": "AbM",
+    "expected": "abmaj"
+  },
+  {
+    "input": "Abminor",
+    "expected": "abmin"
+  },
+  {
+    "input": "Abmin",
+    "expected": "abmin"
+  },
+  {
+    "input": "Abm",
+    "expected": "abmin"
+  },
+  {
+    "input": "A\u266dmajor",
+    "expected": "abmaj"
+  },
+  {
+    "input": "A\u266dmaj",
+    "expected": "abmaj"
+  },
+  {
+    "input": "A\u266dM",
+    "expected": "abmaj"
+  },
+  {
+    "input": "A\u266dminor",
+    "expected": "abmin"
+  },
+  {
+    "input": "A\u266dmin",
+    "expected": "abmin"
+  },
+  {
+    "input": "A\u266dm",
+    "expected": "abmin"
+  },
+  {
+    "input": "Aflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Aflatmaj",
+    "expected": []
+  },
+  {
+    "input": "AflatM",
+    "expected": []
+  },
+  {
+    "input": "Aflatminor",
+    "expected": []
+  },
+  {
+    "input": "Aflatmin",
+    "expected": []
+  },
+  {
+    "input": "Aflatm",
+    "expected": []
+  },
+  {
+    "input": "B#major",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B#maj",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B#M",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B#minor",
+    "expected": "b#min"
+  },
+  {
+    "input": "B#min",
+    "expected": "b#min"
+  },
+  {
+    "input": "B#m",
+    "expected": "b#min"
+  },
+  {
+    "input": "B\u266fmajor",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B\u266fmaj",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B\u266fM",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B\u266fminor",
+    "expected": "b#min"
+  },
+  {
+    "input": "B\u266fmin",
+    "expected": "b#min"
+  },
+  {
+    "input": "B\u266fm",
+    "expected": "b#min"
+  },
+  {
+    "input": "Bsharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Bsharpmaj",
+    "expected": []
+  },
+  {
+    "input": "BsharpM",
+    "expected": []
+  },
+  {
+    "input": "Bsharpminor",
+    "expected": []
+  },
+  {
+    "input": "Bsharpmin",
+    "expected": []
+  },
+  {
+    "input": "Bsharpm",
+    "expected": []
+  },
+  {
+    "input": "Bbmajor",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "Bbmaj",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "BbM",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "Bbminor",
+    "expected": "bbmin"
+  },
+  {
+    "input": "Bbmin",
+    "expected": "bbmin"
+  },
+  {
+    "input": "Bbm",
+    "expected": "bbmin"
+  },
+  {
+    "input": "B\u266dmajor",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "B\u266dmaj",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "B\u266dM",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "B\u266dminor",
+    "expected": "bbmin"
+  },
+  {
+    "input": "B\u266dmin",
+    "expected": "bbmin"
+  },
+  {
+    "input": "B\u266dm",
+    "expected": "bbmin"
+  },
+  {
+    "input": "Bflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Bflatmaj",
+    "expected": []
+  },
+  {
+    "input": "BflatM",
+    "expected": []
+  },
+  {
+    "input": "Bflatminor",
+    "expected": []
+  },
+  {
+    "input": "Bflatmin",
+    "expected": []
+  },
+  {
+    "input": "Bflatm",
+    "expected": []
+  },
+  {
+    "input": "C#major",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C#maj",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C#M",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C#minor",
+    "expected": "c#min"
+  },
+  {
+    "input": "C#min",
+    "expected": "c#min"
+  },
+  {
+    "input": "C#m",
+    "expected": "c#min"
+  },
+  {
+    "input": "C\u266fmajor",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C\u266fmaj",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C\u266fM",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C\u266fminor",
+    "expected": "c#min"
+  },
+  {
+    "input": "C\u266fmin",
+    "expected": "c#min"
+  },
+  {
+    "input": "C\u266fm",
+    "expected": "c#min"
+  },
+  {
+    "input": "Csharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Csharpmaj",
+    "expected": []
+  },
+  {
+    "input": "CsharpM",
+    "expected": []
+  },
+  {
+    "input": "Csharpminor",
+    "expected": []
+  },
+  {
+    "input": "Csharpmin",
+    "expected": []
+  },
+  {
+    "input": "Csharpm",
+    "expected": []
+  },
+  {
+    "input": "Cbmajor",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "Cbmaj",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "CbM",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "Cbminor",
+    "expected": "cbmin"
+  },
+  {
+    "input": "Cbmin",
+    "expected": "cbmin"
+  },
+  {
+    "input": "Cbm",
+    "expected": "cbmin"
+  },
+  {
+    "input": "C\u266dmajor",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "C\u266dmaj",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "C\u266dM",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "C\u266dminor",
+    "expected": "cbmin"
+  },
+  {
+    "input": "C\u266dmin",
+    "expected": "cbmin"
+  },
+  {
+    "input": "C\u266dm",
+    "expected": "cbmin"
+  },
+  {
+    "input": "Cflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Cflatmaj",
+    "expected": []
+  },
+  {
+    "input": "CflatM",
+    "expected": []
+  },
+  {
+    "input": "Cflatminor",
+    "expected": []
+  },
+  {
+    "input": "Cflatmin",
+    "expected": []
+  },
+  {
+    "input": "Cflatm",
+    "expected": []
+  },
+  {
+    "input": "D#major",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D#maj",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D#M",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D#minor",
+    "expected": "d#min"
+  },
+  {
+    "input": "D#min",
+    "expected": "d#min"
+  },
+  {
+    "input": "D#m",
+    "expected": "d#min"
+  },
+  {
+    "input": "D\u266fmajor",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D\u266fmaj",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D\u266fM",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D\u266fminor",
+    "expected": "d#min"
+  },
+  {
+    "input": "D\u266fmin",
+    "expected": "d#min"
+  },
+  {
+    "input": "D\u266fm",
+    "expected": "d#min"
+  },
+  {
+    "input": "Dsharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Dsharpmaj",
+    "expected": []
+  },
+  {
+    "input": "DsharpM",
+    "expected": []
+  },
+  {
+    "input": "Dsharpminor",
+    "expected": []
+  },
+  {
+    "input": "Dsharpmin",
+    "expected": []
+  },
+  {
+    "input": "Dsharpm",
+    "expected": []
+  },
+  {
+    "input": "Dbmajor",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "Dbmaj",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "DbM",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "Dbminor",
+    "expected": "dbmin"
+  },
+  {
+    "input": "Dbmin",
+    "expected": "dbmin"
+  },
+  {
+    "input": "Dbm",
+    "expected": "dbmin"
+  },
+  {
+    "input": "D\u266dmajor",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "D\u266dmaj",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "D\u266dM",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "D\u266dminor",
+    "expected": "dbmin"
+  },
+  {
+    "input": "D\u266dmin",
+    "expected": "dbmin"
+  },
+  {
+    "input": "D\u266dm",
+    "expected": "dbmin"
+  },
+  {
+    "input": "Dflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Dflatmaj",
+    "expected": []
+  },
+  {
+    "input": "DflatM",
+    "expected": []
+  },
+  {
+    "input": "Dflatminor",
+    "expected": []
+  },
+  {
+    "input": "Dflatmin",
+    "expected": []
+  },
+  {
+    "input": "Dflatm",
+    "expected": []
+  },
+  {
+    "input": "E#major",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E#maj",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E#M",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E#minor",
+    "expected": "e#min"
+  },
+  {
+    "input": "E#min",
+    "expected": "e#min"
+  },
+  {
+    "input": "E#m",
+    "expected": "e#min"
+  },
+  {
+    "input": "E\u266fmajor",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E\u266fmaj",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E\u266fM",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E\u266fminor",
+    "expected": "e#min"
+  },
+  {
+    "input": "E\u266fmin",
+    "expected": "e#min"
+  },
+  {
+    "input": "E\u266fm",
+    "expected": "e#min"
+  },
+  {
+    "input": "Esharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Esharpmaj",
+    "expected": []
+  },
+  {
+    "input": "EsharpM",
+    "expected": []
+  },
+  {
+    "input": "Esharpminor",
+    "expected": []
+  },
+  {
+    "input": "Esharpmin",
+    "expected": []
+  },
+  {
+    "input": "Esharpm",
+    "expected": []
+  },
+  {
+    "input": "Ebmajor",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "Ebmaj",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "EbM",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "Ebminor",
+    "expected": "ebmin"
+  },
+  {
+    "input": "Ebmin",
+    "expected": "ebmin"
+  },
+  {
+    "input": "Ebm",
+    "expected": "ebmin"
+  },
+  {
+    "input": "E\u266dmajor",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "E\u266dmaj",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "E\u266dM",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "E\u266dminor",
+    "expected": "ebmin"
+  },
+  {
+    "input": "E\u266dmin",
+    "expected": "ebmin"
+  },
+  {
+    "input": "E\u266dm",
+    "expected": "ebmin"
+  },
+  {
+    "input": "Eflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Eflatmaj",
+    "expected": []
+  },
+  {
+    "input": "EflatM",
+    "expected": []
+  },
+  {
+    "input": "Eflatminor",
+    "expected": []
+  },
+  {
+    "input": "Eflatmin",
+    "expected": []
+  },
+  {
+    "input": "Eflatm",
+    "expected": []
+  },
+  {
+    "input": "F#major",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F#maj",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F#M",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F#minor",
+    "expected": "f#min"
+  },
+  {
+    "input": "F#min",
+    "expected": "f#min"
+  },
+  {
+    "input": "F#m",
+    "expected": "f#min"
+  },
+  {
+    "input": "F\u266fmajor",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F\u266fmaj",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F\u266fM",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F\u266fminor",
+    "expected": "f#min"
+  },
+  {
+    "input": "F\u266fmin",
+    "expected": "f#min"
+  },
+  {
+    "input": "F\u266fm",
+    "expected": "f#min"
+  },
+  {
+    "input": "Fsharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Fsharpmaj",
+    "expected": []
+  },
+  {
+    "input": "FsharpM",
+    "expected": []
+  },
+  {
+    "input": "Fsharpminor",
+    "expected": []
+  },
+  {
+    "input": "Fsharpmin",
+    "expected": []
+  },
+  {
+    "input": "Fsharpm",
+    "expected": []
+  },
+  {
+    "input": "Fbmajor",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "Fbmaj",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "FbM",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "Fbminor",
+    "expected": "fbmin"
+  },
+  {
+    "input": "Fbmin",
+    "expected": "fbmin"
+  },
+  {
+    "input": "Fbm",
+    "expected": "fbmin"
+  },
+  {
+    "input": "F\u266dmajor",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "F\u266dmaj",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "F\u266dM",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "F\u266dminor",
+    "expected": "fbmin"
+  },
+  {
+    "input": "F\u266dmin",
+    "expected": "fbmin"
+  },
+  {
+    "input": "F\u266dm",
+    "expected": "fbmin"
+  },
+  {
+    "input": "Fflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Fflatmaj",
+    "expected": []
+  },
+  {
+    "input": "FflatM",
+    "expected": []
+  },
+  {
+    "input": "Fflatminor",
+    "expected": []
+  },
+  {
+    "input": "Fflatmin",
+    "expected": []
+  },
+  {
+    "input": "Fflatm",
+    "expected": []
+  },
+  {
+    "input": "G#major",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G#maj",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G#M",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G#minor",
+    "expected": "g#min"
+  },
+  {
+    "input": "G#min",
+    "expected": "g#min"
+  },
+  {
+    "input": "G#m",
+    "expected": "g#min"
+  },
+  {
+    "input": "G\u266fmajor",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G\u266fmaj",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G\u266fM",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G\u266fminor",
+    "expected": "g#min"
+  },
+  {
+    "input": "G\u266fmin",
+    "expected": "g#min"
+  },
+  {
+    "input": "G\u266fm",
+    "expected": "g#min"
+  },
+  {
+    "input": "Gsharpmajor",
+    "expected": []
+  },
+  {
+    "input": "Gsharpmaj",
+    "expected": []
+  },
+  {
+    "input": "GsharpM",
+    "expected": []
+  },
+  {
+    "input": "Gsharpminor",
+    "expected": []
+  },
+  {
+    "input": "Gsharpmin",
+    "expected": []
+  },
+  {
+    "input": "Gsharpm",
+    "expected": []
+  },
+  {
+    "input": "Gbmajor",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "Gbmaj",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "GbM",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "Gbminor",
+    "expected": "gbmin"
+  },
+  {
+    "input": "Gbmin",
+    "expected": "gbmin"
+  },
+  {
+    "input": "Gbm",
+    "expected": "gbmin"
+  },
+  {
+    "input": "G\u266dmajor",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "G\u266dmaj",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "G\u266dM",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "G\u266dminor",
+    "expected": "gbmin"
+  },
+  {
+    "input": "G\u266dmin",
+    "expected": "gbmin"
+  },
+  {
+    "input": "G\u266dm",
+    "expected": "gbmin"
+  },
+  {
+    "input": "Gflatmajor",
+    "expected": []
+  },
+  {
+    "input": "Gflatmaj",
+    "expected": []
+  },
+  {
+    "input": "GflatM",
+    "expected": []
+  },
+  {
+    "input": "Gflatminor",
+    "expected": []
+  },
+  {
+    "input": "Gflatmin",
+    "expected": []
+  },
+  {
+    "input": "Gflatm",
+    "expected": []
+  },
+  {
+    "input": "A sharp major",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A sharp maj",
+    "expected": "a#maj"
+  },
+  {
+    "input": "A sharp minor",
+    "expected": "a#min"
+  },
+  {
+    "input": "A sharp min",
+    "expected": "a#min"
+  },
+  {
+    "input": "A flat major",
+    "expected": "abmaj"
+  },
+  {
+    "input": "A flat maj",
+    "expected": "abmaj"
+  },
+  {
+    "input": "A flat minor",
+    "expected": "abmin"
+  },
+  {
+    "input": "A flat min",
+    "expected": "abmin"
+  },
+  {
+    "input": "B sharp major",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B sharp maj",
+    "expected": "b#maj"
+  },
+  {
+    "input": "B sharp minor",
+    "expected": "b#min"
+  },
+  {
+    "input": "B sharp min",
+    "expected": "b#min"
+  },
+  {
+    "input": "B flat major",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "B flat maj",
+    "expected": "bbmaj"
+  },
+  {
+    "input": "B flat minor",
+    "expected": "bbmin"
+  },
+  {
+    "input": "B flat min",
+    "expected": "bbmin"
+  },
+  {
+    "input": "C sharp major",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C sharp maj",
+    "expected": "c#maj"
+  },
+  {
+    "input": "C sharp minor",
+    "expected": "c#min"
+  },
+  {
+    "input": "C sharp min",
+    "expected": "c#min"
+  },
+  {
+    "input": "C flat major",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "C flat maj",
+    "expected": "cbmaj"
+  },
+  {
+    "input": "C flat minor",
+    "expected": "cbmin"
+  },
+  {
+    "input": "C flat min",
+    "expected": "cbmin"
+  },
+  {
+    "input": "D sharp major",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D sharp maj",
+    "expected": "d#maj"
+  },
+  {
+    "input": "D sharp minor",
+    "expected": "d#min"
+  },
+  {
+    "input": "D sharp min",
+    "expected": "d#min"
+  },
+  {
+    "input": "D flat major",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "D flat maj",
+    "expected": "dbmaj"
+  },
+  {
+    "input": "D flat minor",
+    "expected": "dbmin"
+  },
+  {
+    "input": "D flat min",
+    "expected": "dbmin"
+  },
+  {
+    "input": "E sharp major",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E sharp maj",
+    "expected": "e#maj"
+  },
+  {
+    "input": "E sharp minor",
+    "expected": "e#min"
+  },
+  {
+    "input": "E sharp min",
+    "expected": "e#min"
+  },
+  {
+    "input": "E flat major",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "E flat maj",
+    "expected": "ebmaj"
+  },
+  {
+    "input": "E flat minor",
+    "expected": "ebmin"
+  },
+  {
+    "input": "E flat min",
+    "expected": "ebmin"
+  },
+  {
+    "input": "F sharp major",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F sharp maj",
+    "expected": "f#maj"
+  },
+  {
+    "input": "F sharp minor",
+    "expected": "f#min"
+  },
+  {
+    "input": "F sharp min",
+    "expected": "f#min"
+  },
+  {
+    "input": "F flat major",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "F flat maj",
+    "expected": "fbmaj"
+  },
+  {
+    "input": "F flat minor",
+    "expected": "fbmin"
+  },
+  {
+    "input": "F flat min",
+    "expected": "fbmin"
+  },
+  {
+    "input": "G sharp major",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G sharp maj",
+    "expected": "g#maj"
+  },
+  {
+    "input": "G sharp minor",
+    "expected": "g#min"
+  },
+  {
+    "input": "G sharp min",
+    "expected": "g#min"
+  },
+  {
+    "input": "G flat major",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "G flat maj",
+    "expected": "gbmaj"
+  },
+  {
+    "input": "G flat minor",
+    "expected": "gbmin"
+  },
+  {
+    "input": "G flat min",
+    "expected": "gbmin"
+  }
 ]

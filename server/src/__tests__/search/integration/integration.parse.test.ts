@@ -101,7 +101,6 @@ function assertParams(actual: Params, expected: Case['expected']) {
     expect(actual.queryTokens.sort()).toEqual(expected.queryTokens.sort());
 }
 
-
 describe('parseSearchQuery integration: BPM + key + keywords', () => {
     cases.forEach(({ description, inputs, expected }) => {
         describe(description, () => {
@@ -114,4 +113,3 @@ describe('parseSearchQuery integration: BPM + key + keywords', () => {
         });
     });
 });
-

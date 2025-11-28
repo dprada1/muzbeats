@@ -4,4 +4,3 @@ export interface SearchParams {
   keys: string[];
   queryTokens: string[];
 }
-

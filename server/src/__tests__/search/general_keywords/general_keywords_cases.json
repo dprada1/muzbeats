@@ -1,91 +1,91 @@
 [
-    {
-        "input": "pierre bright",
-        "expected": [
-            "pierre",
-            "bright"
-        ]
-    },
-    {
-        "input": "pierre C#m 160",
-        "expected": [
-            "pierre"
-        ]
-    },
-    {
-        "input": "dark aggressive trap",
-        "expected": [
-            "dark",
-            "aggressive",
-            "trap"
-        ]
-    },
-    {
-        "input": "lofi 85",
-        "expected": [
-            "lofi"
-        ]
-    },
-    {
-        "input": "Amin jazzy chill",
-        "expected": [
-            "jazzy",
-            "chill"
-        ]
-    },
-    {
-        "input": "space ambient 120 bpm",
-        "expected": [
-            "space",
-            "ambient",
-            "bpm"
-        ]
-    },
-    {
-        "input": "Cmaj",
-        "expected": []
-    },
-    {
-        "input": "150",
-        "expected": []
-    },
-    {
-        "input": "",
-        "expected": []
-    },
-    {
-        "input": "hyperpop overload bmin",
-        "expected": [
-            "hyperpop",
-            "overload"
-        ]
-    },
-    {
-        "input": "trap aggressive 160",
-        "expected": [
-            "trap",
-            "aggressive"
-        ]
-    },
-    {
-        "input": "kickless void 90",
-        "expected": [
-            "kickless",
-            "void"
-        ]
-    },
-    {
-        "input": "west coast 90 Amin",
-        "expected": [
-            "west",
-            "coast"
-        ]
-    },
-    {
-        "input": "synth glitchy Bmaj",
-        "expected": [
-            "synth",
-            "glitchy"
-        ]
-    }
+  {
+    "input": "pierre bright",
+    "expected": [
+      "pierre",
+      "bright"
+    ]
+  },
+  {
+    "input": "pierre C#m 160",
+    "expected": [
+      "pierre"
+    ]
+  },
+  {
+    "input": "dark aggressive trap",
+    "expected": [
+      "dark",
+      "aggressive",
+      "trap"
+    ]
+  },
+  {
+    "input": "lofi 85",
+    "expected": [
+      "lofi"
+    ]
+  },
+  {
+    "input": "Amin jazzy chill",
+    "expected": [
+      "jazzy",
+      "chill"
+    ]
+  },
+  {
+    "input": "space ambient 120 bpm",
+    "expected": [
+      "space",
+      "ambient",
+      "bpm"
+    ]
+  },
+  {
+    "input": "Cmaj",
+    "expected": []
+  },
+  {
+    "input": "150",
+    "expected": []
+  },
+  {
+    "input": "",
+    "expected": []
+  },
+  {
+    "input": "hyperpop overload bmin",
+    "expected": [
+      "hyperpop",
+      "overload"
+    ]
+  },
+  {
+    "input": "trap aggressive 160",
+    "expected": [
+      "trap",
+      "aggressive"
+    ]
+  },
+  {
+    "input": "kickless void 90",
+    "expected": [
+      "kickless",
+      "void"
+    ]
+  },
+  {
+    "input": "west coast 90 Amin",
+    "expected": [
+      "west",
+      "coast"
+    ]
+  },
+  {
+    "input": "synth glitchy Bmaj",
+    "expected": [
+      "synth",
+      "glitchy"
+    ]
+  }
 ]

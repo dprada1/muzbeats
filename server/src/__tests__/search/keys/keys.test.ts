@@ -19,4 +19,3 @@ describe("parseSearchQuery - key parsing", () => {
         });
     });
 });
-

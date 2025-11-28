@@ -7,4 +7,3 @@ export type Beat = {
   audio: string;
   cover: string;
 };
-
