@@ -18,3 +18,35 @@ CREATE INDEX IF NOT EXISTS idx_beats_bpm ON beats(bpm);
 CREATE INDEX IF NOT EXISTS idx_beats_key ON beats(key);
 CREATE INDEX IF NOT EXISTS idx_beats_price ON beats(price);
 
+-- Orders table: tracks each customer order (guest checkout)
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_email VARCHAR(255) NOT NULL,
+  total_amount DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
+  stripe_payment_intent_id VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Order items table: which beats were purchased in each order
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
+  price_at_purchase DECIMAL(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Downloads table: secure download tokens for purchased beats
+CREATE TABLE IF NOT EXISTS downloads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
+  download_token VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  download_count INTEGER DEFAULT 0,
+  max_downloads INTEGER DEFAULT 5,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
