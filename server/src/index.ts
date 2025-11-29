@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import beatsRoutes from '@/routes/beatsRoutes.js';
 import checkoutRoutes from '@/routes/checkoutRoutes.js';
+import webhookRoutes from '@/routes/webhookRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -17,8 +18,14 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Stripe webhook needs raw body for signature verification
+// Register webhook route BEFORE express.json() so it gets raw body
+app.use('/api/webhooks', webhookRoutes);
+
+// JSON parsing for all other routes (after webhook)
+app.use(express.json());
 
 // Serve static files (images, audio files)
 // This serves files from server/public/assets/
@@ -32,6 +39,7 @@ app.get('/health', (_req, res) => {
 // API routes
 app.use('/api/beats', beatsRoutes);
 app.use('/api/checkout', checkoutRoutes);
+// Note: webhookRoutes is registered above, before express.json()
 
 // Start server
 app.listen(PORT, () => {

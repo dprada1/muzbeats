@@ -55,6 +55,7 @@ export async function createPaymentIntent(
         const metadata: Record<string, string> = {
             beatIds: JSON.stringify(lineItems.map(item => item.beat.id)),
             beatCount: lineItems.length.toString(),
+            ...(customerEmail && { customerEmail }), // Include email in metadata for webhook
         };
 
         // Create Payment Intent
