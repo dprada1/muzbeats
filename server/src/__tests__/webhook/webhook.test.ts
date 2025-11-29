@@ -85,6 +85,22 @@ async function testWebhook() {
                     console.log(`   ${idx + 1}. Beat ID: ${item.beat_id}, Price: $${item.price_at_purchase}`);
                 });
             }
+
+            // Check download tokens
+            const tokensResult = await pool.query('SELECT * FROM downloads WHERE order_id = $1', [
+                result.orderId,
+            ]);
+            console.log(`\n🔑 Download tokens: ${tokensResult.rows.length}`);
+            if (tokensResult.rows.length > 0) {
+                tokensResult.rows.forEach((token, idx) => {
+                    const expiresAt = new Date(token.expires_at);
+                    const daysUntilExpiry = Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    console.log(`   ${idx + 1}. Beat ID: ${token.beat_id}`);
+                    console.log(`      Token: ${token.download_token.substring(0, 20)}...`);
+                    console.log(`      Expires: ${expiresAt.toISOString().split('T')[0]} (${daysUntilExpiry} days)`);
+                    console.log(`      Downloads: ${token.download_count}/${token.max_downloads}`);
+                });
+            }
         }
     } catch (error) {
         console.error('❌ Error creating order:', error);

@@ -1,6 +1,7 @@
 import pool from '@/config/database.js';
 import type { OrderStatus } from '@/types/Order.js';
 import type Stripe from 'stripe';
+import { randomBytes } from 'crypto';
 
 /**
  * Create an order and related order_items/downloads from a Stripe PaymentIntent.
@@ -77,7 +78,12 @@ export async function createOrderFromPaymentIntent(paymentIntent: Stripe.Payment
                 [beatIds]
             );
 
+            // Calculate expiration date (30 days from now)
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+
             for (const row of beatsResult.rows) {
+                // Insert order item
                 await client.query(
                     `
                     INSERT INTO order_items (order_id, beat_id, price_at_purchase, quantity)
@@ -85,10 +91,22 @@ export async function createOrderFromPaymentIntent(paymentIntent: Stripe.Payment
                 `,
                     [orderId, row.id, row.price, 1]
                 );
+
+                // Generate secure download token
+                // Using 32 bytes (256 bits) for security, base64 encoded = 44 characters
+                const tokenBytes = randomBytes(32);
+                const downloadToken = tokenBytes.toString('base64url'); // base64url is URL-safe
+
+                // Insert download token
+                await client.query(
+                    `
+                    INSERT INTO downloads (order_id, beat_id, download_token, expires_at, max_downloads)
+                    VALUES ($1, $2, $3, $4, $5)
+                `,
+                    [orderId, row.id, downloadToken, expiresAt, 5] // Max 5 downloads per token
+                );
             }
         }
-
-        // TODO: In a future step, create downloads tokens here as well.
 
         await client.query('COMMIT');
 

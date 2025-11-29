@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import beatsRoutes from '@/routes/beatsRoutes.js';
 import checkoutRoutes from '@/routes/checkoutRoutes.js';
 import webhookRoutes from '@/routes/webhookRoutes.js';
+import downloadRoutes from '@/routes/downloadRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.get('/health', (_req, res) => {
 // API routes
 app.use('/api/beats', beatsRoutes);
 app.use('/api/checkout', checkoutRoutes);
+app.use('/api/downloads', downloadRoutes);
 // Note: webhookRoutes is registered above, before express.json()
 
 // Start server
