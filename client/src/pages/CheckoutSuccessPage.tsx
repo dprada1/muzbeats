@@ -33,7 +33,7 @@ export default function CheckoutSuccessPage() {
         
         try {
             // Verify payment status with backend
-            const response = await fetch(`http://localhost:3000/api/checkout/payment-intent/${paymentIntentId}`);
+            const response = await fetch(`/api/checkout/payment-intent/${paymentIntentId}`);
             
             console.log('Verification response status:', response.status);
             
@@ -148,21 +148,48 @@ export default function CheckoutSuccessPage() {
 
     return (
         <div className="pt-12 max-w-2xl mx-auto text-center">
-            <div className="bg-green-500/20 border border-green-500 rounded-2xl p-8 mb-6">
+            <div className="bg-green-500/20 border border-green-500 rounded-2xl p-8 mb-4">
                 <div className="text-6xl mb-4">✓</div>
                 <h1 className="text-3xl font-bold text-green-400 mb-4">Payment Successful!</h1>
-                <p className="text-zinc-300 mb-2">
-                    Thank you for your purchase. Your download links will be available soon.
+                <p className="text-zinc-300 mb-2 text-lg">
+                    Thank you for your purchase!
                 </p>
-                <p className="text-zinc-400 text-sm">
-                    (Download system coming in next phase)
+                <div className="rounded-xl p-6 mb-0 text-left">
+                    <div className="flex items-start gap-3 mb-3">
+                        <div className="text-2xl">📧</div>
+                        <div>
+                            <h2 className="text-xl font-semibold text-white mb-2">
+                                Check Your Email
+                            </h2>
+                            <p className="text-zinc-300 mb-3">
+                                We've sent your download links to the email address you provided during checkout.
+                            </p>
+                            <div className="space-y-2 text-sm text-zinc-400 mb-0">
+                                <p className="flex items-center gap-2">
+                                    <span className="text-green-400">•</span>
+                                    Download links are valid for 30 days
+                                </p>
+                                <p className="flex items-center gap-2">
+                                    <span className="text-green-400">•</span>
+                                    Each link can be used up to 5 times
+                                </p>
+                                <p className="flex items-center gap-2 mb-0">
+                                    <span className="text-green-400">•</span>
+                                    Check your spam folder if you don't see the email
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p className="text-zinc-400 text-sm mt-2 mb-0">
+                    Didn't receive the email? Please contact support and we'll resend your download links.
                 </p>
             </div>
 
             <div className="space-y-4">
                 <Link
                     to="/store"
-                    className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full
                     bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
                     active:scale-[1.02] transition no-ring"
                 >
