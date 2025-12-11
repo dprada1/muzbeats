@@ -109,7 +109,7 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                     // Automatically trigger order creation and email in development
                     // In production, this is handled by the webhook
                     try {
-                        const processResponse = await fetch('http://localhost:3000/api/checkout/process-payment', {
+                        const processResponse = await fetch('/api/checkout/process-payment', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

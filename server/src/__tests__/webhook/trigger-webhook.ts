@@ -60,7 +60,7 @@ async function triggerWebhook(paymentIntentId: string) {
                 console.error('❌ Failed to send email:', emailError.message);
                 if (emailError.statusCode === 403) {
                     console.error('\n💡 Tip: Resend test domain only allows sending to your account email.');
-                    console.error('   Use your actual email address (danielprada2006@gmail.com) for testing.');
+                    console.error('   Use your actual Resend account email address for testing.');
                 }
             }
         } else {
