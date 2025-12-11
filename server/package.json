@@ -23,6 +23,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "pg": "^8.16.3",
+    "resend": "^6.5.2",
     "stripe": "^20.0.0"
   },
   "devDependencies": {

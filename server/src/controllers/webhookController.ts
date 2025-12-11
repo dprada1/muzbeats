@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { stripe } from '@/config/stripe.js';
 import { createOrderFromPaymentIntent } from '@/services/orderService.js';
+import { sendDownloadEmail } from '@/services/emailService.js';
 
 /**
  * POST /api/webhooks/stripe
@@ -39,11 +40,28 @@ export async function stripeWebhookHandler(req: Request, res: Response): Promise
                     : any; // Type-safe enough for now
 
                 try {
-                    await createOrderFromPaymentIntent(paymentIntent);
+                    const orderResult = await createOrderFromPaymentIntent(paymentIntent);
                     console.log(
                         'stripeWebhookHandler: Order created for payment_intent',
                         paymentIntent.id
                     );
+
+                    // Send download email to customer
+                    if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
+                        try {
+                            await sendDownloadEmail(
+                                orderResult.customerEmail,
+                                orderResult.orderId,
+                                orderResult.totalAmount
+                            );
+                        } catch (emailError) {
+                            // Log but don't fail the webhook if email fails
+                            console.error(
+                                'stripeWebhookHandler: Failed to send download email:',
+                                emailError
+                            );
+                        }
+                    }
                 } catch (err) {
                     console.error(
                         'stripeWebhookHandler: Failed to create order from payment intent:',

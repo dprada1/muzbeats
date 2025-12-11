@@ -105,7 +105,33 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
             // Handle different payment statuses
             switch (paymentIntent.status) {
                 case 'succeeded':
-                    console.log('Payment succeeded! Redirecting to success page...');
+                    console.log('Payment succeeded! Processing payment...');
+                    // Automatically trigger order creation and email in development
+                    // In production, this is handled by the webhook
+                    try {
+                        const processResponse = await fetch('http://localhost:3000/api/checkout/process-payment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                paymentIntentId: paymentIntent.id,
+                            }),
+                        });
+
+                        if (processResponse.ok) {
+                            const processData = await processResponse.json();
+                            console.log('Payment processed successfully:', processData);
+                        } else {
+                            const errorData = await processResponse.json();
+                            console.warn('Failed to process payment (order/email):', errorData.error);
+                            // Don't fail the payment - it succeeded, just order processing failed
+                            // This can be retried or handled by webhook in production
+                        }
+                    } catch (processError) {
+                        console.error('Error processing payment:', processError);
+                        // Don't fail the payment - it succeeded, just order processing failed
+                    }
                     // Pass payment intent ID to success page for verification
                     onSuccess(paymentIntent.id);
                     break;

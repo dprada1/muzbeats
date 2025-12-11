@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { createPaymentIntent, getPaymentIntent } from '@/services/checkoutService.js';
 import type { CartItem } from '@/services/checkoutService.js';
+import { stripe } from '@/config/stripe.js';
+import { createOrderFromPaymentIntent } from '@/services/orderService.js';
+import { sendDownloadEmail } from '@/services/emailService.js';
+import pool from '@/config/database.js';
 
 /**
  * POST /api/checkout/create-payment-intent
@@ -97,6 +101,92 @@ export async function getPaymentIntentHandler(
         console.error('Error in getPaymentIntentHandler:', error);
         res.status(500).json({ 
             error: error.message || 'Failed to retrieve payment intent' 
+        });
+    }
+}
+
+/**
+ * POST /api/checkout/process-payment
+ * Process a successful payment: create order and send email
+ * This is called automatically after payment succeeds in development.
+ * In production, this is handled by the webhook.
+ *
+ * Request body:
+ * {
+ *   paymentIntentId: "pi_xxx"
+ * }
+ */
+export async function processPaymentHandler(
+    req: Request,
+    res: Response
+): Promise<void> {
+    try {
+        const { paymentIntentId } = req.body;
+
+        if (!paymentIntentId || typeof paymentIntentId !== 'string') {
+            res.status(400).json({ 
+                error: 'Payment intent ID is required' 
+            });
+            return;
+        }
+
+        // Retrieve the payment intent from Stripe
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        // Only process if payment succeeded
+        if (paymentIntent.status !== 'succeeded') {
+            res.status(400).json({ 
+                error: `Payment intent status is "${paymentIntent.status}", not "succeeded"` 
+            });
+            return;
+        }
+
+        // Check if order already exists (idempotency)
+        const existingOrderResult = await pool.query(
+            'SELECT id FROM orders WHERE stripe_payment_intent_id = $1',
+            [paymentIntentId]
+        );
+
+        if (existingOrderResult.rows.length > 0) {
+            // Order already exists, return success
+            res.status(200).json({
+                success: true,
+                message: 'Order already processed',
+                orderId: existingOrderResult.rows[0].id,
+            });
+            return;
+        }
+
+        // Create order from payment intent
+        const orderResult = await createOrderFromPaymentIntent(paymentIntent as any);
+        console.log('processPaymentHandler: Order created for payment_intent', paymentIntentId);
+
+        // Send download email to customer
+        if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
+            try {
+                await sendDownloadEmail(
+                    orderResult.customerEmail,
+                    orderResult.orderId,
+                    orderResult.totalAmount
+                );
+                console.log('processPaymentHandler: Download email sent successfully');
+            } catch (emailError) {
+                // Log but don't fail the request if email fails
+                console.error('processPaymentHandler: Failed to send download email:', emailError);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Payment processed successfully',
+            orderId: orderResult.orderId,
+            customerEmail: orderResult.customerEmail,
+            totalAmount: orderResult.totalAmount,
+        });
+    } catch (error: any) {
+        console.error('Error in processPaymentHandler:', error);
+        res.status(500).json({ 
+            error: error.message || 'Failed to process payment' 
         });
     }
 }

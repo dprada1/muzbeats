@@ -110,7 +110,12 @@ export async function createOrderFromPaymentIntent(paymentIntent: Stripe.Payment
 
         await client.query('COMMIT');
 
-        return { orderId };
+        return {
+            orderId,
+            customerEmail,
+            totalAmount,
+            beatIds,
+        };
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('orderService.createOrderFromPaymentIntent error:', error);

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     createPaymentIntentHandler,
     getPaymentIntentHandler,
+    processPaymentHandler,
 } from '@/controllers/checkoutController.js';
 
 const router = Router();
@@ -11,5 +12,8 @@ router.post('/create-payment-intent', createPaymentIntentHandler);
 
 // GET /api/checkout/payment-intent/:id
 router.get('/payment-intent/:id', getPaymentIntentHandler);
+
+// POST /api/checkout/process-payment
+router.post('/process-payment', processPaymentHandler);
 
 export default router;
