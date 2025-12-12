@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node start.js",
     "lint": "echo \"Linting not configured yet\"",
     "migrate": "tsx src/db/migrate-json-to-db.ts",
     "test-db": "tsx src/test-db.ts",
@@ -24,7 +24,8 @@
     "express": "^5.1.0",
     "pg": "^8.16.3",
     "resend": "^6.5.2",
-    "stripe": "^20.0.0"
+    "stripe": "^20.0.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
