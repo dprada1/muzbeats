@@ -1,5 +1,4 @@
-[providers]
-node = "20"
+providers = ["node"]
 
 [phases.install]
 cmds = ["cd server && npm install"]
