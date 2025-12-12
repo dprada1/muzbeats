@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Beat } from '@/types/Beat';
 import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
+import { apiUrl } from '@/utils/api';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
@@ -14,7 +15,7 @@ export default function BeatDetail() {
             return;
         }
 
-        fetch(`/api/beats/${beatId}`)
+        fetch(apiUrl(`/api/beats/${beatId}`))
             .then((res) => {
                 if (!res.ok) {
                     if (res.status === 404) {

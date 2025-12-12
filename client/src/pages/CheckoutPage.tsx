@@ -10,6 +10,7 @@ import {
 import { useCart } from '@/context/CartContext';
 import type { Beat } from '@/types/Beat';
 import CheckoutFormSkeleton from '@/components/checkout/CheckoutFormSkeleton';
+import { apiUrl } from '@/utils/api';
 
 /**
  * Back to Cart button component
@@ -109,7 +110,7 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                     // Automatically trigger order creation and email in development
                     // In production, this is handled by the webhook
                     try {
-                        const processResponse = await fetch('/api/checkout/process-payment', {
+                        const processResponse = await fetch(apiUrl('/api/checkout/process-payment'), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -232,7 +233,7 @@ export default function CheckoutPage() {
     const createPaymentIntent = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/checkout/create-payment-intent', {
+        const response = await fetch(apiUrl('/api/checkout/create-payment-intent'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

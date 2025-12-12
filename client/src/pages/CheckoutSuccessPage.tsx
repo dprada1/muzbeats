@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { apiUrl } from '@/utils/api';
 
 export default function CheckoutSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -33,7 +34,7 @@ export default function CheckoutSuccessPage() {
     
     try {
       // Verify payment status with backend
-            const response = await fetch(`/api/checkout/payment-intent/${paymentIntentId}`);
+            const response = await fetch(apiUrl(`/api/checkout/payment-intent/${paymentIntentId}`));
       
       console.log('Verification response status:', response.status);
       
