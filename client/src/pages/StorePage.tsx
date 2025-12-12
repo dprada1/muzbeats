@@ -27,21 +27,28 @@ export default function StorePage() {
             ? apiUrl(`/api/beats?q=${encodeURIComponent(searchQuery.trim())}`)
             : apiUrl('/api/beats');
 
+        console.log('StorePage: Fetching beats from:', url);
+        console.log('StorePage: VITE_API_URL =', import.meta.env.VITE_API_URL);
+
         fetch(url)
             .then((res) => {
+                console.log('StorePage: Response status:', res.status, res.statusText);
                 if (!res.ok) {
-                    throw new Error('Failed to fetch beats');
+                    throw new Error(`Failed to fetch beats: ${res.status} ${res.statusText}`);
                 }
                 return res.json();
             })
             .then((data: Beat[]) => {
+                console.log('StorePage: Received', data.length, 'beats');
                 // Transform relative asset paths to full URLs
                 const transformedBeats = transformBeatsAssets(data);
+                console.log('StorePage: Transformed beats, first beat audio:', transformedBeats[0]?.audio);
                 setBeats(transformedBeats);
                 setVisibleBeats(transformedBeats);
             })
             .catch((error) => {
-                console.error('Error fetching beats:', error);
+                console.error('StorePage: Error fetching beats:', error);
+                console.error('StorePage: Error details:', error.message, error.stack);
                 setBeats([]);
                 setVisibleBeats([]);
             })
