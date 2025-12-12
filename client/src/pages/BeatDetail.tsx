@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Beat } from '@/types/Beat';
 import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
-import { apiUrl } from '@/utils/api';
+import { apiUrl, transformBeatAssets } from '@/utils/api';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
@@ -26,7 +26,8 @@ export default function BeatDetail() {
                 return res.json();
             })
             .then((data: Beat | null) => {
-                setBeat(data ?? null);
+                // Transform relative asset paths to full URLs
+                setBeat(data ? transformBeatAssets(data) : null);
             })
             .catch((error) => {
                 console.error('Error fetching beat:', error);

@@ -4,6 +4,7 @@ import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
+import { assetUrl } from '@/utils/api';
 
 export default function Navbar() {
     const { cartItems } = useCart();
@@ -20,7 +21,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 group no-ring"
                     onClick={() => { NProgress.start(); (NProgress.done()); }}
                 >
-                    <img src="/assets/images/skimask.png" alt="Logo" className="w-10 h-10 object-cover" />
+                    <img src={assetUrl('/assets/images/skimask.png')} alt="Logo" className="w-10 h-10 object-cover" />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
                         Muz Beats
                     </span>

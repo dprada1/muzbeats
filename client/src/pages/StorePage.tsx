@@ -7,7 +7,7 @@ import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
 import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
 import { SkeletonTheme } from "react-loading-skeleton";
-import { apiUrl } from "@/utils/api";
+import { apiUrl, transformBeatsAssets } from "@/utils/api";
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
@@ -35,8 +35,10 @@ export default function StorePage() {
                 return res.json();
             })
             .then((data: Beat[]) => {
-                setBeats(data);
-                setVisibleBeats(data);
+                // Transform relative asset paths to full URLs
+                const transformedBeats = transformBeatsAssets(data);
+                setBeats(transformedBeats);
+                setVisibleBeats(transformedBeats);
             })
             .catch((error) => {
                 console.error('Error fetching beats:', error);
