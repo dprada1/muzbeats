@@ -1,3 +1,6 @@
+[providers]
+node = "20"
+
 [phases.install]
 cmds = ["cd server && npm install"]
 
