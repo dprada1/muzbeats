@@ -1,0 +1,14 @@
+{
+  "name": "muzbeats",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MuzBeats - Beat Store",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "cd server && npm install && npm run build",
+    "start": "cd server && npm start"
+  }
+}
+
