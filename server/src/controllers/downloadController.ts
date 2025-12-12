@@ -3,6 +3,7 @@ import {
     validateDownloadToken,
     incrementDownloadCount,
     getAudioFilePath,
+    hasWavFile,
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
@@ -51,19 +52,28 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             console.error('downloadController: Failed to increment download count:', error);
         });
 
-        // If R2 is configured and it's an MP3 (not WAV), redirect to R2 URL
-        // WAVs are kept private and served through backend (protected by token)
-        if (isR2Configured() && !validation.audioPath.includes('/wav/') && !validation.audioPath.endsWith('.wav')) {
+        // Security: Always check if WAV exists before deciding to redirect
+        // The database stores MP3 paths, but we prefer WAVs when available
+        // WAVs must ALWAYS be served through protected endpoint (never publicly accessible)
+        const wavExists = hasWavFile(validation.audioPath);
+        const isMp3Path = validation.audioPath.includes('/mp3/') || validation.audioPath.endsWith('.mp3');
+
+        // If WAV exists, always serve through protected endpoint (never redirect to R2)
+        // This ensures WAVs are never publicly accessible
+        if (wavExists) {
+            console.log(`downloadController: WAV file exists, serving through protected endpoint`);
+            // Continue to serve through endpoint below
+        }
+        // If no WAV exists, it's MP3-only, and R2 is configured, redirect to R2 (uses free egress)
+        else if (!wavExists && isMp3Path && isR2Configured()) {
             const r2Url = getR2Url(validation.audioPath);
-            console.log(`downloadController: Redirecting MP3 to R2 URL: ${r2Url}`);
+            console.log(`downloadController: MP3-only, redirecting to R2 URL: ${r2Url}`);
             res.redirect(302, r2Url);
             return;
         }
-        
+
         // For WAVs (or when R2 not configured), serve from local filesystem
         // This ensures WAVs are only accessible through the protected download endpoint
-
-        // Otherwise, stream from local filesystem (for local dev)
         const filePath = getAudioFilePath(validation.audioPath);
 
         if (!filePath) {

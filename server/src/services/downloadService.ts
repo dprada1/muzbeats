@@ -88,6 +88,34 @@ export async function incrementDownloadCount(downloadId: string) {
 }
 
 /**
+ * Convert MP3 path to WAV path
+ * @param audioPath - The audio path from the database (e.g., "/assets/beats/mp3/beat.mp3")
+ * @returns WAV path (e.g., "/assets/beats/wav/beat.wav")
+ */
+export function getWavPath(audioPath: string): string {
+    let wavPath = audioPath;
+    if (wavPath.includes('/mp3/')) {
+        wavPath = wavPath.replace('/mp3/', '/wav/');
+    }
+    if (wavPath.endsWith('.mp3')) {
+        wavPath = wavPath.replace('.mp3', '.wav');
+    }
+    return wavPath;
+}
+
+/**
+ * Check if a WAV file exists for the given audio path
+ * @param audioPath - The audio path from the database (e.g., "/assets/beats/mp3/...")
+ * @returns True if WAV exists, false otherwise
+ */
+export function hasWavFile(audioPath: string): boolean {
+    const wavPath = getWavPath(audioPath);
+    const wavCleanPath = wavPath.startsWith('/') ? wavPath.slice(1) : wavPath;
+    const wavFullPath = path.join(__dirname, '../../public', wavCleanPath);
+    return existsSync(wavFullPath);
+}
+
+/**
  * Get the full file path for an audio file
  * Prefers WAV files, falls back to MP3
  *
@@ -98,14 +126,8 @@ export function getAudioFilePath(audioPath: string): string | null {
     // Remove leading slash if present
     const cleanPath = audioPath.startsWith('/') ? audioPath.slice(1) : audioPath;
 
-    // Try WAV first (higher quality) - replace /mp3/ with /wav/ and .mp3 with .wav
-    let wavPath = audioPath;
-    if (wavPath.includes('/mp3/')) {
-        wavPath = wavPath.replace('/mp3/', '/wav/');
-    }
-    if (wavPath.endsWith('.mp3')) {
-        wavPath = wavPath.replace('.mp3', '.wav');
-    }
+    // Try WAV first (higher quality)
+    const wavPath = getWavPath(audioPath);
     const wavCleanPath = wavPath.startsWith('/') ? wavPath.slice(1) : wavPath;
     const wavFullPath = path.join(__dirname, '../../public', wavCleanPath);
 
