@@ -10,6 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Register path aliases from tsconfig.json
+// baseUrl points to dist (where compiled files are)
+// paths map @/* to * (same structure as src)
 register({
     baseUrl: resolve(__dirname, 'dist'),
     paths: {
@@ -18,5 +20,5 @@ register({
 });
 
 // Import and run the actual application
-import('./dist/index.js');
+await import('./dist/index.js');
 
