@@ -2,10 +2,12 @@ import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
+import { getR2Url } from '@/utils/r2.js';
 
 /**
  * Map database row to Beat type
  * Converts audio_path -> audio, cover_path -> cover
+ * Transforms paths to R2 URLs if R2 is configured
 */
 function mapDbRowToBeat(row: any): Beat {
     return {
@@ -14,8 +16,8 @@ function mapDbRowToBeat(row: any): Beat {
         key: row.key,
         bpm: row.bpm,
         price: parseFloat(row.price),
-        audio: row.audio_path,
-        cover: row.cover_path,
+        audio: getR2Url(row.audio_path),
+        cover: getR2Url(row.cover_path),
     };
 }
 

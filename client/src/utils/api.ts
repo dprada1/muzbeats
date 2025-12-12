@@ -45,9 +45,15 @@ export function getAssetUrl(): string {
 /**
  * Build a full asset URL from a path
  * @param path - Asset path (e.g., '/assets/images/skimask.png' or 'assets/beats/mp3/beat.mp3')
+ *               Can also be a full URL (e.g., 'https://r2.dev/beats/mp3/beat.mp3') from R2
  * @returns Full URL to the asset
  */
 export function assetUrl(path: string): string {
+    // If path is already a full URL (from R2), return as-is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+    
     const baseUrl = getAssetUrl();
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     

@@ -6,6 +6,7 @@ import {
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
+import { getR2Url, isR2Configured } from '@/utils/r2.js';
 
 /**
  * GET /api/downloads/:token
@@ -45,7 +46,20 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             return;
         }
 
-        // Get file path
+        // Increment download count (do this before redirect/stream)
+        await incrementDownloadCount(validation.downloadId).catch((error) => {
+            console.error('downloadController: Failed to increment download count:', error);
+        });
+
+        // If R2 is configured, redirect to R2 URL (uses R2's free egress)
+        if (isR2Configured()) {
+            const r2Url = getR2Url(validation.audioPath);
+            console.log(`downloadController: Redirecting to R2 URL: ${r2Url}`);
+            res.redirect(302, r2Url);
+            return;
+        }
+
+        // Otherwise, stream from local filesystem (for local dev)
         const filePath = getAudioFilePath(validation.audioPath);
 
         if (!filePath) {
@@ -81,12 +95,6 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // Stream the file
         const fileStream = createReadStream(filePath);
         fileStream.pipe(res);
-
-        // Increment download count after streaming starts (non-blocking)
-        // We do this asynchronously so it doesn't delay the file download
-        incrementDownloadCount(validation.downloadId).catch((error) => {
-            console.error('downloadController: Failed to increment download count:', error);
-        });
 
         // Handle stream errors
         fileStream.on('error', (error) => {
