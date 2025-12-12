@@ -5,8 +5,9 @@
 
 /**
  * Get the R2 public URL for an asset
- * @param assetPath - Relative path (e.g., "/assets/beats/mp3/beat.mp3")
- * @returns Full R2 URL or original path if R2 not configured
+ * Only serves MP3s from R2 (public). WAVs are kept private and served through download endpoint.
+ * @param assetPath - Relative path (e.g., "/assets/beats/mp3/beat.mp3" or "/assets/beats/wav/beat.wav")
+ * @returns Full R2 URL for MP3s, original path for WAVs (to be served through protected download endpoint)
  */
 export function getR2Url(assetPath: string): string {
     const r2PublicUrl = process.env.R2_PUBLIC_URL;
@@ -16,7 +17,14 @@ export function getR2Url(assetPath: string): string {
         return assetPath;
     }
     
-    // Remove leading slash if present
+    // Only serve MP3s from R2 (public). WAVs stay private.
+    // WAVs will be served through the download endpoint which validates tokens.
+    if (assetPath.includes('/wav/') || assetPath.endsWith('.wav')) {
+        // Return original path - WAVs will be served through protected download endpoint
+        return assetPath;
+    }
+    
+    // For MP3s (and other non-WAV files), serve from R2
     const cleanPath = assetPath.startsWith('/') ? assetPath.slice(1) : assetPath;
     
     // Remove 'assets/' prefix if present (R2 bucket structure)

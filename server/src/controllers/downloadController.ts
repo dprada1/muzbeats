@@ -51,13 +51,17 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             console.error('downloadController: Failed to increment download count:', error);
         });
 
-        // If R2 is configured, redirect to R2 URL (uses R2's free egress)
-        if (isR2Configured()) {
+        // If R2 is configured and it's an MP3 (not WAV), redirect to R2 URL
+        // WAVs are kept private and served through backend (protected by token)
+        if (isR2Configured() && !validation.audioPath.includes('/wav/') && !validation.audioPath.endsWith('.wav')) {
             const r2Url = getR2Url(validation.audioPath);
-            console.log(`downloadController: Redirecting to R2 URL: ${r2Url}`);
+            console.log(`downloadController: Redirecting MP3 to R2 URL: ${r2Url}`);
             res.redirect(302, r2Url);
             return;
         }
+        
+        // For WAVs (or when R2 not configured), serve from local filesystem
+        // This ensures WAVs are only accessible through the protected download endpoint
 
         // Otherwise, stream from local filesystem (for local dev)
         const filePath = getAudioFilePath(validation.audioPath);
