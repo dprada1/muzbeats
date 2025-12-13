@@ -6,6 +6,12 @@ dotenv.config();
 
 const { Pool } = pg;
 
+function getDefaultDatabaseName(): string {
+    // In local development we want a stable default that won't collide with production-ish names.
+    // This also matches how we've been using Postgres locally (e.g., `muzbeats_dev`).
+    return process.env.NODE_ENV === 'production' ? 'muzbeats' : 'muzbeats_dev';
+}
+
 // Create connection pool
 // Prefer DATABASE_URL (Railway provides this automatically)
 // Fall back to individual DB_* variables for local development
@@ -20,7 +26,7 @@ const pool = new Pool(
         : {
               host: process.env.DB_HOST || 'localhost',
               port: parseInt(process.env.DB_PORT || '5432'),
-              database: process.env.DB_NAME || 'muzbeats',
+              database: process.env.DB_NAME || getDefaultDatabaseName(),
               user: process.env.DB_USER || 'postgres',
               password: process.env.DB_PASSWORD || '',
               max: 20,
@@ -37,5 +43,17 @@ pool.on('connect', () => {
 pool.on('error', (err) => {
     console.error('PostgreSQL connection error:', err);
 });
+
+// Log which DB we intend to use (without leaking secrets)
+if (!process.env.DATABASE_URL) {
+    console.log('PostgreSQL (local) config:', {
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        database: process.env.DB_NAME || getDefaultDatabaseName(),
+        user: process.env.DB_USER || 'postgres',
+    });
+} else {
+    console.log('PostgreSQL config: Using DATABASE_URL');
+}
 
 export default pool;

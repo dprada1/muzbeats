@@ -2,9 +2,47 @@ import pool from '@/config/database.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
+import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+function stripLeadingSlash(p: string): string {
+    return p.startsWith('/') ? p.slice(1) : p;
+}
+
+function stripAssetsPrefix(p: string): string {
+    const clean = stripLeadingSlash(p);
+    return clean.startsWith('assets/') ? clean.slice(7) : clean;
+}
+
+function isR2PrivateConfigured(): boolean {
+    return !!(
+        process.env.R2_PRIVATE_BUCKET_NAME &&
+        process.env.R2_ENDPOINT &&
+        process.env.R2_ACCESS_KEY_ID &&
+        process.env.R2_SECRET_ACCESS_KEY
+    );
+}
+
+let privateS3Client: S3Client | null = null;
+function getPrivateS3Client(): S3Client | null {
+    if (!isR2PrivateConfigured()) {
+        return null;
+    }
+    if (privateS3Client) {
+        return privateS3Client;
+    }
+    privateS3Client = new S3Client({
+        region: 'auto',
+        endpoint: process.env.R2_ENDPOINT,
+        credentials: {
+            accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
+            secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
+        },
+    });
+    return privateS3Client;
+}
 
 /**
  * Validate a download token and return the associated beat information
@@ -108,9 +146,28 @@ export function getWavPath(audioPath: string): string {
  * @param audioPath - The audio path from the database (e.g., "/assets/beats/mp3/...")
  * @returns True if WAV exists, false otherwise
  */
-export function hasWavFile(audioPath: string): boolean {
+export async function hasWavFile(audioPath: string): Promise<boolean> {
     const wavPath = getWavPath(audioPath);
-    const wavCleanPath = wavPath.startsWith('/') ? wavPath.slice(1) : wavPath;
+
+    // If private R2 bucket is configured, check there (WAVs should live in the private bucket)
+    const client = getPrivateS3Client();
+    if (client && process.env.R2_PRIVATE_BUCKET_NAME) {
+        const key = stripAssetsPrefix(wavPath); // e.g. beats/wav/...
+        try {
+            await client.send(
+                new HeadObjectCommand({
+                    Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+                    Key: key,
+                })
+            );
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // Local dev fallback: check filesystem
+    const wavCleanPath = stripLeadingSlash(wavPath);
     const wavFullPath = path.join(__dirname, '../../public', wavCleanPath);
     return existsSync(wavFullPath);
 }
@@ -142,5 +199,41 @@ export function getAudioFilePath(audioPath: string): string | null {
     }
 
     return null;
+}
+
+/**
+ * Fetch an object stream from the private R2 bucket.
+ * Used to serve WAVs privately through the token-protected download endpoint.
+ */
+export async function getPrivateR2Object(key: string): Promise<{
+    stream: NodeJS.ReadableStream;
+    contentType: string | null;
+    contentLength: number | null;
+}> {
+    const client = getPrivateS3Client();
+    if (!client || !process.env.R2_PRIVATE_BUCKET_NAME) {
+        throw new Error('Private R2 is not configured');
+    }
+
+    const result = await client.send(
+        new GetObjectCommand({
+            Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+            Key: key,
+        })
+    );
+
+    if (!result.Body) {
+        throw new Error('Private R2 object body is empty');
+    }
+
+    return {
+        stream: result.Body as NodeJS.ReadableStream,
+        contentType: (result.ContentType as string | undefined) ?? null,
+        contentLength: (result.ContentLength as number | undefined) ?? null,
+    };
+}
+
+export function isPrivateR2Enabled(): boolean {
+    return isR2PrivateConfigured();
 }
 

@@ -23,7 +23,7 @@ export default function Navbar() {
                 >
                     <img src={assetUrl('/assets/images/skimask.png')} alt="Logo" className="w-10 h-10 object-cover" />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
-                        Muz Beats
+                               MuzBeats
                     </span>
                 </Link>
 

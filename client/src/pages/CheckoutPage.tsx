@@ -45,10 +45,17 @@ function BackToCartButton({ variant = 'link' }: { variant?: 'button' | 'link' })
 }
 
 // Initialize Stripe with publishable key
-// In production, you'd get this from environment variables
-const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here'
-);
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!STRIPE_PUBLISHABLE_KEY) {
+    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
+}
+
+// Only load Stripe if we have a valid key (starts with pk_test_ or pk_live_)
+const stripePromise = STRIPE_PUBLISHABLE_KEY && 
+    (STRIPE_PUBLISHABLE_KEY.startsWith('pk_test_') || STRIPE_PUBLISHABLE_KEY.startsWith('pk_live_'))
+    ? loadStripe(STRIPE_PUBLISHABLE_KEY)
+    : null;
 
 interface CheckoutFormProps {
   total: number;
@@ -61,6 +68,14 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [email, setEmail] = useState('');
+  const [isStripeReady, setIsStripeReady] = useState(false);
+
+  // Wait for Stripe to be ready before showing Payment Element
+  useEffect(() => {
+    if (stripe && elements) {
+      setIsStripeReady(true);
+    }
+  }, [stripe, elements]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,22 +197,28 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
       </div>
 
       <div className="border-t border-zinc-700 pt-4">
-                <PaymentElement
-                    options={{
-                        // Hide email and phone fields - we collect email separately for receipts
-                        fields: {
-                            billingDetails: {
-                                email: 'never',
-                                phone: 'never',
+                {isStripeReady && stripe && elements ? (
+                    <PaymentElement
+                        options={{
+                            // Hide email and phone fields - we collect email separately for receipts
+                            fields: {
+                                billingDetails: {
+                                    email: 'never',
+                                    phone: 'never',
+                                },
                             },
-                        },
-                    }}
-                />
+                        }}
+                    />
+                ) : (
+                    <div className="text-zinc-400 text-sm py-4">
+                        Loading payment form...
+                    </div>
+                )}
       </div>
 
       <button
         type="submit"
-        disabled={!stripe || isProcessing}
+        disabled={!stripe || !elements || !isStripeReady || isProcessing}
         className="w-full bg-[#f3c000] hover:bg-[#e4b300] disabled:bg-zinc-600 disabled:cursor-not-allowed cursor-pointer text-black font-semibold py-3 px-6 rounded-full transition active:scale-[1.02]"
       >
         {isProcessing ? 'Processing...' : `Pay $${total.toFixed(2)}`}
@@ -307,6 +328,19 @@ export default function CheckoutPage() {
       <div className="bg-[#1e1e1e] rounded-2xl p-6 sm:p-8">
         {(isLoading || !clientSecret) ? (
           <CheckoutFormSkeleton />
+        ) : !stripePromise ? (
+          <div className="space-y-4">
+            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4">
+              <p className="text-red-400 font-semibold mb-2">Stripe Configuration Error</p>
+              <p className="text-zinc-300 text-sm">
+                Stripe publishable key is missing or invalid. Please set <code className="bg-zinc-800 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> in your environment variables.
+              </p>
+              <p className="text-zinc-400 text-xs mt-2">
+                The key should start with <code className="bg-zinc-800 px-1 rounded">pk_test_</code> (for testing) or <code className="bg-zinc-800 px-1 rounded">pk_live_</code> (for production).
+              </p>
+            </div>
+            <BackToCartButton variant="button" />
+          </div>
         ) : (
           <Elements
             stripe={stripePromise}

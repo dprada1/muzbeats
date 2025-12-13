@@ -4,10 +4,22 @@ import {
     incrementDownloadCount,
     getAudioFilePath,
     hasWavFile,
+    getPrivateR2Object,
+    isPrivateR2Enabled,
+    getWavPath,
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2Url, isR2Configured } from '@/utils/r2.js';
+
+function stripLeadingSlash(p: string): string {
+    return p.startsWith('/') ? p.slice(1) : p;
+}
+
+function stripAssetsPrefix(p: string): string {
+    const clean = stripLeadingSlash(p);
+    return clean.startsWith('assets/') ? clean.slice(7) : clean;
+}
 
 /**
  * GET /api/downloads/:token
@@ -55,7 +67,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // Security: Always check if WAV exists before deciding to redirect
         // The database stores MP3 paths, but we prefer WAVs when available
         // WAVs must ALWAYS be served through protected endpoint (never publicly accessible)
-        const wavExists = hasWavFile(validation.audioPath);
+        const wavExists = await hasWavFile(validation.audioPath);
         const isMp3Path = validation.audioPath.includes('/mp3/') || validation.audioPath.endsWith('.mp3');
 
         // If WAV exists, always serve through protected endpoint (never redirect to R2)
@@ -72,8 +84,42 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             return;
         }
 
-        // For WAVs (or when R2 not configured), serve from local filesystem
-        // This ensures WAVs are only accessible through the protected download endpoint
+        // If WAV exists and private R2 is enabled, stream WAV from private bucket
+        if (wavExists && isPrivateR2Enabled()) {
+            const wavPath = getWavPath(validation.audioPath);
+            const key = stripAssetsPrefix(wavPath); // beats/wav/...
+            try {
+                const { stream, contentType, contentLength } = await getPrivateR2Object(key);
+                const ext = path.extname(key).toLowerCase() || '.wav';
+                const resolvedContentType =
+                    contentType ||
+                    (ext === '.wav' ? 'audio/wav' : ext === '.mp3' ? 'audio/mpeg' : 'application/octet-stream');
+
+                res.setHeader('Content-Type', resolvedContentType);
+                if (contentLength) {
+                    res.setHeader('Content-Length', contentLength);
+                }
+                res.setHeader(
+                    'Content-Disposition',
+                    `attachment; filename="${validation.beatTitle}${ext}"`
+                );
+                res.setHeader('Accept-Ranges', 'bytes');
+
+                stream.pipe(res);
+                stream.on('error', (error) => {
+                    console.error('downloadController: Private R2 stream error:', error);
+                    if (!res.headersSent) {
+                        res.status(500).json({ error: 'Error streaming file' });
+                    }
+                });
+                return;
+            } catch (error: any) {
+                console.error('downloadController: Failed to fetch WAV from private R2:', error);
+                // fall through to local filesystem attempt
+            }
+        }
+
+        // Otherwise, serve from local filesystem (dev / non-R2 setups)
         const filePath = getAudioFilePath(validation.audioPath);
 
         if (!filePath) {
