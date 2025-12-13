@@ -163,16 +163,15 @@ export async function processPaymentHandler(
 
         // Send download email to customer
         if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
-            try {
-                await sendDownloadEmail(
-                    orderResult.customerEmail,
-                    orderResult.orderId,
-                    orderResult.totalAmount
-                );
+            const emailSent = await sendDownloadEmail(
+                orderResult.customerEmail,
+                orderResult.orderId,
+                orderResult.totalAmount
+            );
+            if (emailSent) {
                 console.log('processPaymentHandler: Download email sent successfully');
-            } catch (emailError) {
-                // Log but don't fail the request if email fails
-                console.error('processPaymentHandler: Failed to send download email:', emailError);
+            } else {
+                console.warn('processPaymentHandler: Download email was not sent (see logs above)');
             }
         }
 

@@ -48,17 +48,14 @@ export async function stripeWebhookHandler(req: Request, res: Response): Promise
 
                     // Send download email to customer
                     if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
-                        try {
-                            await sendDownloadEmail(
-                                orderResult.customerEmail,
-                                orderResult.orderId,
-                                orderResult.totalAmount
-                            );
-                        } catch (emailError) {
-                            // Log but don't fail the webhook if email fails
-                            console.error(
-                                'stripeWebhookHandler: Failed to send download email:',
-                                emailError
+                        const emailSent = await sendDownloadEmail(
+                            orderResult.customerEmail,
+                            orderResult.orderId,
+                            orderResult.totalAmount
+                        );
+                        if (!emailSent) {
+                            console.warn(
+                                'stripeWebhookHandler: Download email was not sent (see logs above)'
                             );
                         }
                     }

@@ -113,50 +113,49 @@ export async function sendDownloadEmail(
     email: string,
     orderId: string,
     orderTotal: number
-): Promise<void> {
-    try {
-        // Check if Resend API key is configured
-        if (!process.env.RESEND_API_KEY) {
-            console.warn(
-                'emailService: RESEND_API_KEY not configured. Skipping email send.'
-            );
-            console.log('📧 Would send download email to:', email);
-            console.log('   Order ID:', orderId);
-            return;
-        }
+): Promise<boolean> {
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+        console.warn(
+            'emailService: RESEND_API_KEY not configured. Skipping email send.'
+        );
+        console.log('📧 Would send download email to:', email);
+        console.log('   Order ID:', orderId);
+        return false;
+    }
 
-        // Get download links for this order
-        const downloadLinks = await getDownloadLinks(orderId);
+    // Get download links for this order
+    const downloadLinks = await getDownloadLinks(orderId);
 
-        if (downloadLinks.length === 0) {
-            console.warn(
-                `emailService: No download links found for order ${orderId}. Skipping email.`
-            );
-            return;
-        }
+    if (downloadLinks.length === 0) {
+        console.warn(
+            `emailService: No download links found for order ${orderId}. Skipping email.`
+        );
+        return false;
+    }
 
-        // Log generated URLs for debugging
-        const baseUrl = getBaseUrl();
-        console.log('emailService: Generated URLs:');
-        console.log('   Base URL:', baseUrl);
-        console.log('   Logo URL:', getLogoUrl());
-        downloadLinks.forEach((link, idx) => {
-            console.log(`   Download ${idx + 1}: ${getDownloadUrl(link.token)}`);
-        });
+    // Log generated URLs for debugging
+    const baseUrl = getBaseUrl();
+    console.log('emailService: Generated URLs:');
+    console.log('   Base URL:', baseUrl);
+    console.log('   Logo URL:', getLogoUrl());
+    downloadLinks.forEach((link, idx) => {
+        console.log(`   Download ${idx + 1}: ${getDownloadUrl(link.token)}`);
+    });
 
-        // Format download links HTML
-        // Escape HTML in titles and encode URLs properly
-        const downloadLinksHtml = downloadLinks
-            .map((link, index) => {
-                const downloadUrl = getDownloadUrl(link.token);
-                const escapedTitle = link.title
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-                
-                return `
+    // Format download links HTML
+    // Escape HTML in titles and encode URLs properly
+    const downloadLinksHtml = downloadLinks
+        .map((link, index) => {
+            const downloadUrl = getDownloadUrl(link.token);
+            const escapedTitle = link.title
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            return `
         <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
             <h3 style="margin: 0 0 10px 0; color: #333; font-size: 18px;">
                 ${index + 1}. ${escapedTitle}
@@ -169,18 +168,18 @@ export async function sendDownloadEmail(
             </a>
         </div>
     `;
-            })
-            .join('');
+        })
+        .join('');
 
-        // Email HTML template
-        const logoUrl = getLogoUrl();
-        // Email template: table-based for maximum compatibility (Gmail/Outlook/etc.)
-        // Avoid flex/grid — many email clients strip or break those styles.
-        const safeLogoHtml = logoUrl
-            ? `<img src="${logoUrl}" width="40" height="40" alt="MuzBeats" style="display:block;border:0;outline:none;text-decoration:none;" />`
-            : '';
+    // Email HTML template
+    const logoUrl = getLogoUrl();
+    // Email template: table-based for maximum compatibility (Gmail/Outlook/etc.)
+    // Avoid flex/grid — many email clients strip or break those styles.
+    const safeLogoHtml = logoUrl
+        ? `<img src="${logoUrl}" width="40" height="40" alt="MuzBeats" style="display:block;border:0;outline:none;text-decoration:none;" />`
+        : '';
 
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -258,15 +257,15 @@ export async function sendDownloadEmail(
 </html>
         `;
 
-        // Plain text version
-        const downloadLinksText = downloadLinks
-            .map(
-                (link, index) =>
-                    `${index + 1}. ${link.title}\n   ${getDownloadUrl(link.token)}`
-            )
-            .join('\n\n');
+    // Plain text version
+    const downloadLinksText = downloadLinks
+        .map(
+            (link, index) =>
+                `${index + 1}. ${link.title}\n   ${getDownloadUrl(link.token)}`
+        )
+        .join('\n\n');
 
-        const text = `
+    const text = `
 Thank you for your purchase!
 
 Your order has been confirmed. Order ID: ${orderId}
@@ -283,26 +282,22 @@ If you have any questions or need assistance, please contact us.
 © ${new Date().getFullYear()} MuzBeats. All rights reserved.
     `;
 
-        // Send email
-        const { data, error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <noreply@muzbeats.com>',
-            to: email,
-            subject: 'Your MuzBeats Purchase - Download Links',
-            html,
-            text,
-        });
+    // Send email
+    const { data, error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <noreply@muzbeats.com>',
+        to: email,
+        subject: 'Your MuzBeats Purchase - Download Links',
+        html,
+        text,
+    });
 
-        if (error) {
-            console.error('emailService: Failed to send email:', error);
-            throw error;
-        }
-
-        console.log('emailService: Download email sent successfully to', email);
-        console.log('   Email ID:', data?.id);
-    } catch (error) {
-        console.error('emailService.sendDownloadEmail error:', error);
-        // Don't throw - we don't want email failures to break the webhook
-        // Just log the error
+    if (error) {
+        console.error('emailService: Failed to send email:', error);
+        return false;
     }
+
+    console.log('emailService: Download email sent successfully to', email);
+    console.log('   Email ID:', data?.id);
+    return true;
 }
 
