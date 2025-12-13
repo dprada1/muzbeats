@@ -43,6 +43,18 @@ export function useWaveSurferInit({
         wsRef.current = ws;
         ws.setMuted?.(true); // PlayerBar drives audio; WS is visual only
 
+        const handleError = (error: unknown) => {
+            // If a beat audio file can't be fetched (CORS, 404, etc), WaveSurfer can throw
+            // and cause unhandled promise rejections. We intentionally swallow here so
+            // the Store page can still render even if waveform/audio fetch fails.
+            console.warn('[Waveform] WaveSurfer load error', {
+                beatId: beat.id,
+                audioUrl: beat.audio,
+                error,
+            });
+            onReady(0, 0);
+        };
+
         // ---- Cached path: hydrate instantly, no network/decode ----
         const cached = buffers[beat.id];
         if (cached) {
@@ -82,10 +94,22 @@ export function useWaveSurferInit({
         };
 
         (ws as any).on?.('ready', handleReady);
-        ws.load(beat.audio);
+        (ws as any).on?.('error', handleError);
+
+        // WaveSurfer v7+ load() returns a promise; older versions may not.
+        // Catch in both cases to prevent unhandled promise rejections.
+        try {
+            const maybePromise = (ws as any).load(beat.audio);
+            if (maybePromise && typeof (maybePromise as any).catch === 'function') {
+                (maybePromise as any).catch(handleError);
+            }
+        } catch (e) {
+            handleError(e);
+        }
 
         return () => {
             ws.un('ready', handleReady);
+            ws.un('error', handleError);
             wsRef.current?.destroy();
             wsRef.current = null;
         };
