@@ -35,8 +35,19 @@ async function getDownloadLinks(orderId: string) {
  * Get base URL for download links
  * Downloads are served from the backend API, so we use BACKEND_URL
  * Falls back to FRONTEND_URL if BACKEND_URL is not set (for same-domain setups)
+ *
+ * NOTE:
+ * - In production, this should typically be your public API base (e.g. https://api.prodmuz.com)
+ * - In local development, emails cannot use localhost. Use EMAIL_LINK_BASE_URL with a public tunnel
+ *   (ngrok / cloudflared) if you want email links to work end-to-end while testing locally.
  */
 function getBaseUrl(): string {
+    // Highest priority: explicitly configured email link base URL
+    // This lets local dev emails use a public tunnel URL while the backend runs on localhost.
+    if (process.env.EMAIL_LINK_BASE_URL) {
+        return process.env.EMAIL_LINK_BASE_URL;
+    }
+
     // Prefer BACKEND_URL since downloads are served from backend
     const backendUrl = process.env.BACKEND_URL || process.env.FRONTEND_URL;
     
