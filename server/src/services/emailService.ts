@@ -135,6 +135,24 @@ export async function sendDownloadEmail(
         return false;
     }
 
+    // Optional safety: only allow emails to specific recipients (useful in staging)
+    // Example:
+    // EMAIL_ALLOWLIST=you@gmail.com,other@test.com
+    if (process.env.EMAIL_ALLOWLIST) {
+        const allowlist = process.env.EMAIL_ALLOWLIST
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+        const normalized = email.trim().toLowerCase();
+        if (allowlist.length > 0 && !allowlist.includes(normalized)) {
+            console.warn(
+                'emailService: Recipient not in EMAIL_ALLOWLIST. Skipping email send.',
+                { email }
+            );
+            return false;
+        }
+    }
+
     // Get download links for this order
     const downloadLinks = await getDownloadLinks(orderId);
 
@@ -297,6 +315,7 @@ If you have any questions or need assistance, please contact us.
     const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <noreply@muzbeats.com>',
         to: email,
+        ...(process.env.RESEND_REPLY_TO_EMAIL ? { replyTo: process.env.RESEND_REPLY_TO_EMAIL } : {}),
         subject: 'Your MuzBeats Purchase - Download Links',
         html,
         text,

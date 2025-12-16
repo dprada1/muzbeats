@@ -108,9 +108,41 @@ async function initializeDatabase() {
 }
 
 // Middleware
-// CORS configuration - allow all origins for now
+/**
+ * CORS configuration
+ *
+ * For production/staging, set CORS_ALLOWED_ORIGINS as a comma-separated list:
+ *   CORS_ALLOWED_ORIGINS=https://www.prodmuz.com,https://staging.prodmuz.com
+ *
+ * If not set, we default to a safe list that covers local dev + deployed frontends.
+ */
+function getAllowedOrigins(): string[] {
+    const raw = process.env.CORS_ALLOWED_ORIGINS;
+    if (raw && raw.trim().length > 0) {
+        return raw
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+
+    return [
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'https://muzbeats.pages.dev',
+        'https://prodmuz.com',
+        'https://www.prodmuz.com',
+        'https://staging.prodmuz.com',
+    ];
+}
+
+const allowedOrigins = getAllowedOrigins();
 app.use(cors({
-    origin: '*', // Allow all origins
+    origin: function (origin, callback) {
+        // Allow requests with no origin (curl, server-to-server, etc.)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
