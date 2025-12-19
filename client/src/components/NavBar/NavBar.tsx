@@ -45,7 +45,7 @@ export default function Navbar() {
                     </Link>
                     <a href="https://youtube.com/@prodmuz" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaYoutube size={20}/></a>
                     <a href="https://tiktok.com/@prod.muz" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors"><FaTiktok size={20}/></a>
-                    <a href="mailto:support@prodmuz.com" className="hover:text-brand-yellow transition-colors"><FaEnvelope size={20}/></a>
+                    <a href="mailto:danielprada2006@gmail.com" className="hover:text-brand-yellow transition-colors"><FaEnvelope size={20}/></a>
                 </div>
             </div>
         </nav>
