@@ -16,6 +16,58 @@ function stripAssetsPrefix(p: string): string {
     return clean.startsWith('assets/') ? clean.slice(7) : clean;
 }
 
+function getPrivateWavKeyCandidatesFromWavPath(wavPath: string): string[] {
+    // Current canonical key derived from /assets/beats/wav/... is "beats/wav/..."
+    // You want to migrate private bucket layout to top-level "wav/...".
+    // Support both so we can move objects without breaking downloads.
+    const primary = stripAssetsPrefix(wavPath);
+    const candidates = [primary];
+
+    if (primary.startsWith('beats/wav/')) {
+        candidates.push(primary.replace(/^beats\/wav\//, 'wav/'));
+    } else if (primary.startsWith('wav/')) {
+        candidates.push(primary.replace(/^wav\//, 'beats/wav/'));
+    }
+
+    const seen = new Set<string>();
+    return candidates.filter((k) => {
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+    });
+}
+
+function getPrivateWavKeyCandidatesFromKey(key: string): string[] {
+    const candidates = [key];
+    if (key.startsWith('beats/wav/')) {
+        candidates.push(key.replace(/^beats\/wav\//, 'wav/'));
+    } else if (key.startsWith('wav/')) {
+        candidates.push(key.replace(/^wav\//, 'beats/wav/'));
+    }
+    return Array.from(new Set(candidates));
+}
+
+async function headPrivateR2Any(keys: string[]): Promise<boolean> {
+    const client = getPrivateS3Client();
+    if (!client || !process.env.R2_PRIVATE_BUCKET_NAME) {
+        return false;
+    }
+    for (const k of keys) {
+        try {
+            await client.send(
+                new HeadObjectCommand({
+                    Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+                    Key: k,
+                })
+            );
+            return true;
+        } catch {
+            // continue
+        }
+    }
+    return false;
+}
+
 function isR2PrivateConfigured(): boolean {
     return !!(
         process.env.R2_PRIVATE_BUCKET_NAME &&
@@ -152,18 +204,8 @@ export async function hasWavFile(audioPath: string): Promise<boolean> {
     // If private R2 bucket is configured, check there (WAVs should live in the private bucket)
     const client = getPrivateS3Client();
     if (client && process.env.R2_PRIVATE_BUCKET_NAME) {
-        const key = stripAssetsPrefix(wavPath); // e.g. beats/wav/...
-        try {
-            await client.send(
-                new HeadObjectCommand({
-                    Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
-                    Key: key,
-                })
-            );
-            return true;
-        } catch {
-            return false;
-        }
+        const keys = getPrivateWavKeyCandidatesFromWavPath(wavPath);
+        return await headPrivateR2Any(keys);
     }
 
     // Local dev fallback: check filesystem
@@ -215,12 +257,26 @@ export async function getPrivateR2Object(key: string): Promise<{
         throw new Error('Private R2 is not configured');
     }
 
-    const result = await client.send(
-        new GetObjectCommand({
-            Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
-            Key: key,
-        })
-    );
+    const keysToTry = getPrivateWavKeyCandidatesFromKey(key);
+
+    let result: any = null;
+    let lastErr: any = null;
+    for (const k of keysToTry) {
+        try {
+            result = await client.send(
+                new GetObjectCommand({
+                    Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+                    Key: k,
+                })
+            );
+            break;
+        } catch (e: any) {
+            lastErr = e;
+        }
+    }
+    if (!result) {
+        throw lastErr || new Error('Failed to fetch object from private R2');
+    }
 
     if (!result.Body) {
         throw new Error('Private R2 object body is empty');

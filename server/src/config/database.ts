@@ -19,6 +19,15 @@ const pool = new Pool(
     process.env.DATABASE_URL
         ? {
               connectionString: process.env.DATABASE_URL,
+              // Railway "Public Networking" / proxy connections typically require SSL.
+              // This is safe for local tooling (migrations/import scripts) and works with most managed PG providers.
+              // For local Postgres, DATABASE_URL is usually not set; we fall back to DB_* vars.
+              ssl:
+                  process.env.DB_SSL === 'false'
+                      ? undefined
+                      : /rlwy\.net|railway\.app|up\.railway\.app/i.test(process.env.DATABASE_URL)
+                        ? { rejectUnauthorized: false }
+                        : undefined,
               max: 20,
               idleTimeoutMillis: 30000,
               connectionTimeoutMillis: 2000,

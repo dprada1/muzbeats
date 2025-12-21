@@ -6,6 +6,24 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function normalizeBaseUrl(raw: string): string {
+    const v = (raw || '').trim();
+    if (!v) return v;
+
+    // Support values like "//api-staging.prodmuz.com"
+    if (v.startsWith('//')) {
+        return `https:${v}`;
+    }
+
+    // If user forgot scheme, assume https in prod, http in dev.
+    if (!/^https?:\/\//i.test(v)) {
+        const scheme = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+        return `${scheme}://${v}`;
+    }
+
+    return v;
+}
+
 /**
  * Get download links for an order
  */
@@ -15,6 +33,8 @@ async function getDownloadLinks(orderId: string) {
         SELECT
             d.download_token,
             b.title,
+            b.key,
+            b.bpm,
             b.id as beat_id
         FROM downloads d
         JOIN beats b ON d.beat_id = b.id
@@ -27,6 +47,8 @@ async function getDownloadLinks(orderId: string) {
     return result.rows.map((row) => ({
         token: row.download_token,
         title: row.title,
+        key: row.key,
+        bpm: row.bpm,
         beatId: row.beat_id,
     }));
 }
@@ -45,7 +67,7 @@ function getBaseUrl(): string {
     // Highest priority: explicitly configured email link base URL
     // This lets local dev emails use a public tunnel URL while the backend runs on localhost.
     if (process.env.EMAIL_LINK_BASE_URL) {
-        return process.env.EMAIL_LINK_BASE_URL;
+        return normalizeBaseUrl(process.env.EMAIL_LINK_BASE_URL);
     }
 
     // Prefer BACKEND_URL since downloads are served from backend
@@ -56,7 +78,7 @@ function getBaseUrl(): string {
         if (backendUrl.startsWith('http://') && process.env.NODE_ENV === 'production') {
             console.warn('emailService: Using HTTP in production. Consider using HTTPS for security.');
         }
-        return backendUrl;
+        return normalizeBaseUrl(backendUrl);
     }
     
     // Development fallback - but warn that this won't work in emails
@@ -72,7 +94,9 @@ function getBaseUrl(): string {
  */
 function getDownloadUrl(token: string): string {
     const baseUrl = getBaseUrl();
-    return `${baseUrl}/api/downloads/${token}`;
+    // Use URL join semantics to avoid double slashes and other malformed links.
+    // Leading slash ensures we always land on the correct route even if baseUrl contains a path.
+    return new URL(`/api/downloads/${encodeURIComponent(token)}`, baseUrl).toString();
 }
 
 /**
@@ -183,12 +207,25 @@ export async function sendDownloadEmail(
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+            const escapedKey = String(link.key ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            const bpmValue =
+                typeof link.bpm === 'number' && Number.isFinite(link.bpm) ? Math.round(link.bpm) : null;
 
             return `
         <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
             <h3 style="margin: 0 0 10px 0; color: #333; font-size: 18px;">
                 ${index + 1}. ${escapedTitle}
             </h3>
+            <div style="margin: 0 0 12px 0; color: #666; font-size: 14px;">
+                Key: <strong>${escapedKey || 'Unknown'}</strong>
+                &nbsp;•&nbsp;
+                BPM: <strong>${bpmValue ?? 'Unknown'}</strong>
+            </div>
             <a 
                 href="${downloadUrl}" 
                 style="display: inline-block; padding: 12px 24px; background-color: #f3c000; color: #000; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;"
@@ -289,8 +326,13 @@ export async function sendDownloadEmail(
     // Plain text version
     const downloadLinksText = downloadLinks
         .map(
-            (link, index) =>
-                `${index + 1}. ${link.title}\n   ${getDownloadUrl(link.token)}`
+            (link, index) => {
+                const bpmValue =
+                    typeof link.bpm === 'number' && Number.isFinite(link.bpm) ? Math.round(link.bpm) : null;
+                return `${index + 1}. ${link.title}\n   Key: ${link.key || 'Unknown'} | BPM: ${
+                    bpmValue ?? 'Unknown'
+                }\n   ${getDownloadUrl(link.token)}`;
+            }
         )
         .join('\n\n');
 

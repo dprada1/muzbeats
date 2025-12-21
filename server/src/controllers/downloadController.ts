@@ -21,6 +21,29 @@ function stripAssetsPrefix(p: string): string {
     return clean.startsWith('assets/') ? clean.slice(7) : clean;
 }
 
+function sanitizeDownloadFilename(name: string): string {
+    // Conservative: keep it ASCII-ish and remove header-breaking characters.
+    // We intentionally avoid using the human title (can contain quotes/special chars).
+    return (
+        name
+            .replace(/[\\/"<>|:*?]/g, '_')
+            .replace(/[\r\n]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim() || 'download'
+    );
+}
+
+function getCanonicalDownloadFilenameFromAudioPath(audioPath: string, ext: string): string {
+    // Prefer the storage basename, e.g. playboi_carti__placid_Amaj_142.wav
+    const base =
+        ext === '.wav'
+            ? path.basename(getWavPath(audioPath))
+            : path.basename(audioPath);
+    // Ensure extension matches what we're serving
+    const withExt = base.toLowerCase().endsWith(ext) ? base : `${base}${ext}`;
+    return sanitizeDownloadFilename(withExt);
+}
+
 /**
  * GET /api/downloads/:token
  *
@@ -91,6 +114,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             try {
                 const { stream, contentType, contentLength } = await getPrivateR2Object(key);
                 const ext = path.extname(key).toLowerCase() || '.wav';
+                const filename = getCanonicalDownloadFilenameFromAudioPath(validation.audioPath, ext);
                 const resolvedContentType =
                     contentType ||
                     (ext === '.wav' ? 'audio/wav' : ext === '.mp3' ? 'audio/mpeg' : 'application/octet-stream');
@@ -101,7 +125,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 }
                 res.setHeader(
                     'Content-Disposition',
-                    `attachment; filename="${validation.beatTitle}${ext}"`
+                    `attachment; filename="${filename}"`
                 );
                 res.setHeader('Accept-Ranges', 'bytes');
 
@@ -142,13 +166,14 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 : ext === '.mp3'
                 ? 'audio/mpeg'
                 : 'application/octet-stream';
+        const filename = getCanonicalDownloadFilenameFromAudioPath(validation.audioPath, ext);
 
         // Set headers for file download
         res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Length', fileSize);
         res.setHeader(
             'Content-Disposition',
-            `attachment; filename="${validation.beatTitle}${ext}"`
+            `attachment; filename="${filename}"`
         );
         res.setHeader('Accept-Ranges', 'bytes');
 
