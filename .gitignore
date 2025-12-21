@@ -30,6 +30,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Local analysis artifacts / venvs
+docs/audits/
+.venv-beats/
+
 # Environment variables
 .env
 .env.local
