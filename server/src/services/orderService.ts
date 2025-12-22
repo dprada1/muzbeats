@@ -17,10 +17,16 @@ export async function createOrderFromPaymentIntent(paymentIntent: Stripe.Payment
 
         const stripePaymentIntentId = paymentIntent.id;
 
-        // Stripe may not always have receipt_email; fall back to metadata or empty string
+        // Stripe may not always have receipt_email; fall back to metadata or charge billing email.
+        // Note: billing email typically lives on the Charge (latest_charge.billing_details.email).
+        const chargeEmail =
+            (paymentIntent as any)?.latest_charge?.billing_details?.email ||
+            (paymentIntent as any)?.charges?.data?.[0]?.billing_details?.email ||
+            '';
         const customerEmail =
             (paymentIntent.receipt_email as string | null) ||
             (paymentIntent.metadata?.customerEmail as string | undefined) ||
+            chargeEmail ||
             '';
 
         // Amount from Stripe is in cents; convert to dollars for our DECIMAL(10,2)

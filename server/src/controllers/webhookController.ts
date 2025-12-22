@@ -33,11 +33,12 @@ export async function stripeWebhookHandler(req: Request, res: Response): Promise
 
         switch (event.type) {
             case 'payment_intent.succeeded': {
-                const paymentIntent = event.data.object as Parameters<
-                    typeof stripe.paymentIntents.retrieve
-                >[0] extends string
-                    ? any
-                    : any; // Type-safe enough for now
+                // Webhook event payload may omit billing email unless we expand the charge.
+                // Re-fetch with expand so order creation + email delivery is reliable.
+                const paymentIntentId = (event.data.object as any)?.id as string | undefined;
+                const paymentIntent = paymentIntentId
+                    ? await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['latest_charge'] })
+                    : (event.data.object as any);
 
                 try {
                     const orderResult = await createOrderFromPaymentIntent(paymentIntent);

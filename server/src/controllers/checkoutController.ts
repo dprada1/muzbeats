@@ -130,8 +130,10 @@ export async function processPaymentHandler(
             return;
         }
 
-        // Retrieve the payment intent from Stripe
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        // Retrieve the payment intent from Stripe (expand latest_charge so we always have billing_details.email)
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+            expand: ['latest_charge'],
+        });
 
         // Only process if payment succeeded
         if (paymentIntent.status !== 'succeeded') {

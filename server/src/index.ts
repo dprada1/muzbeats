@@ -148,6 +148,15 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true }));
 
+// Normalize accidental double slashes in URLs (helps if an email link contains `//api/...`)
+// This is safe for our API routes and prevents "Cannot GET //api/..." when proxies preserve double slashes.
+app.use((req, _res, next) => {
+    if (req.url.includes('//')) {
+        req.url = req.url.replace(/\/{2,}/g, '/');
+    }
+    next();
+});
+
 // Stripe webhook needs raw body for signature verification
 // Register webhook route BEFORE express.json() so it gets raw body
 app.use('/api/webhooks', webhookRoutes);
