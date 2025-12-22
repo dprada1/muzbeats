@@ -251,8 +251,12 @@ CREATE TABLE beats (
    - All queries use `$1, $2, ...` placeholders
 
 3. **CORS Configuration**
-   - Currently allows all origins (development)
-   - Should restrict in production
+   - CORS is configurable via `CORS_ALLOWED_ORIGINS` for production/staging.
+
+4. **Private WAV masters**
+   - WAV masters are stored in a **private** Cloudflare R2 bucket.
+   - WAV downloads are served only through the token-protected endpoint: `GET /api/downloads/:token`.
+   - Public R2 only serves MP3 previews and images.
 
 ### Future Security Enhancements
 
@@ -261,14 +265,14 @@ CREATE TABLE beats (
 - Helmet.js (security headers)
 - Request sanitization
 
-## 🚀 Deployment Architecture (Future)
+## 🚀 Deployment Architecture (Current)
 
-### Production Setup
+### Production / Staging Setup
 
 ```
 ┌─────────────┐
-│   Vercel    │  Frontend (Static)
-│   (CDN)     │  - React app
+│ Cloudflare  │  Frontend (Pages)
+│   Pages     │  - React app
 └─────────────┘
        │
        │ API calls
@@ -282,14 +286,14 @@ CREATE TABLE beats (
        │
 ┌─────────────┐
 │   Railway   │  Database
-│  PostgreSQL │  - Production DB
+│  PostgreSQL │  - Separate DBs per environment
 └─────────────┘
 ```
 
 **Why this setup?**
-- Vercel: Excellent for static React apps (CDN, fast)
-- Railway: Easy PostgreSQL + Node.js deployment
-- Separate services: Scale independently
+- Cloudflare Pages: fast static frontend deployments per branch/environment
+- Railway: easy Node.js backend + Postgres per environment
+- Separate services: isolate staging from production
 
 ## 📊 Technology Choices & Rationale
 
@@ -400,6 +404,6 @@ See `BACKEND_ROADMAP.md` for detailed next steps:
 
 ---
 
-**Last Updated**: November 2025
+**Last Updated**: December 2025
 **Version**: 2.0 (Renovated from file-based to database-backed)
 
