@@ -99,12 +99,34 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             console.log(`downloadController: WAV file exists, serving through protected endpoint`);
             // Continue to serve through endpoint below
         }
-        // If no WAV exists, it's MP3-only, and R2 is configured, redirect to R2 (uses free egress)
-        else if (!wavExists && isMp3Path && isR2Configured()) {
-            const r2Url = getR2Url(validation.audioPath);
-            console.log(`downloadController: MP3-only, redirecting to R2 URL: ${r2Url}`);
-            res.redirect(302, r2Url);
-            return;
+        // If no WAV exists:
+        // - In production-like environments, DO NOT fall back to MP3 for a paid download.
+        //   This almost always means private R2 is misconfigured or WAVs are missing.
+        // - In local dev, we allow MP3 fallback to keep testing unblocked.
+        else if (!wavExists && isMp3Path) {
+            const prodLike = process.env.NODE_ENV === 'production';
+            if (prodLike) {
+                console.warn(
+                    'downloadController: WAV not found for purchased download (prod-like). Refusing MP3 fallback.',
+                    {
+                        audioPath: validation.audioPath,
+                        privateR2Enabled: isPrivateR2Enabled(),
+                        r2PublicConfigured: isR2Configured(),
+                    }
+                );
+                res.status(500).json({
+                    error:
+                        'WAV master is not available. Please contact support (server is likely missing private R2 configuration).',
+                });
+                return;
+            }
+
+            if (isR2Configured()) {
+                const r2Url = getR2Url(validation.audioPath);
+                console.log(`downloadController: Dev fallback to MP3, redirecting to R2 URL: ${r2Url}`);
+                res.redirect(302, r2Url);
+                return;
+            }
         }
 
         // If WAV exists and private R2 is enabled, stream WAV from private bucket
