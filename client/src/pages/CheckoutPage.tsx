@@ -216,6 +216,20 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                 )}
       </div>
 
+      <div className="text-xs text-zinc-400 leading-relaxed">
+        By purchasing, you agree that this beat is provided under a{' '}
+        <strong className="text-zinc-200">non‑exclusive</strong> license.{' '}
+        <a
+          href="/store/license"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white cursor-pointer"
+        >
+          View license details
+        </a>
+        .
+      </div>
+
       <button
         type="submit"
         disabled={!stripe || !elements || !isStripeReady || isProcessing}

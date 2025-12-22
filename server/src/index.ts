@@ -172,8 +172,8 @@ app.use('/api/downloads', downloadRoutes);
 
 // Initialize database and start server
 initializeDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📁 Serving static files from: ${path.join(__dirname, '../public/assets')}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📁 Serving static files from: ${path.join(__dirname, '../public/assets')}`);
   });
 });

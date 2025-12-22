@@ -6,6 +6,7 @@ import CartPage from './pages/CartPage';
 import BeatDetail from './pages/BeatDetail';
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
+import LicensePage from './pages/LicensePage';
 
 function Layout() {
     return (
@@ -29,6 +30,7 @@ function App() {
                 <Route path="checkout" element={<CheckoutPage />} />
                 <Route path="checkout/success" element={<CheckoutSuccessPage />} />
                 <Route path="beat/:beatId" element={<BeatDetail />}/>
+                <Route path="license" element={<LicensePage />} />
             </Route>
         </Routes>
     );
