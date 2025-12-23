@@ -4,11 +4,17 @@ import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
-import { assetUrl } from '@/utils/api';
+import { getR2PublicUrl, assetUrl } from '@/utils/api';
 
 export default function Navbar() {
     const { cartItems } = useCart();
     const qty = cartItems.length;
+
+    // Get logo URL: prefer R2 (consistent with covers), fallback to backend static files
+    const r2Url = getR2PublicUrl();
+    const logoUrl = r2Url 
+        ? `${r2Url}/images/skimask.png`
+        : assetUrl('/assets/images/skimask.png');
 
     return (
         <nav
@@ -21,7 +27,7 @@ export default function Navbar() {
                     className="flex items-center gap-2 group no-ring"
                     onClick={() => { NProgress.start(); (NProgress.done()); }}
                 >
-                    <img src={assetUrl('/assets/images/skimask.png')} alt="Logo" className="w-10 h-10 object-cover" />
+                    <img src={logoUrl} alt="Logo" className="w-10 h-10 object-cover" />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
                                MuzBeats
                     </span>

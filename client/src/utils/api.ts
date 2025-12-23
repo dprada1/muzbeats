@@ -34,6 +34,18 @@ export function apiUrl(path: string): string {
 }
 
 /**
+ * Get the R2 public URL for assets (images, audio files)
+ * @returns R2 public URL if configured, otherwise empty string
+ */
+export function getR2PublicUrl(): string {
+    if (import.meta.env.VITE_R2_PUBLIC_URL) {
+        const url = import.meta.env.VITE_R2_PUBLIC_URL;
+        return url.endsWith('/') ? url.slice(0, -1) : url;
+    }
+    return '';
+}
+
+/**
  * Get the base URL for static assets (images, audio files)
  * Assets are served from the backend, so we use the same base URL as the API
  * @returns Base URL for assets

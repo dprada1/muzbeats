@@ -12,8 +12,12 @@
 export function getR2Url(assetPath: string): string {
     const r2PublicUrl = process.env.R2_PUBLIC_URL;
     
-    // If R2 is not configured, return original path (for local dev)
-    if (!r2PublicUrl) {
+    // In local development (NODE_ENV !== 'production'), prefer local files for faster dev experience
+    // Only use R2 URLs in production/staging environments
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // If R2 is not configured, or we're in local dev, return original path (serves from local filesystem)
+    if (!r2PublicUrl || !isProduction) {
         return assetPath;
     }
     

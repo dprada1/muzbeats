@@ -44,6 +44,12 @@ export function useWaveSurferInit({
         ws.setMuted?.(true); // PlayerBar drives audio; WS is visual only
 
         const handleError = (error: unknown) => {
+            // Ignore AbortError - this is expected in React Strict Mode when cleanup runs
+            // before the load completes. It's harmless and doesn't indicate a real problem.
+            if (error instanceof Error && error.name === 'AbortError') {
+                return; // Silently ignore abort errors
+            }
+            
             // If a beat audio file can't be fetched (CORS, 404, etc), WaveSurfer can throw
             // and cause unhandled promise rejections. We intentionally swallow here so
             // the Store page can still render even if waveform/audio fetch fails.
@@ -108,9 +114,19 @@ export function useWaveSurferInit({
         }
 
         return () => {
-            ws.un('ready', handleReady);
-            ws.un('error', handleError);
-            wsRef.current?.destroy();
+            // Cleanup: remove event listeners and destroy instance
+            // Check if instance still exists (might have been destroyed already)
+            const currentWs = wsRef.current;
+            if (currentWs) {
+                try {
+                    currentWs.un('ready', handleReady);
+                    currentWs.un('error', handleError);
+                    currentWs.destroy();
+                } catch (e) {
+                    // Ignore errors during cleanup (e.g., already destroyed)
+                    // AbortErrors are expected when cleanup runs before load completes
+                }
+            }
             wsRef.current = null;
         };
     }, [isVisible]);

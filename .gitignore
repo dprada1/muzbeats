@@ -41,13 +41,21 @@ docs/audits/
 .env.test.local
 .env.production.local
 
-# Audio files (should not be in public repo)
+# Audio files (should not be in public repo - stored in R2)
 *.mp3
 *.wav
 *.flac
 *.aac
 *.ogg
 *.m4a
+
+# Image files (should not be in public repo - stored in R2)
+*.webp
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
 
 # Large media files
 *.mov
