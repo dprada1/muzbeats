@@ -4,20 +4,23 @@ export default function Progress() {
     const { currentTime, duration, seekTo, noTrackLoaded } =
         usePlayerBarContext();
 
+    // Ensure duration is a valid number (fallback to 0 if NaN or invalid)
+    const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
+
     return (
         <div className="relative h-1 w-full bg-zinc-700">
             <div
                 className="absolute inset-0 bg-white pointer-events-none"
                 style={{
-                    width: duration
-                        ? `${(currentTime / duration) * 100}%`
+                    width: safeDuration > 0
+                        ? `${(currentTime / safeDuration) * 100}%`
                         : '0%',
                 }}
             />
             <input
                 type="range"
                 min={0}
-                max={duration}
+                max={safeDuration || 0}
                 step={0.01}
                 value={currentTime}
                 onChange={e => seekTo(+e.target.value)}
