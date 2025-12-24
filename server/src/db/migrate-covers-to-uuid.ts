@@ -20,7 +20,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { readdir, copyFile, mkdir, readFile } from 'fs/promises';
+import { readdir, copyFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '@/config/database.js';
 
