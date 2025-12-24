@@ -13,7 +13,7 @@ type Args = {
 function parseArgs(argv: string[]): Args {
     const out: Args = {
         apply: false,
-        prefix: '/assets/images/covers',
+        prefix: '/assets/images/covers', // Flat structure (no "used" folder) to match R2
         ext: 'webp',
         onlyMissing: false,
     };

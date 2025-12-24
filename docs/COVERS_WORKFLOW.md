@@ -8,6 +8,7 @@
 ## Recommended naming (stable + scalable)
 Use the beat UUID (database `beats.id`) as the canonical cover filename:
 
+- **Local**: `server/public/assets/images/covers/<beat_id>.webp`
 - **DB**: `cover_path = /assets/images/covers/<beat_id>.webp`
 - **Public R2 bucket** (`muzbeats-media-public`):
   - object key: `images/covers/<beat_id>.webp`
@@ -18,10 +19,10 @@ Why UUID?
 - Avoids coupling to title/key/bpm changes.
 
 ## Step 1 — Prepare images locally
-Create a local folder (NOT committed) with final webp covers named by beat UUID:
+Images should be in the `covers/` folder, named by beat UUID:
 
 ```
-covers/
+server/public/assets/images/covers/
   <beat_id_1>.webp
   <beat_id_2>.webp
   ...
@@ -30,14 +31,20 @@ covers/
 Tip: standardize size (e.g. 512×512 or 1024×1024) and keep file sizes reasonable.
 
 ## Step 2 — Upload covers to public R2
-Use AWS CLI sync (exclude macOS `.DS_Store`):
+Upload from local `covers/` to R2 `images/covers/`:
 
 ```bash
-ENDPOINT="https://<your-account-id>.r2.cloudflarestorage.com"
+export R2_ENDPOINT="https://<your-account-id>.r2.cloudflarestorage.com"
 
-aws s3 sync "./covers" "s3://muzbeats-media-public/images/covers" \
-  --endpoint-url "$ENDPOINT" \
-  --exclude ".DS_Store" --exclude "*/.DS_Store"
+# Use the upload script
+./scripts/upload-covers-flat.sh
+
+# Or manually:
+aws s3 sync server/public/assets/images/covers/ \
+  s3://muzbeats-media-public/images/covers/ \
+  --endpoint-url "$R2_ENDPOINT" \
+  --exclude ".DS_Store" --exclude "*/.DS_Store" \
+  --exclude "unused/*"
 ```
 
 ## Step 3 — Update DB cover_path values
