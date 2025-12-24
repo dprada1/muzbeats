@@ -14,10 +14,13 @@ export function getR2Url(assetPath: string): string {
     
     // In local development (NODE_ENV !== 'production'), prefer local files for faster dev experience
     // Only use R2 URLs in production/staging environments
+    // If R2_PUBLIC_URL is set, assume we should use R2 (even if NODE_ENV isn't 'production')
     const isProduction = process.env.NODE_ENV === 'production';
+    const isStaging = process.env.NODE_ENV === 'staging';
+    const shouldUseR2 = r2PublicUrl && (isProduction || isStaging || process.env.RAILWAY_ENVIRONMENT);
     
     // If R2 is not configured, or we're in local dev, return original path (serves from local filesystem)
-    if (!r2PublicUrl || !isProduction) {
+    if (!shouldUseR2) {
         return assetPath;
     }
     
