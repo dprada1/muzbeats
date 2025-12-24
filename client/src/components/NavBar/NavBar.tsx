@@ -4,17 +4,14 @@ import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
-import { getR2PublicUrl, assetUrl } from '@/utils/api';
+import { assetUrl } from '@/utils/api';
 
 export default function Navbar() {
     const { cartItems } = useCart();
     const qty = cartItems.length;
 
-    // Get logo URL: prefer R2 (consistent with covers), fallback to backend static files
-    const r2Url = getR2PublicUrl();
-    const logoUrl = r2Url 
-        ? `${r2Url}/images/skimask.png`
-        : assetUrl('/assets/images/skimask.png');
+    // Logo is always served from backend static files (not R2)
+    const logoUrl = assetUrl('/assets/images/skimask.png');
 
     return (
         <nav

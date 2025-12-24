@@ -8,8 +8,12 @@ import { getR2Url } from '@/utils/r2.js';
  * Map database row to Beat type
  * Converts audio_path -> audio, cover_path -> cover
  * Transforms paths to R2 URLs if R2 is configured
+ * Uses fallback image if cover_path is null/empty
 */
 function mapDbRowToBeat(row: any): Beat {
+    // Use fallback image if cover_path is null or empty
+    const coverPath = row.cover_path || '/assets/images/skimask.png';
+    
     return {
         id: row.id,
         title: row.title,
@@ -17,7 +21,7 @@ function mapDbRowToBeat(row: any): Beat {
         bpm: row.bpm,
         price: parseFloat(row.price),
         audio: getR2Url(row.audio_path),
-        cover: getR2Url(row.cover_path),
+        cover: getR2Url(coverPath),
     };
 }
 

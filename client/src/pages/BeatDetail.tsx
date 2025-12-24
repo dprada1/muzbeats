@@ -37,7 +37,11 @@ export default function BeatDetail() {
 
     // still loading?
     if (beat === undefined) {
-        return <p className="p-4">Loading…</p>;
+        return (
+            <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
+                <PageHeader title="Shared Beat" subtitle="Loading..." />
+            </div>
+        );
     }
 
     // invalid or not found
