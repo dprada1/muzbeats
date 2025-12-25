@@ -12,18 +12,23 @@ export default function CheckoutSuccessPage() {
         console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
     window.scrollTo({ top: 0 });
     
-    // Verify payment intent status if we have a payment_intent in URL
-    // Stripe redirects with: ?payment_intent=pi_xxx&payment_intent_client_secret=pi_xxx_secret_xxx
-    // We also pass it manually for non-redirect payments
-    const paymentIntentId = searchParams.get('payment_intent');
+    // Check for both Stripe (payment_intent) and PayPal (order_id) parameters
+    const paymentIntentId = searchParams.get('payment_intent'); // Stripe
+    const orderId = searchParams.get('order_id'); // PayPal
     
-    console.log('CheckoutSuccessPage: payment_intent from URL:', paymentIntentId);
+    console.log('CheckoutSuccessPage: payment_intent (Stripe):', paymentIntentId);
+    console.log('CheckoutSuccessPage: order_id (PayPal):', orderId);
     
     if (paymentIntentId) {
+      // Stripe payment - verify payment intent
       verifyPaymentStatus(paymentIntentId);
+    } else if (orderId) {
+      // PayPal payment - order is already created, just show success
+      console.log('PayPal order ID found, showing success');
+      setPaymentStatus('success');
     } else {
-      // If no payment intent in URL, something went wrong
-      console.error('No payment intent ID found in URL');
+      // If no payment info in URL, something went wrong
+      console.error('No payment ID found in URL');
       setPaymentStatus('failed');
       setErrorMessage('Payment information not found. Please contact support if you were charged.');
     }

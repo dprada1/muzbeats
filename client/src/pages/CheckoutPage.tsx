@@ -7,10 +7,15 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { useCart } from '@/context/CartContext';
 import type { Beat } from '@/types/Beat';
 import CheckoutFormSkeleton from '@/components/checkout/CheckoutFormSkeleton';
+import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
 import { apiUrl } from '@/utils/api';
+
+// Payment provider type
+type PaymentProvider = 'stripe' | 'paypal';
 
 /**
  * Back to Cart button component
@@ -46,9 +51,17 @@ function BackToCartButton({ variant = 'link' }: { variant?: 'button' | 'link' })
 
 // Initialize Stripe with publishable key
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+
+// Default payment provider based on what's configured
+const DEFAULT_PROVIDER: PaymentProvider = PAYPAL_CLIENT_ID ? 'paypal' : 'stripe';
 
 if (!STRIPE_PUBLISHABLE_KEY) {
-    console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set in environment variables');
+    console.warn('VITE_STRIPE_PUBLISHABLE_KEY is not set - Stripe payments disabled');
+}
+
+if (!PAYPAL_CLIENT_ID) {
+    console.warn('VITE_PAYPAL_CLIENT_ID is not set - PayPal payments disabled');
 }
 
 // Only load Stripe if we have a valid key (starts with pk_test_ or pk_live_)
@@ -57,17 +70,27 @@ const stripePromise = STRIPE_PUBLISHABLE_KEY &&
     ? loadStripe(STRIPE_PUBLISHABLE_KEY)
     : null;
 
+// PayPal configuration
+const paypalOptions = {
+    clientId: PAYPAL_CLIENT_ID || '',
+    currency: 'USD',
+    intent: 'capture',
+};
+
 interface CheckoutFormProps {
   total: number;
   onSuccess: (paymentIntentId: string) => void;
   onError: (error: string) => void;
 }
 
-function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
+interface CheckoutFormPropsExtended extends CheckoutFormProps {
+  email: string;
+}
+
+function CheckoutForm({ total, email, onSuccess, onError }: CheckoutFormPropsExtended) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [email, setEmail] = useState('');
   const [isStripeReady, setIsStripeReady] = useState(false);
 
   // Wait for Stripe to be ready before showing Payment Element
@@ -181,21 +204,6 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-2">
-          Email <span className="text-red-400">*</span> <span className="text-zinc-500">(for receipt)</span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-4 py-2 bg-[#1e1e1e] border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-[#0b84ff]"
-          placeholder="your@email.com"
-        />
-      </div>
-
       <div className="border-t border-zinc-700 pt-4">
                 {isStripeReady && stripe && elements ? (
                     <PaymentElement
@@ -216,20 +224,6 @@ function CheckoutForm({ total, onSuccess, onError }: CheckoutFormProps) {
                 )}
       </div>
 
-      <div className="text-xs text-zinc-400 leading-relaxed">
-        By purchasing, you agree that this beat is provided under a{' '}
-        <strong className="text-zinc-200">non‑exclusive</strong> license.{' '}
-        <a
-          href="/store/license"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-white cursor-pointer"
-        >
-          View license details
-        </a>
-        .
-      </div>
-
       <button
         type="submit"
         disabled={!stripe || !elements || !isStripeReady || isProcessing}
@@ -248,6 +242,8 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(DEFAULT_PROVIDER);
+  const [email, setEmail] = useState('');
 
   const total = cartItems.reduce((acc, beat) => acc + (beat.price ?? 0), 0);
 
@@ -264,39 +260,44 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Create payment intent when component mounts
-    const createPaymentIntent = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(apiUrl('/api/checkout/create-payment-intent'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            items: cartItems.map((beat: Beat) => ({
-              beatId: beat.id,
-              quantity: 1,
-            })),
-          }),
-        });
+    // Only create payment intent for Stripe
+    if (paymentProvider === 'stripe') {
+      const createPaymentIntent = async () => {
+        try {
+          setIsLoading(true);
+          const response = await fetch(apiUrl('/api/checkout/create-payment-intent'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: cartItems.map((beat: Beat) => ({
+                beatId: beat.id,
+                quantity: 1,
+              })),
+            }),
+          });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create payment intent');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create payment intent');
+          }
+
+          const data = await response.json();
+          setClientSecret(data.clientSecret);
+        } catch (err: any) {
+          setError(err.message || 'Failed to initialize payment');
+        } finally {
+          setIsLoading(false);
         }
+      };
 
-        const data = await response.json();
-        setClientSecret(data.clientSecret);
-      } catch (err: any) {
-        setError(err.message || 'Failed to initialize payment');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    createPaymentIntent();
-  }, [cartItems, navigate]);
+      createPaymentIntent();
+    } else {
+      // PayPal doesn't need pre-initialization
+      setIsLoading(false);
+    }
+  }, [cartItems, navigate, paymentProvider]);
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
         console.log('handlePaymentSuccess called with paymentIntentId:', paymentIntentId);
@@ -327,64 +328,158 @@ export default function CheckoutPage() {
     );
   }
 
+  const handlePayPalSuccess = (orderId: string) => {
+    console.log('PayPal payment success, orderId:', orderId);
+    const successUrl = `/store/checkout/success?order_id=${orderId}`;
+    navigate(successUrl, { replace: true });
+    setTimeout(() => {
+      clearCart();
+    }, 50);
+  };
+
   return (
     <div className="pt-12 max-w-3xl mx-auto">
       {/* header */}
       <div className="space-y-1 sm:space-y-1.5 mb-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Checkout</h1>
         <p className="text-base sm:text-lg text-zinc-400">
-          {isLoading || !clientSecret
+          {isLoading
             ? 'Initializing payment…'
             : `${cartItems.length} ${cartItems.length === 1 ? 'item' : 'items'} • Total: $${total.toFixed(2)}`}
         </p>
       </div>
 
       <div className="bg-[#1e1e1e] rounded-2xl p-6 sm:p-8">
-        {(isLoading || !clientSecret) ? (
+        {isLoading ? (
           <CheckoutFormSkeleton />
-        ) : !stripePromise ? (
-          <div className="space-y-4">
-            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4">
-              <p className="text-red-400 font-semibold mb-2">Stripe Configuration Error</p>
-              <p className="text-zinc-300 text-sm">
-                Stripe publishable key is missing or invalid. Please set <code className="bg-zinc-800 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> in your environment variables.
-              </p>
-              <p className="text-zinc-400 text-xs mt-2">
-                The key should start with <code className="bg-zinc-800 px-1 rounded">pk_test_</code> (for testing) or <code className="bg-zinc-800 px-1 rounded">pk_live_</code> (for production).
-              </p>
-            </div>
-            <BackToCartButton variant="button" />
-          </div>
         ) : (
-          <Elements
-            stripe={stripePromise}
-            options={{
-              clientSecret,
-              loader: 'never', // Prevent Stripe's default loading state
-              appearance: {
-                theme: 'night',
-                variables: {
-                  colorPrimary: '#f3c000',
-                  colorBackground: '#1e1e1e',
-                  colorText: '#ffffff',
-                  colorDanger: '#ef4444',
-                  fontFamily: 'system-ui, sans-serif',
-                  spacingUnit: '4px',
-                  borderRadius: '8px',
-                },
-              },
-            }}
-          >
-            <CheckoutForm
-              total={total}
-              onSuccess={handlePaymentSuccess}
-              onError={setError}
-            />
-          </Elements>
+          <>
+            {/* Payment Provider Selection */}
+            {STRIPE_PUBLISHABLE_KEY && PAYPAL_CLIENT_ID && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-3">Payment Method</label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setPaymentProvider('paypal')}
+                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition cursor-pointer ${
+                      paymentProvider === 'paypal'
+                        ? 'border-[#f3c000] bg-[#f3c000]/10 text-white'
+                        : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className="font-semibold">PayPal</div>
+                  </button>
+                  <button
+                    onClick={() => setPaymentProvider('stripe')}
+                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition cursor-pointer ${
+                      paymentProvider === 'stripe'
+                        ? 'border-[#f3c000] bg-[#f3c000]/10 text-white'
+                        : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className="font-semibold">Credit Card</div>
+                    <div className="text-xs mt-1">via Stripe</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Email Input (shared by both payment methods) */}
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-sm font-medium mb-2">
+                Email <span className="text-red-400">*</span>{' '}
+                <span className="text-zinc-500">(for receipt)</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2 bg-[#1e1e1e] border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-[#0b84ff]"
+                placeholder="your@email.com"
+              />
+            </div>
+
+            {/* PayPal Checkout */}
+            {paymentProvider === 'paypal' && PAYPAL_CLIENT_ID ? (
+              <PayPalScriptProvider options={paypalOptions}>
+                <PayPalCheckoutButton
+                  cartItems={cartItems}
+                  email={email}
+                  onSuccess={handlePayPalSuccess}
+                  onError={setError}
+                />
+              </PayPalScriptProvider>
+            ) : paymentProvider === 'paypal' ? (
+              <div className="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                <p className="text-red-400 font-semibold mb-2">PayPal Not Configured</p>
+                <p className="text-zinc-300 text-sm">
+                  PayPal client ID is missing. Please set{' '}
+                  <code className="bg-zinc-800 px-1 rounded">VITE_PAYPAL_CLIENT_ID</code> in
+                  your environment variables.
+                </p>
+              </div>
+            ) : null}
+
+            {/* Stripe Checkout */}
+            {paymentProvider === 'stripe' && stripePromise && clientSecret ? (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  loader: 'never',
+                  appearance: {
+                    theme: 'night',
+                    variables: {
+                      colorPrimary: '#f3c000',
+                      colorBackground: '#1e1e1e',
+                      colorText: '#ffffff',
+                      colorDanger: '#ef4444',
+                      fontFamily: 'system-ui, sans-serif',
+                      spacingUnit: '4px',
+                      borderRadius: '8px',
+                    },
+                  },
+                }}
+              >
+                <CheckoutForm
+                  total={total}
+                  email={email}
+                  onSuccess={handlePaymentSuccess}
+                  onError={setError}
+                />
+              </Elements>
+            ) : paymentProvider === 'stripe' && !stripePromise ? (
+              <div className="bg-red-500/20 border border-red-500 rounded-lg p-4">
+                <p className="text-red-400 font-semibold mb-2">Stripe Not Configured</p>
+                <p className="text-zinc-300 text-sm">
+                  Stripe publishable key is missing or invalid. Please set{' '}
+                  <code className="bg-zinc-800 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> in
+                  your environment variables.
+                </p>
+              </div>
+            ) : null}
+
+            {/* License Agreement */}
+            <div className="text-xs text-zinc-400 leading-relaxed mt-4">
+              By purchasing, you agree that this beat is provided under a{' '}
+              <strong className="text-zinc-200">non‑exclusive</strong> license.{' '}
+              <a
+                href="/store/license"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white cursor-pointer"
+              >
+                View license details
+              </a>
+              .
+            </div>
+          </>
         )}
       </div>
 
-            <BackToCartButton variant="link" />
+      <BackToCartButton variant="link" />
     </div>
   );
 }
