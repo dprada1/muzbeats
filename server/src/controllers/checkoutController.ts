@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { createPaymentIntent, getPaymentIntent } from '@/services/checkoutService.js';
 import type { CartItem } from '@/services/checkoutService.js';
-import { stripe } from '@/config/stripe.js';
+import { stripe, STRIPE_ENABLED } from '@/config/stripe.js';
 import { createOrderFromPaymentIntent } from '@/services/orderService.js';
 import { sendDownloadEmail } from '@/services/emailService.js';
 import pool from '@/config/database.js';
@@ -21,6 +21,14 @@ export async function createPaymentIntentHandler(
     res: Response
 ): Promise<void> {
     try {
+        // Check if Stripe is enabled
+        if (!STRIPE_ENABLED) {
+            res.status(403).json({ 
+                error: 'Stripe payments are not enabled on this server' 
+            });
+            return;
+        }
+
         const { items, customerEmail } = req.body;
 
         // Validate request body
@@ -82,6 +90,14 @@ export async function getPaymentIntentHandler(
     res: Response
 ): Promise<void> {
     try {
+        // Check if Stripe is enabled
+        if (!STRIPE_ENABLED) {
+            res.status(403).json({ 
+                error: 'Stripe payments are not enabled on this server' 
+            });
+            return;
+        }
+
         const { id } = req.params;
 
         if (!id) {
@@ -121,6 +137,14 @@ export async function processPaymentHandler(
     res: Response
 ): Promise<void> {
     try {
+        // Check if Stripe is enabled
+        if (!STRIPE_ENABLED || !stripe) {
+            res.status(403).json({ 
+                error: 'Stripe payments are not enabled on this server' 
+            });
+            return;
+        }
+
         const { paymentIntentId } = req.body;
 
         if (!paymentIntentId || typeof paymentIntentId !== 'string') {

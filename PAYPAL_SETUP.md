@@ -24,20 +24,24 @@ PAYPAL_CLIENT_ID=your_paypal_client_id_here
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
 PAYPAL_MODE=sandbox  # or "live" for production
 
-# Existing Stripe Configuration (kept for compatibility)
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
+# Stripe Configuration (kept for future use)
+# Set to "false" to completely disable Stripe (recommended until you get SSN)
+ENABLE_STRIPE=false
+
+# Only needed if ENABLE_STRIPE=true:
+# STRIPE_SECRET_KEY=sk_test_...
+# STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
 ### Frontend (`client/.env`)
 
-```env
-# PayPal Configuration
-VITE_PAYPAL_CLIENT_ID=your_paypal_client_id_here
+**No PayPal or Stripe variables needed!** 
 
-# Existing Stripe Configuration (kept for compatibility)
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-```
+The frontend now fetches payment configuration dynamically from the backend at runtime. This prevents frontend tampering and ensures the backend controls which payment methods are available.
+
+You can remove these if they exist:
+- ~~`VITE_PAYPAL_CLIENT_ID`~~ (no longer used)
+- ~~`VITE_STRIPE_PUBLISHABLE_KEY`~~ (no longer used)
 
 ---
 
@@ -69,12 +73,12 @@ You'll see two keys:
 PAYPAL_CLIENT_ID=AYour...ClientID...Here
 PAYPAL_CLIENT_SECRET=EYour...Secret...Here
 PAYPAL_MODE=sandbox
+
+# Disable Stripe until you complete SSN verification
+ENABLE_STRIPE=false
 ```
 
-**Frontend** (`client/.env`):
-```env
-VITE_PAYPAL_CLIENT_ID=AYour...ClientID...Here
-```
+**Frontend**: No environment variables needed! The frontend now fetches payment config from the backend automatically.
 
 ---
 
@@ -141,15 +145,16 @@ PayPal automatically creates test accounts. To find them:
 
 ### Railway Environment Variables
 
-Add these to your Railway services:
+Add these to your Railway **backend service only**:
 
 **Backend Service:**
 - `PAYPAL_CLIENT_ID` = (from PayPal live app)
 - `PAYPAL_CLIENT_SECRET` = (from PayPal live app)
 - `PAYPAL_MODE` = `live`
+- `ENABLE_STRIPE` = `false` (disable until SSN verification complete)
 
 **Frontend Service:**
-- `VITE_PAYPAL_CLIENT_ID` = (from PayPal live app)
+- No PayPal or Stripe variables needed!
 
 ### Switching to Live Mode
 
@@ -157,8 +162,24 @@ Add these to your Railway services:
 2. Switch from "Sandbox" to "Live"
 3. Create a new app (or use existing)
 4. Get new Live credentials
-5. Update Railway environment variables
-6. Redeploy both services
+5. Update Railway backend environment variables
+6. Redeploy backend service (frontend will auto-detect the change)
+
+### Future: Enabling Stripe (When You Get SSN)
+
+When you complete Stripe verification and want to offer both payment methods:
+
+1. Update Railway backend environment variables:
+   - `ENABLE_STRIPE` = `true`
+   - `STRIPE_SECRET_KEY` = `sk_live_...`
+   - `STRIPE_PUBLISHABLE_KEY` = `pk_live_...`
+   - `STRIPE_WEBHOOK_SECRET` = `whsec_...`
+
+2. Redeploy backend
+
+3. Both PayPal and Stripe will now be available to customers!
+
+See [docs/PAYMENT_PROVIDER_CONFIGURATION.md](docs/PAYMENT_PROVIDER_CONFIGURATION.md) for detailed configuration options.
 
 ---
 
@@ -184,14 +205,16 @@ Add these to your Railway services:
 
 ## Troubleshooting
 
-### "PayPal Not Configured" Error
-- Check that `VITE_PAYPAL_CLIENT_ID` is set in `client/.env`
-- Restart the frontend dev server after adding env vars
-
-### "Failed to create PayPal order" Error
+### "PayPal Not Available" Error
 - Check that `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` are set in `server/.env`
 - Check that `PAYPAL_MODE` is set to `sandbox` for testing
 - Restart the backend dev server
+- Check browser console for `GET /api/checkout/config` response
+
+### "Failed to create PayPal order" Error
+- Check backend logs for authentication errors
+- Verify your PayPal credentials are correct
+- Make sure you're using sandbox credentials when `PAYPAL_MODE=sandbox`
 
 ### PayPal Button Not Showing
 - Check browser console for errors
