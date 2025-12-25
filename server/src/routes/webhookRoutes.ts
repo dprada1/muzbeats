@@ -1,11 +1,8 @@
-import express, { Router } from 'express';
-import { stripeWebhookHandler } from '@/controllers/webhookController.js';
+import { Router } from 'express';
 
 const router = Router();
 
-// Stripe webhook needs raw body for signature verification
-// Use express.raw() middleware for this specific route
-// POST /api/webhooks/stripe
-router.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+// Stripe webhooks removed - using PayPal only
+// PayPal webhooks can be added here in the future if needed
 
 export default router;
