@@ -4,7 +4,6 @@ import PlayerBar from './components/PlayerBar';
 import StorePage from './pages/StorePage';
 import CartPage from './pages/CartPage';
 import BeatDetail from './pages/BeatDetail';
-import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import LicensePage from './pages/LicensePage';
 
@@ -27,7 +26,6 @@ function App() {
             <Route path="/store" element={<Layout />}>
                 <Route index element={<StorePage />} />
                 <Route path="cart" element={<CartPage />} />
-                <Route path="checkout" element={<CheckoutPage />} />
                 <Route path="checkout/success" element={<CheckoutSuccessPage />} />
                 <Route path="beat/:beatId" element={<BeatDetail />}/>
                 <Route path="license" element={<LicensePage />} />

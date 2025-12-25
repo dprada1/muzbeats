@@ -47,23 +47,13 @@ export async function createPayPalOrderHandler(
             return;
         }
 
-        // Validate email format if provided
-        if (customerEmail && typeof customerEmail === 'string') {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(customerEmail)) {
-                res.status(400).json({
-                    error: 'Invalid email format',
-                });
-                return;
-            }
-        }
-
         const cartItems: CartItem[] = items.map((item: any) => ({
             beatId: item.beatId,
             quantity: item.quantity || 1,
         }));
 
-        const paypalOrder = await createPayPalOrder(cartItems, customerEmail);
+        // Email is no longer required - PayPal provides it automatically
+        const paypalOrder = await createPayPalOrder(cartItems);
 
         res.status(200).json(paypalOrder);
     } catch (error: any) {

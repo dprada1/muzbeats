@@ -12,8 +12,8 @@ import {
 const ordersController = new OrdersController(paypalSDK as any);
 
 // Temporary storage for order data (in production, use Redis or database)
-// Maps PayPal order ID -> beat IDs and customer email
-const orderDataStore = new Map<string, { beatIds: string[]; customerEmail?: string }>();
+// Maps PayPal order ID -> beat IDs (email comes from PayPal payer info)
+const orderDataStore = new Map<string, { beatIds: string[] }>();
 
 /**
  * Cart item from client (just beat IDs)
@@ -27,13 +27,9 @@ export interface CartItem {
  * Create a PayPal Order for the cart
  * 
  * @param items - Array of cart items (beat IDs)
- * @param customerEmail - Optional customer email for guest checkout
  * @returns PayPal Order with ID and approval URL
  */
-export async function createPayPalOrder(
-    items: CartItem[],
-    customerEmail?: string
-) {
+export async function createPayPalOrder(items: CartItem[]) {
     try {
         // Fetch all beats from database to get prices
         const beatPromises = items.map(item => getBeatById(item.beatId));
@@ -117,7 +113,6 @@ export async function createPayPalOrder(
         // Store order data for later retrieval (when capturing)
         orderDataStore.set(paypalOrderId, {
             beatIds: lineItems.map(item => item.beat.id),
-            customerEmail,
         });
         
         console.log(`Stored order data for PayPal order ${paypalOrderId}:`, {

@@ -4,14 +4,12 @@ import type { Beat } from '@/types/Beat';
 
 interface PayPalCheckoutButtonProps {
     cartItems: Beat[];
-    email: string;
     onSuccess: (orderId: string) => void;
     onError: (error: string) => void;
 }
 
 export default function PayPalCheckoutButton({
     cartItems,
-    email,
     onSuccess,
     onError,
 }: PayPalCheckoutButtonProps) {
@@ -24,14 +22,17 @@ export default function PayPalCheckoutButton({
                     Loading PayPal...
                 </div>
             )}
-            <PayPalButtons
-                style={{
-                    layout: 'vertical',
-                    color: 'gold',
-                    shape: 'rect',
-                    label: 'paypal',
-                }}
-                createOrder={async () => {
+            <div className="paypal-buttons-container">
+                <PayPalButtons
+                    style={{
+                        layout: 'vertical',
+                        color: 'gold',
+                        shape: 'pill',
+                        label: 'paypal',
+                        height: 48,
+                        tagline: false, // Remove "Safer way to pay" tagline
+                    }}
+                    createOrder={async () => {
                     try {
                         // Create PayPal order on our backend
                         const response = await fetch(apiUrl('/api/checkout/paypal/create-order'), {
@@ -44,7 +45,6 @@ export default function PayPalCheckoutButton({
                                     beatId: beat.id,
                                     quantity: 1,
                                 })),
-                                customerEmail: email,
                             }),
                         });
 
@@ -100,6 +100,18 @@ export default function PayPalCheckoutButton({
                     onError('Payment was cancelled');
                 }}
             />
+            </div>
+            <style>{`
+                /* Reduce excessive spacing in PayPal container */
+                .paypal-buttons-container {
+                    margin-bottom: -1rem;
+                }
+                
+                /* Reduce spacing between PayPal buttons */
+                .paypal-buttons-container iframe {
+                    margin-bottom: 0 !important;
+                }
+            `}</style>
         </>
     );
 }

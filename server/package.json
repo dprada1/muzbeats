@@ -35,7 +35,6 @@
     "express": "^5.1.0",
     "pg": "^8.16.3",
     "resend": "^6.5.2",
-    "stripe": "^20.0.0",
     "tsx": "^4.20.6"
   },
   "devDependencies": {
