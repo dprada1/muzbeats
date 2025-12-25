@@ -16,16 +16,17 @@ import pool from '@/config/database.js';
  *
  * Request body:
  * {
- *   items: [{ beatId: "uuid", quantity: 1 }],
- *   customerEmail?: "email@example.com"
+ *   items: [{ beatId: "uuid", quantity: 1 }]
  * }
+ * 
+ * Note: Customer email is automatically retrieved from PayPal payer info during capture
  */
 export async function createPayPalOrderHandler(
     req: Request,
     res: Response
 ): Promise<void> {
     try {
-        const { items, customerEmail } = req.body;
+        const { items } = req.body;
 
         // Validate request body
         if (!items || !Array.isArray(items) || items.length === 0) {

@@ -33,7 +33,7 @@ interface PayPalOrderCapture {
  */
 export async function createOrderFromPayPalCapture(
     paypalOrder: PayPalOrderCapture,
-    storedData?: { beatIds: string[]; customerEmail?: string } | null
+    storedData?: { beatIds: string[] } | null
 ) {
     const client = await pool.connect();
 
@@ -42,8 +42,8 @@ export async function createOrderFromPayPalCapture(
 
         const paypalOrderId = paypalOrder.id;
 
-        // Get customer email from stored data first, then fall back to payer info
-        const customerEmail = storedData?.customerEmail || paypalOrder.payer?.emailAddress || '';
+        // Get customer email from PayPal payer info (always provided by PayPal)
+        const customerEmail = paypalOrder.payer?.emailAddress || '';
 
         // Get total amount from first capture
         const capture = paypalOrder.purchaseUnits?.[0]?.payments?.captures?.[0];

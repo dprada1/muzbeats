@@ -117,7 +117,6 @@ export async function createPayPalOrder(items: CartItem[]) {
         
         console.log(`Stored order data for PayPal order ${paypalOrderId}:`, {
             beatIds: lineItems.map(item => item.beat.id),
-            customerEmail,
         });
 
         // Extract approval URL
