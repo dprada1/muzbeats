@@ -35,6 +35,10 @@ export async function stripeWebhookHandler(req: Request, res: Response): Promise
             case 'payment_intent.succeeded': {
                 // Webhook event payload may omit billing email unless we expand the charge.
                 // Re-fetch with expand so order creation + email delivery is reliable.
+                if (!stripe) {
+                    throw new Error('Stripe is not enabled on this server');
+                }
+                
                 const paymentIntentId = (event.data.object as any)?.id as string | undefined;
                 const paymentIntent = paymentIntentId
                     ? await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['latest_charge'] })

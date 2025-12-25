@@ -16,7 +16,7 @@ const router = Router();
 
 // GET /api/checkout/config
 // Returns which payment providers are enabled and their public keys
-router.get('/config', (req, res) => {
+router.get('/config', (_req, res) => {
     res.json({
         stripe: {
             enabled: STRIPE_ENABLED,

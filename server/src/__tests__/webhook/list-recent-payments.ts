@@ -15,6 +15,10 @@ import { stripe } from '@/config/stripe.js';
 
 async function listRecentPayments(limit: number = 10) {
     try {
+        if (!stripe) {
+            throw new Error('Stripe is not enabled. Set ENABLE_STRIPE=true in .env');
+        }
+
         console.log(`\n🔍 Fetching last ${limit} payment intents from Stripe...\n`);
 
         const paymentIntents = await stripe.paymentIntents.list({

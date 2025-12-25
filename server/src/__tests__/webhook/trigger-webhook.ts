@@ -22,6 +22,10 @@ import { sendDownloadEmail } from '@/services/emailService.js';
 
 async function triggerWebhook(paymentIntentId: string) {
     try {
+        if (!stripe) {
+            throw new Error('Stripe is not enabled. Set ENABLE_STRIPE=true in .env');
+        }
+
         console.log(`\n🔍 Retrieving payment intent: ${paymentIntentId}...\n`);
 
         // Retrieve the payment intent from Stripe

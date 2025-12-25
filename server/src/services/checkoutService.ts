@@ -58,6 +58,11 @@ export async function createPaymentIntent(
             ...(customerEmail && { customerEmail }), // Include email in metadata for webhook
         };
 
+        // Check if Stripe is enabled
+        if (!stripe) {
+            throw new Error('Stripe is not enabled on this server');
+        }
+
         // Create Payment Intent
         const paymentIntent = await stripe.paymentIntents.create({
             amount: totalAmount,
@@ -85,6 +90,10 @@ export async function createPaymentIntent(
  */
 export async function getPaymentIntent(paymentIntentId: string) {
     try {
+        if (!stripe) {
+            throw new Error('Stripe is not enabled on this server');
+        }
+        
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
         return paymentIntent;
     } catch (error) {
