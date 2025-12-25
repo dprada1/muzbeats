@@ -104,53 +104,58 @@ export default function CartPage() {
                         {showSkeletons
                             ? <CartSummarySkeleton />
                             : (!isEmpty &&
-                                <div className="bg-[#1e1e1e] rounded-2xl p-5 sticky top-4">
-                                    <h2 className="text-xl font-semibold mb-3">Cart Summary</h2>
-                                    <div className="flex items-center justify-between text-lg mb-4">
-                                        <span className="text-white font-bold">Total: ${total}</span>
+                                <div className="bg-[#1e1e1e] rounded-2xl p-6 sticky top-4">
+                                    <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
+                                    
+                                    {/* Total */}
+                                    <div className="flex items-center justify-between py-3 border-b border-zinc-700/50 mb-5">
+                                        <span className="text-zinc-400">Total</span>
+                                        <span className="text-2xl font-bold text-white">${total}</span>
                                     </div>
 
                                     {/* PayPal Checkout */}
                                     {error ? (
-                                        <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-3">
+                                        <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4">
                                             <p className="text-red-400 text-sm">{error}</p>
                                         </div>
                                     ) : paypalClientId ? (
-                                        <PayPalScriptProvider 
-                                            options={{ 
-                                                clientId: paypalClientId, 
-                                                currency: 'USD',
-                                                disableFunding: 'card', // Hide card button for cleaner UI
-                                            }}
-                                        >
-                                            <PayPalCheckoutButton
-                                                cartItems={cartItems}
-                                                onSuccess={handlePaymentSuccess}
-                                                onError={setError}
-                                            />
-                                        </PayPalScriptProvider>
+                                        <div className="mb-5">
+                                            <PayPalScriptProvider 
+                                                options={{ 
+                                                    clientId: paypalClientId, 
+                                                    currency: 'USD',
+                                                    disableFunding: 'card', // Hide card button for cleaner UI
+                                                }}
+                                            >
+                                                <PayPalCheckoutButton
+                                                    cartItems={cartItems}
+                                                    onSuccess={handlePaymentSuccess}
+                                                    onError={setError}
+                                                />
+                                            </PayPalScriptProvider>
+                                        </div>
                                     ) : (
-                                        <div className="text-zinc-400 text-sm py-4">Loading payment options...</div>
+                                        <div className="text-zinc-400 text-sm py-4 text-center">Loading payment options...</div>
                                     )}
 
                                     {/* License Agreement */}
-                                    <div className="text-xs text-zinc-400 leading-relaxed mt-4">
-                                        By purchasing, you agree that this beat is provided under a{' '}
-                                        <strong className="text-zinc-200">non‑exclusive</strong> license.{' '}
+                                    <div className="text-[11px] text-zinc-500 leading-relaxed mb-3 pb-3 border-b border-zinc-800">
+                                        By purchasing, you agree to a{' '}
+                                        <span className="text-zinc-400 font-medium">non‑exclusive</span> license.{' '}
                                         <a
                                             href="/store/license"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="underline hover:text-white cursor-pointer"
+                                            className="text-zinc-400 underline hover:text-white transition"
                                         >
-                                            View license details
+                                            View details
                                         </a>
-                                        .
                                     </div>
 
+                                    {/* Clear Cart */}
                                     <button
                                         onClick={() => setShowConfirm(true)}
-                                        className="mt-4 block w-full text-center text-red-400 hover:text-red-300 text-sm underline no-ring cursor-pointer"
+                                        className="w-full text-center text-red-400/80 hover:text-red-400 text-sm transition no-ring cursor-pointer"
                                     >
                                         Clear Cart
                                     </button>
@@ -166,46 +171,54 @@ export default function CartPage() {
                 ? <CartSummaryStickySkeleton />
                 :   (!isEmpty && (
                         <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
-                            <div className="pointer-events-auto backdrop-blur-md bg-[#111]/80 border border-white/10 rounded-2xl p-4 shadow-xl">
-                                <div className="text-base font-semibold mb-3">
-                                    Total: <span className="text-zinc-400 font-normal">${total}</span>
+                            <div className="pointer-events-auto backdrop-blur-xl bg-[#0d0d0d]/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
+                                {/* Total */}
+                                <div className="flex items-center justify-between mb-3 pb-3 border-b border-zinc-800">
+                                    <span className="text-sm text-zinc-400">Total</span>
+                                    <span className="text-xl font-bold text-white">${total}</span>
                                 </div>
                                 
                                 {/* PayPal Checkout Mobile */}
                                 {error ? (
-                                    <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-2">
+                                    <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-3">
                                         <p className="text-red-400 text-xs">{error}</p>
                                     </div>
                                 ) : paypalClientId ? (
-                                    <PayPalScriptProvider 
-                                        options={{ 
-                                            clientId: paypalClientId, 
-                                            currency: 'USD',
-                                            disableFunding: 'card',
-                                        }}
-                                    >
-                                        <PayPalCheckoutButton
-                                            cartItems={cartItems}
-                                            onSuccess={handlePaymentSuccess}
-                                            onError={setError}
-                                        />
-                                    </PayPalScriptProvider>
+                                    <div className="mb-3">
+                                        <PayPalScriptProvider 
+                                            options={{ 
+                                                clientId: paypalClientId, 
+                                                currency: 'USD',
+                                                disableFunding: 'card',
+                                            }}
+                                        >
+                                            <PayPalCheckoutButton
+                                                cartItems={cartItems}
+                                                onSuccess={handlePaymentSuccess}
+                                                onError={setError}
+                                            />
+                                        </PayPalScriptProvider>
+                                    </div>
                                 ) : (
-                                    <div className="text-zinc-400 text-xs py-2">Loading...</div>
+                                    <div className="text-zinc-400 text-xs py-3 text-center">Loading...</div>
                                 )}
 
-                                <div className="flex items-center justify-between mt-2">
+                                {/* Footer Links */}
+                                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-zinc-800">
                                     <button
                                         onClick={() => setShowConfirm(true)}
-                                        className="text-sm text-red-400 underline hover:text-red-300 no-ring"
+                                        className="text-red-400/80 hover:text-red-400 transition no-ring"
                                     >
                                         Clear Cart
                                     </button>
-                                    <div className="text-xs text-zinc-500">
-                                        <a href="/store/license" target="_blank" rel="noopener noreferrer" className="underline hover:text-zinc-400">
-                                            License
-                                        </a>
-                                    </div>
+                                    <a 
+                                        href="/store/license" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-zinc-500 hover:text-zinc-400 transition"
+                                    >
+                                        License Details
+                                    </a>
                                 </div>
                             </div>
                         </div>
