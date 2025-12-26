@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "tsx src/index.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/index.js",
     "lint": "echo \"Linting not configured yet\"",
     "migrate": "tsx src/db/migrate-json-to-db.ts",
     "import-beats": "tsx src/db/import-beats-from-filenames.ts",
@@ -44,6 +44,7 @@
     "@types/pg": "^8.15.6",
     "@vitest/ui": "^3.2.4",
     "nodemon": "^3.1.10",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
