@@ -6,6 +6,7 @@ import CartPage from './pages/CartPage';
 import BeatDetail from './pages/BeatDetail';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import LicensePage from './pages/LicensePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function Layout() {
     return (
@@ -29,6 +30,10 @@ function App() {
                 <Route path="checkout/success" element={<CheckoutSuccessPage />} />
                 <Route path="beat/:beatId" element={<BeatDetail />}/>
                 <Route path="license" element={<LicensePage />} />
+            </Route>
+            {/* Catch-all route for 404 - uses Layout wrapper */}
+            <Route path="*" element={<Layout />}>
+                <Route path="*" element={<NotFoundPage />} />
             </Route>
         </Routes>
     );
