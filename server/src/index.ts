@@ -67,7 +67,7 @@ async function initializeDatabase() {
                 customer_email VARCHAR(255) NOT NULL,
                 total_amount DECIMAL(10, 2) NOT NULL,
                 status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
-                stripe_payment_intent_id VARCHAR(255) UNIQUE,
+                paypal_order_id VARCHAR(255) UNIQUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -157,8 +157,7 @@ app.use((req, _res, next) => {
     next();
 });
 
-// Stripe webhook needs raw body for signature verification
-// Register webhook route BEFORE express.json() so it gets raw body
+// Register webhook route BEFORE express.json() so it gets raw body (for future webhook handlers)
 app.use('/api/webhooks', webhookRoutes);
 
 // JSON parsing for all other routes (after webhook)

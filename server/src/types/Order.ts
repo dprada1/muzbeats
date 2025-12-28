@@ -5,7 +5,7 @@ export interface Order {
     customer_email: string;
     total_amount: number; // stored as DECIMAL(10,2) in DB
     status: OrderStatus;
-    stripe_payment_intent_id: string | null;
+    paypal_order_id: string | null;
     created_at: Date;
     updated_at: Date;
 }

@@ -32,11 +32,11 @@ async function createTestDownload() {
         // Create a test order
         const orderResult = await pool.query(
             `
-            INSERT INTO orders (customer_email, total_amount, status, stripe_payment_intent_id)
+            INSERT INTO orders (customer_email, total_amount, status, paypal_order_id)
             VALUES ($1, $2, $3, $4)
             RETURNING id
         `,
-            ['test@example.com', 20.00, 'completed', 'pi_test_manual_' + Date.now()]
+            ['test@example.com', 20.00, 'completed', 'test_paypal_order_' + Date.now()]
         );
 
         const orderId = orderResult.rows[0].id;

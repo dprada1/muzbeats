@@ -1,6 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { apiUrl } from '@/utils/api';
 
 export default function CheckoutSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -8,21 +7,16 @@ export default function CheckoutSuccessPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-        console.log('CheckoutSuccessPage: Component mounted/updated');
-        console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
+    console.log('CheckoutSuccessPage: Component mounted/updated');
+    console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
     window.scrollTo({ top: 0 });
     
-    // Check for both Stripe (payment_intent) and PayPal (order_id) parameters
-    const paymentIntentId = searchParams.get('payment_intent'); // Stripe
-    const orderId = searchParams.get('order_id'); // PayPal
+    // Check for PayPal order_id parameter
+    const orderId = searchParams.get('order_id');
     
-    console.log('CheckoutSuccessPage: payment_intent (Stripe):', paymentIntentId);
     console.log('CheckoutSuccessPage: order_id (PayPal):', orderId);
     
-    if (paymentIntentId) {
-      // Stripe payment - verify payment intent
-      verifyPaymentStatus(paymentIntentId);
-    } else if (orderId) {
+    if (orderId) {
       // PayPal payment - order is already created, just show success
       console.log('PayPal order ID found, showing success');
       setPaymentStatus('success');
@@ -33,78 +27,6 @@ export default function CheckoutSuccessPage() {
       setErrorMessage('Payment information not found. Please contact support if you were charged.');
     }
   }, [searchParams]);
-
-  const verifyPaymentStatus = async (paymentIntentId: string, retryCount = 0) => {
-    console.log(`Verifying payment intent: ${paymentIntentId} (attempt ${retryCount + 1})`);
-    
-    try {
-      // Verify payment status with backend
-            const response = await fetch(apiUrl(`/api/checkout/payment-intent/${paymentIntentId}`));
-      
-      console.log('Verification response status:', response.status);
-      
-      if (!response.ok) {
-        // If 404 or other error, try to parse error message
-        let errorMessage = `Failed to verify payment (${response.status})`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // If JSON parsing fails, use status text
-          errorMessage = `Failed to verify payment: ${response.statusText || response.status}`;
-        }
-        
-        // If it's a 404 and we haven't retried, the payment might still be processing
-        if (response.status === 404 && retryCount < 2) {
-          setTimeout(() => {
-            verifyPaymentStatus(paymentIntentId, retryCount + 1);
-          }, 1000);
-          return;
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-            console.log('CheckoutSuccessPage: Payment verification response:', data);
-      
-      if (data.status === 'succeeded') {
-                console.log('CheckoutSuccessPage: Payment succeeded! Setting status to success');
-        setPaymentStatus('success');
-      } else if (data.status === 'canceled' || data.status === 'requires_payment_method') {
-        setPaymentStatus('failed');
-        setErrorMessage('Payment was not completed successfully.');
-      } else if (data.status === 'processing') {
-        // Payment is still processing - wait a bit and retry (max 3 retries)
-        if (retryCount < 3) {
-          setTimeout(() => {
-            verifyPaymentStatus(paymentIntentId, retryCount + 1);
-          }, 2000);
-        } else {
-          // After max retries, show as processing
-          setPaymentStatus('failed');
-          setErrorMessage('Payment is still processing. Please check back in a few minutes or contact support.');
-        }
-      } else {
-        // Other intermediate states
-        setPaymentStatus('failed');
-        setErrorMessage(`Payment status: ${data.status}. Please contact support if you were charged.`);
-      }
-    } catch (err: any) {
-      console.error('Payment verification error:', err);
-      
-      // If we've retried a few times and still failing, show error
-      if (retryCount >= 2) {
-        setPaymentStatus('failed');
-        setErrorMessage(`Unable to verify payment status. Please contact support with payment ID: ${paymentIntentId}`);
-      } else {
-        // Retry once more
-        setTimeout(() => {
-          verifyPaymentStatus(paymentIntentId, retryCount + 1);
-        }, 1000);
-      }
-    }
-  };
 
   if (paymentStatus === 'loading') {
     return (
@@ -128,7 +50,7 @@ export default function CheckoutSuccessPage() {
             {errorMessage || 'Your payment was not completed successfully.'}
           </p>
           <p className="text-zinc-400 text-sm mb-6">
-            If you were charged, please contact support with your payment intent ID.
+            If you were charged, please contact support with your order ID.
           </p>
         </div>
 

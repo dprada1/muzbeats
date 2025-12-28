@@ -26,7 +26,7 @@ interface PayPalOrderCapture {
 /**
  * Create an order and related order_items/downloads from a PayPal Order Capture.
  *
- * Similar to createOrderFromPaymentIntent but handles PayPal's order structure.
+ * Handles PayPal's order structure and creates database records.
  * 
  * @param paypalOrder - The captured PayPal order
  * @param storedData - Optional stored order data (beat IDs and email) from order creation
