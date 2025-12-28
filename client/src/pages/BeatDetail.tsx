@@ -46,7 +46,11 @@ export default function BeatDetail() {
 
     // invalid or not found
     if (beat === null) {
-        return <p className="p-4 text-center text-gray-400">Beat not found.</p>;
+        return (
+            <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
+                <PageHeader title="Shared Beat" subtitle="Beat not found." />
+            </div>
+        );
     }
 
     // valid beat!
