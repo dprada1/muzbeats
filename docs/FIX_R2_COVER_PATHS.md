@@ -95,3 +95,4 @@ The local folder structure has `covers/used/` to organize files, but:
 - R2 should match: `images/covers/<beat_id>.webp`
 - The `used/` folder is just for local organization, not for R2
 
+

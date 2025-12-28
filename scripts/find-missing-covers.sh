@@ -33,3 +33,4 @@ echo ""
 echo "📝 For the missing beats, run:"
 echo "  UPDATE beats SET cover_path = NULL WHERE id IN ('<uuid1>', '<uuid2>', ...);"
 
+

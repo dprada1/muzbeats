@@ -78,3 +78,4 @@ export R2_ENDPOINT=https://a9eba83c23486e01c5a44f9ff5fd697d.r2.cloudflarestorage
 ./scripts/fix-r2-cover-paths.sh
 ```
 
+

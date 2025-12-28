@@ -56,3 +56,4 @@ echo ""
 echo "📝 To upload missing files, run:"
 echo "   ./scripts/upload-all-covers-to-r2.sh"
 
+

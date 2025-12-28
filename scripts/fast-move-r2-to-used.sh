@@ -50,3 +50,4 @@ echo "   aws s3 rm s3://${BUCKET}/images/covers/ --endpoint-url ${R2_ENDPOINT} -
 echo ""
 echo "   Or leave them - they won't be used since DB paths point to covers/used/"
 
+

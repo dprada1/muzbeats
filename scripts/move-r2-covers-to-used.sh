@@ -88,3 +88,4 @@ echo ""
 echo "✅ Done! Covers are now at: images/covers/used/<beat_id>.webp"
 echo "   This matches local structure and database paths."
 
+
