@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import pool from '../server/src/config/database.js';
-import { readdir, stat } from 'fs/promises';
+import { readdir } from 'fs/promises';
 import { join } from 'path';
 
 dotenv.config();
@@ -73,4 +73,5 @@ async function checkCoverMismatch() {
 }
 
 checkCoverMismatch().catch(console.error);
+
 
