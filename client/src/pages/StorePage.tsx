@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import LazyBeatCard from "@/components/beatcards/store/LazyBeatCard";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
@@ -89,6 +89,11 @@ export default function StorePage() {
         }
     }, [searchQuery]);
 
+    // Memoize onVisible callback to avoid recreating function on every render
+    const handleCardVisible = useCallback(() => {
+        setHasVisibleCards(true);
+    }, []);
+
     const showSkeletons = isLoading || !hasVisibleCards;
 
     const subtitle = showSkeletons
@@ -113,7 +118,7 @@ export default function StorePage() {
                             <LazyBeatCard 
                                 key={beat.id} 
                                 beat={beat} 
-                                onVisible={() => setHasVisibleCards(true)}
+                                onVisible={handleCardVisible}
                             />
                         ))}
                 </SkeletonTheme>
