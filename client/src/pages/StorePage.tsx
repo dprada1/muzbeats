@@ -50,7 +50,7 @@ export default function StorePage() {
                 setIsLoading(false);
                 NProgress.done();
             });
-    }, [searchQuery, setVisibleBeats]);
+    }, [searchQuery]);
 
     // Handle visibility flag when beats change
     useEffect(() => {
