@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import LazyBeatCard from "@/components/beatcards/store/LazyBeatCard";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
@@ -12,17 +12,12 @@ import { apiUrl, transformBeatsAssets } from "@/utils/api";
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [hasVisibleCards, setHasVisibleCards] = useState<boolean>(false);
     const { searchQuery, setBeats: setVisibleBeats } = useSearch();
-    const isInitialMount = useRef(true);
-    const previousSearchQuery = useRef(searchQuery);
 
-    // Fetch beats from backend with search query
     useEffect(() => {
         setIsLoading(true);
         NProgress.start();
         
-        // Build API URL with search query if present
         const url = searchQuery.trim() 
             ? apiUrl(`/api/beats?q=${encodeURIComponent(searchQuery.trim())}`)
             : apiUrl('/api/beats');
@@ -52,51 +47,7 @@ export default function StorePage() {
             });
     }, [searchQuery]);
 
-    // Handle visibility flag when beats change
-    useEffect(() => {
-        if (!isLoading && beats.length > 0 && !hasVisibleCards) {
-            // If there are results and loading is complete, wait for IntersectionObserver
-            // Add a fallback timeout only on initial mount (page refresh scenario)
-            if (isInitialMount.current) {
-                // Set a short timeout as fallback in case IntersectionObserver hasn't fired yet
-                // This handles the case where cards are already in viewport on page refresh
-                const timeoutId = setTimeout(() => {
-                    setHasVisibleCards(true);
-                }, 200);
-
-                return () => clearTimeout(timeoutId);
-            }
-            // For subsequent searches, IntersectionObserver will handle it via onVisible callback
-        } else if (!isLoading && beats.length === 0) {
-            // If no results, immediately mark as visible (no cards to wait for)
-            setHasVisibleCards(true);
-        }
-    }, [beats.length, hasVisibleCards, isLoading]);
-
-    // Reset visibility when search query actually changes (user action), not on initial mount
-    useEffect(() => {
-        // Skip on initial mount
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            previousSearchQuery.current = searchQuery;
-            return;
-        }
-
-        // Only reset if search query actually changed (user typed new search)
-        if (previousSearchQuery.current !== searchQuery) {
-            setHasVisibleCards(false);
-            previousSearchQuery.current = searchQuery;
-        }
-    }, [searchQuery]);
-
-    // Memoize onVisible callback to avoid recreating function on every render
-    const handleCardVisible = useCallback(() => {
-        setHasVisibleCards(true);
-    }, []);
-
-    const showSkeletons = isLoading || !hasVisibleCards;
-
-    const subtitle = showSkeletons
+    const subtitle = isLoading
         ? "Loading..."
         : searchQuery
         ? beats.length === 0
@@ -117,8 +68,7 @@ export default function StorePage() {
                         : beats.map((beat: Beat) => (
                             <LazyBeatCard 
                                 key={beat.id} 
-                                beat={beat} 
-                                onVisible={handleCardVisible}
+                                beat={beat}
                             />
                         ))}
                 </SkeletonTheme>
