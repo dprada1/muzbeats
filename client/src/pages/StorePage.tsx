@@ -23,21 +23,17 @@ export default function StorePage() {
             : apiUrl('/api/beats');
 
         fetch(url)
-            .then((res) => {
+            .then(async (res) => {
                 if (!res.ok) {
-                    throw new Error(`Failed to fetch beats: ${res.status} ${res.statusText}`);
+                    throw new Error(`${res.status} ${res.statusText}`);
                 }
-                return res.json();
-            })
-            .then((data: Beat[]) => {
-                // Transform relative asset paths to full URLs
+                const data: Beat[] = await res.json();
                 const transformedBeats = transformBeatsAssets(data);
                 setBeats(transformedBeats);
                 setVisibleBeats(transformedBeats);
             })
             .catch((error) => {
-                console.error('StorePage: Error fetching beats:', error);
-                console.error('StorePage: Error details:', error.message, error.stack);
+                console.error('Failed to fetch beats:', error.message);
                 setBeats([]);
                 setVisibleBeats([]);
             })
