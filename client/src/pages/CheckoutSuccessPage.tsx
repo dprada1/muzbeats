@@ -2,83 +2,87 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 export default function CheckoutSuccessPage() {
-  const [searchParams] = useSearchParams();
-  const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'failed'>('loading');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [searchParams] = useSearchParams();
+    const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'failed'>('loading');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log('CheckoutSuccessPage: Component mounted/updated');
-    console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
-    window.scrollTo({ top: 0 });
-    
-    // Check for PayPal order_id parameter
-    const orderId = searchParams.get('order_id');
-    
-    console.log('CheckoutSuccessPage: order_id (PayPal):', orderId);
-    
-    if (orderId) {
-      // PayPal payment - order is already created, just show success
-      console.log('PayPal order ID found, showing success');
-      setPaymentStatus('success');
-    } else {
-      // If no payment info in URL, something went wrong
-      console.error('No payment ID found in URL');
-      setPaymentStatus('failed');
-      setErrorMessage('Payment information not found. Please contact support if you were charged.');
+    useEffect(() => {
+        console.log('CheckoutSuccessPage: Component mounted/updated');
+        console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
+        window.scrollTo({ top: 0 });
+        
+        // Check for PayPal order_id parameter
+        const orderId = searchParams.get('order_id');
+        
+        console.log('CheckoutSuccessPage: order_id (PayPal):', orderId);
+        
+        if (orderId) {
+            // PayPal payment - order is already created, just show success
+            console.log('PayPal order ID found, showing success');
+            setPaymentStatus('success');
+        } else {
+            // If no payment info in URL, something went wrong
+            console.error('No payment ID found in URL');
+            setPaymentStatus('failed');
+            setErrorMessage('Payment information not found. Please contact support if you were charged.');
+        }
+    }, [searchParams]);
+
+    if (paymentStatus === 'loading') {
+        return (
+            <div className="pt-12 max-w-2xl mx-auto text-center">
+                <div className="bg-zinc-500/20 border border-zinc-500 rounded-2xl p-8 mb-6">
+                    <div className="text-6xl mb-4">⏳</div>
+                    <h1 className="text-3xl font-bold text-zinc-300 mb-4">Verifying Payment...</h1>
+                    <p className="text-zinc-400">Please wait while we confirm your payment.</p>
+                </div>
+            </div>
+        );
     }
-  }, [searchParams]);
 
-  if (paymentStatus === 'loading') {
+    if (paymentStatus === 'failed') {
+        return (
+            <div className="pt-12 max-w-2xl mx-auto text-center">
+                <div className="bg-red-500/20 border border-red-500 rounded-2xl p-8 mb-6">
+                    <div className="text-6xl mb-4">✗</div>
+                    <h1 className="text-3xl font-bold text-red-400 mb-4">Payment Not Completed</h1>
+                    <p className="text-zinc-300 mb-4">
+                        {errorMessage || 'Your payment was not completed successfully.'}
+                    </p>
+                    <p className="text-zinc-400 text-sm mb-6">
+                        If you were charged, please contact support with your order ID.
+                    </p>
+                </div>
+
+                <div className="space-y-4">
+                    <Link
+                        to="/store/cart"
+                        className="inline-block bg-[#0b84ff] hover:bg-[#0a74d1] text-white font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
+                    >
+                        Try Again
+                    </Link>
+                    <div>
+                        <Link
+                            to="/store"
+                            className="text-zinc-400 hover:text-white underline text-sm"
+                        >
+                            Continue Shopping
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className="pt-12 max-w-2xl mx-auto text-center">
-        <div className="bg-zinc-500/20 border border-zinc-500 rounded-2xl p-8 mb-6">
-          <div className="text-6xl mb-4">⏳</div>
-          <h1 className="text-3xl font-bold text-zinc-300 mb-4">Verifying Payment...</h1>
-          <p className="text-zinc-400">Please wait while we confirm your payment.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (paymentStatus === 'failed') {
-    return (
-      <div className="pt-12 max-w-2xl mx-auto text-center">
-        <div className="bg-red-500/20 border border-red-500 rounded-2xl p-8 mb-6">
-          <div className="text-6xl mb-4">✗</div>
-          <h1 className="text-3xl font-bold text-red-400 mb-4">Payment Not Completed</h1>
-          <p className="text-zinc-300 mb-4">
-            {errorMessage || 'Your payment was not completed successfully.'}
-          </p>
-          <p className="text-zinc-400 text-sm mb-6">
-            If you were charged, please contact support with your order ID.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <Link
-            to="/store/cart"
-            className="inline-block bg-[#0b84ff] hover:bg-[#0a74d1] text-white font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
-          >
-            Try Again
-          </Link>
-          <div>
-            <Link
-              to="/store"
-              className="text-zinc-400 hover:text-white underline text-sm"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="pt-12 max-w-2xl mx-auto text-center">
+        <div className="pt-12 max-w-2xl mx-auto text-center">
             <div className="bg-green-500/20 border border-green-500 rounded-2xl p-8 mb-4">
-        <div className="text-6xl mb-4">✓</div>
-        <h1 className="text-3xl font-bold text-green-400 mb-4">Payment Successful!</h1>
+                <div className="text-6xl mb-4">
+                    ✓
+                </div>
+                <h1 className="text-3xl font-bold text-green-400 mb-4">
+                    Payment Successful!
+                </h1>
                 <p className="text-zinc-300 mb-2 text-lg">
                     Thank you for your purchase!
                 </p>
@@ -91,7 +95,7 @@ export default function CheckoutSuccessPage() {
                             </h2>
                             <p className="text-zinc-300 mb-3">
                                 We've sent your download links to the email address you provided during checkout.
-        </p>
+                            </p>
                             <div className="space-y-2 text-sm text-zinc-400 mb-0">
                                 <p className="flex items-center gap-2">
                                     <span className="text-green-400">•</span>
@@ -111,19 +115,19 @@ export default function CheckoutSuccessPage() {
                 </div>
                 <p className="text-zinc-400 text-sm mt-2 mb-0">
                     Didn't receive the email? Please contact support and we'll resend your download links.
-        </p>
-      </div>
+                </p>
+            </div>
 
-      <div className="space-y-4">
-        <Link
-          to="/store"
+            <div className="space-y-4">
+                <Link
+                    to="/store"
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-full
                     bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
                     active:scale-[1.02] transition no-ring"
-        >
+                >
                     ← Continue Shopping
-          </Link>
-      </div>
-    </div>
-  );
+                </Link>
+            </div>
+        </div>
+    );
 }

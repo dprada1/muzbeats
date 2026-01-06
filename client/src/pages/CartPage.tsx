@@ -5,10 +5,6 @@ import { useSearch } from '@/context/SearchContext';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
-import BeatCardCartSkeleton from '@/components/beatcards/cart/BeatCardCartSkeleton';
-import { SkeletonTheme } from 'react-loading-skeleton';
-import CartSummarySkeleton from '@/components/beatcards/cart/CartSummarySkeleton';
-import CartSummaryStickySkeleton from '@/components/beatcards/cart/CartSummaryStickySkeleton';
 import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
 import { apiUrl } from '@/utils/api';
 
@@ -42,17 +38,11 @@ export default function CartPage() {
         fetchConfig();
     }, []);
 
-    const [showSkeletons, setShowSkeletons] = useState(true);
-    useEffect(() => {
-        setShowSkeletons(false);
-    }, []);
-
     const [showConfirm, setShowConfirm] = useState(false);
 
     const count = cartItems.length;
     const isEmpty = count === 0;
     const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
-    const skeletonCount = Math.max(count, 3);
 
     const handlePaymentSuccess = (orderId: string) => {
         navigate(`/store/checkout/success?order_id=${orderId}`, { replace: true });
@@ -65,15 +55,13 @@ export default function CartPage() {
             <div className="space-y-1 sm:space-y-1.5 mb-4">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white">Your Cart</h1>
                 <p className="text-base sm:text-lg text-zinc-400">
-                    {showSkeletons
-                    ? 'Loading…'
-                    : isEmpty
-                    ? 'Your cart is empty.'
-                    : `${count} ${count === 1 ? 'item' : 'items'} in your cart.`}
+                    {isEmpty
+                        ? 'Your cart is empty.'
+                        : `${count} ${count === 1 ? 'item' : 'items'} in your cart.`}
                 </p>
             </div>
 
-            {!showSkeletons && isEmpty && (
+            {isEmpty && (
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
@@ -84,27 +72,18 @@ export default function CartPage() {
                 </Link>
             )}
 
-            {(showSkeletons || !isEmpty) && (
+            {!isEmpty && (
                 <div className="grid lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
                     {/* list */}
                     <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
-                        <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
-                        {showSkeletons
-                            ? Array.from({ length: skeletonCount }).map((_, i) => (
-                                    <BeatCardCartSkeleton key={i} />
-                                ))
-                            : cartItems.map((beat) => (
-                                    <LazyBeatCardCart key={beat.id} beat={beat} />
-                                ))}
-                        </SkeletonTheme>
+                        {cartItems.map((beat) => (
+                            <LazyBeatCardCart key={beat.id} beat={beat} />
+                        ))}
                     </div>
 
                     {/* sidebar summary (desktop/tablet) */}
                     <div className="hidden lg:block">
-                        {showSkeletons
-                            ? <CartSummarySkeleton />
-                            : (!isEmpty &&
-                                <div className="bg-[#1e1e1e] rounded-2xl p-6 sticky top-4">
+                        <div className="bg-[#1e1e1e] rounded-2xl p-6 sticky top-4">
                                     <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
                                     
                                     {/* Total */}
@@ -160,16 +139,12 @@ export default function CartPage() {
                                         Clear Cart
                                     </button>
                                 </div>
-                            )
-                        }
                     </div>
                 </div>
             )}
 
             {/* sticky checkout bar for mobile */}
-            {showSkeletons
-                ? <CartSummaryStickySkeleton />
-                :   (!isEmpty && (
+            {!isEmpty && (
                         <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
                             <div className="pointer-events-auto backdrop-blur-xl bg-[#0d0d0d]/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
                                 {/* Total */}
@@ -222,8 +197,7 @@ export default function CartPage() {
                                 </div>
                             </div>
                         </div>
-                    ))
-            }
+                    )}
 
             {/* confirm dialog */}
             {showConfirm && (
