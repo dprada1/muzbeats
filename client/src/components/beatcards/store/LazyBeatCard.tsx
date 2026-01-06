@@ -5,22 +5,14 @@ import BeatCardStore from "./BeatCardStore";
 import BeatCardSkeleton from "./BeatCardSkeleton";
 import type { Beat } from "@/types/Beat";
 
-type Props = { 
-    beat: Beat; 
-    rootMargin?: string;
-    onVisible?: () => void;
-};
-
-export default function LazyBeatCard({ beat, rootMargin = "600px 0px", onVisible }: Props) {
-    const { ref, inView } = useInView<HTMLDivElement>({ rootMargin, threshold: 0.01, once: true });
+export default function LazyBeatCard({ beat }: { beat: Beat }) {
+    const { ref, inView } = useInView<HTMLDivElement>({ threshold: 0.01, once: true });
     const [coverReady, setCoverReady] = useState(false);
     const [waveReady, setWaveReady] = useState(false);
     const allReady = coverReady && waveReady;
 
     useEffect(() => {
         if (!inView) return;
-        // Notify parent that this card is now visible/loading
-        onVisible?.();
         
         let cancelled = false;
         preloadImage(beat.cover).then(() => !cancelled && setCoverReady(true)).catch(() => {
@@ -28,7 +20,7 @@ export default function LazyBeatCard({ beat, rootMargin = "600px 0px", onVisible
             if (!cancelled) setCoverReady(true);
         });
         return () => { cancelled = true; };
-    }, [inView, beat.cover, onVisible]);
+    }, [inView, beat.cover]);
 
     // Reset states when beat changes
     useEffect(() => {
