@@ -65,8 +65,8 @@ export default function CartPage() {
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
-                    bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
-                    active:scale-[1.02] transition no-ring"
+                                   bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                                   active:scale-[1.02] transition no-ring"
                 >
                     ← Continue Shopping
                 </Link>
@@ -84,120 +84,120 @@ export default function CartPage() {
                     {/* sidebar summary (desktop/tablet) */}
                     <div className="hidden lg:block">
                         <div className="bg-[#1e1e1e] rounded-2xl p-6 sticky top-4">
-                                    <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
-                                    
-                                    {/* Total */}
-                                    <div className="flex items-center justify-between py-3 border-b border-zinc-700/50 mb-5">
-                                        <span className="text-zinc-400">Total</span>
-                                        <span className="text-2xl font-bold text-white">${total}</span>
-                                    </div>
+                            <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
+                            
+                            {/* Total */}
+                            <div className="flex items-center justify-between py-3 border-b border-zinc-700/50 mb-5">
+                                <span className="text-zinc-400">Total</span>
+                                <span className="text-2xl font-bold text-white">${total}</span>
+                            </div>
 
-                                    {/* PayPal Checkout */}
-                                    {error ? (
-                                        <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4">
-                                            <p className="text-red-400 text-sm">{error}</p>
-                                        </div>
-                                    ) : paypalClientId ? (
-                                        <div className="mb-5">
-                                            <PayPalScriptProvider 
-                                                options={{ 
-                                                    clientId: paypalClientId, 
-                                                    currency: 'USD',
-                                                    disableFunding: 'card', // Hide card button for cleaner UI
-                                                }}
-                                            >
-                                                <PayPalCheckoutButton
-                                                    cartItems={cartItems}
-                                                    onSuccess={handlePaymentSuccess}
-                                                    onError={setError}
-                                                />
-                                            </PayPalScriptProvider>
-                                        </div>
-                                    ) : (
-                                        <div className="text-zinc-400 text-sm py-4 text-center">Loading payment options...</div>
-                                    )}
-
-                                    {/* License Agreement */}
-                                    <div className="text-[11px] text-zinc-500 leading-relaxed mb-3 pb-3 border-b border-zinc-800">
-                                        By purchasing, you agree to a{' '}
-                                        <span className="text-zinc-400 font-medium">non‑exclusive</span> license.{' '}
-                                        <a
-                                            href="/store/license"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-zinc-400 underline hover:text-white transition"
-                                        >
-                                            View details
-                                        </a>
-                                    </div>
-
-                                    {/* Clear Cart */}
-                                    <button
-                                        onClick={() => setShowConfirm(true)}
-                                        className="w-full text-center text-red-400/80 hover:text-red-400 text-sm transition no-ring cursor-pointer"
-                                    >
-                                        Clear Cart
-                                    </button>
+                            {/* PayPal Checkout */}
+                            {error ? (
+                                <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4">
+                                    <p className="text-red-400 text-sm">{error}</p>
                                 </div>
+                            ) : paypalClientId ? (
+                                <div className="mb-5">
+                                    <PayPalScriptProvider 
+                                        options={{ 
+                                            clientId: paypalClientId, 
+                                            currency: 'USD',
+                                            disableFunding: 'card', // Hide card button for cleaner UI
+                                        }}
+                                    >
+                                        <PayPalCheckoutButton
+                                            cartItems={cartItems}
+                                            onSuccess={handlePaymentSuccess}
+                                            onError={setError}
+                                        />
+                                    </PayPalScriptProvider>
+                                </div>
+                            ) : (
+                                <div className="text-zinc-400 text-sm py-4 text-center">Loading payment options...</div>
+                            )}
+
+                            {/* License Agreement */}
+                            <div className="text-[11px] text-zinc-500 leading-relaxed mb-3 pb-3 border-b border-zinc-800">
+                                By purchasing, you agree to a{' '}
+                                <span className="text-zinc-400 font-medium">non‑exclusive</span> license.{' '}
+                                <a
+                                    href="/store/license"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-zinc-400 underline hover:text-white transition"
+                                >
+                                    View details
+                                </a>
+                            </div>
+
+                            {/* Clear Cart */}
+                            <button
+                                onClick={() => setShowConfirm(true)}
+                                className="w-full text-center text-red-400/80 hover:text-red-400 text-sm transition no-ring cursor-pointer"
+                            >
+                                Clear Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* sticky checkout bar for mobile */}
             {!isEmpty && (
-                        <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
-                            <div className="pointer-events-auto backdrop-blur-xl bg-[#0d0d0d]/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
-                                {/* Total */}
-                                <div className="flex items-center justify-between mb-3 pb-3 border-b border-zinc-800">
-                                    <span className="text-sm text-zinc-400">Total</span>
-                                    <span className="text-xl font-bold text-white">${total}</span>
-                                </div>
-                                
-                                {/* PayPal Checkout Mobile */}
-                                {error ? (
-                                    <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-3">
-                                        <p className="text-red-400 text-xs">{error}</p>
-                                    </div>
-                                ) : paypalClientId ? (
-                                    <div className="mb-3">
-                                        <PayPalScriptProvider 
-                                            options={{ 
-                                                clientId: paypalClientId, 
-                                                currency: 'USD',
-                                                disableFunding: 'card',
-                                            }}
-                                        >
-                                            <PayPalCheckoutButton
-                                                cartItems={cartItems}
-                                                onSuccess={handlePaymentSuccess}
-                                                onError={setError}
-                                            />
-                                        </PayPalScriptProvider>
-                                    </div>
-                                ) : (
-                                    <div className="text-zinc-400 text-xs py-3 text-center">Loading...</div>
-                                )}
-
-                                {/* Footer Links */}
-                                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-zinc-800">
-                                    <button
-                                        onClick={() => setShowConfirm(true)}
-                                        className="text-red-400/80 hover:text-red-400 transition no-ring"
-                                    >
-                                        Clear Cart
-                                    </button>
-                                    <a 
-                                        href="/store/license" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="text-zinc-500 hover:text-zinc-400 transition"
-                                    >
-                                        License Details
-                                    </a>
-                                </div>
-                            </div>
+                <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
+                    <div className="pointer-events-auto backdrop-blur-xl bg-[#0d0d0d]/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
+                        {/* Total */}
+                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-zinc-800">
+                            <span className="text-sm text-zinc-400">Total</span>
+                            <span className="text-xl font-bold text-white">${total}</span>
                         </div>
-                    )}
+                        
+                        {/* PayPal Checkout Mobile */}
+                        {error ? (
+                            <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-3">
+                                <p className="text-red-400 text-xs">{error}</p>
+                            </div>
+                        ) : paypalClientId ? (
+                            <div className="mb-3">
+                                <PayPalScriptProvider 
+                                    options={{ 
+                                        clientId: paypalClientId, 
+                                        currency: 'USD',
+                                        disableFunding: 'card',
+                                    }}
+                                >
+                                    <PayPalCheckoutButton
+                                        cartItems={cartItems}
+                                        onSuccess={handlePaymentSuccess}
+                                        onError={setError}
+                                    />
+                                </PayPalScriptProvider>
+                            </div>
+                        ) : (
+                            <div className="text-zinc-400 text-xs py-3 text-center">Loading...</div>
+                        )}
+
+                        {/* Footer Links */}
+                        <div className="flex items-center justify-between text-[11px] pt-2 border-t border-zinc-800">
+                            <button
+                                onClick={() => setShowConfirm(true)}
+                                className="text-red-400/80 hover:text-red-400 transition no-ring"
+                            >
+                                Clear Cart
+                            </button>
+                            <a 
+                                href="/store/license" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-zinc-500 hover:text-zinc-400 transition"
+                            >
+                                License Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* confirm dialog */}
             {showConfirm && (
