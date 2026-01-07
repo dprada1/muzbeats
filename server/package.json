@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
@@ -43,7 +46,6 @@
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.6",
     "@vitest/ui": "^3.2.4",
-    "nodemon": "^3.1.10",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
