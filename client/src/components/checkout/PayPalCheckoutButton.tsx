@@ -1,6 +1,7 @@
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { apiUrl } from '@/utils/api';
 import type { Beat } from '@/types/Beat';
+import { validatedFetch, PayPalCreateOrderResponseSchema, PayPalCaptureOrderResponseSchema } from '@/utils/apiValidation';
 
 interface PayPalCheckoutButtonProps {
     cartItems: Beat[];
@@ -35,25 +36,22 @@ export default function PayPalCheckoutButton({
                     createOrder={async () => {
                     try {
                         // Create PayPal order on our backend
-                        const response = await fetch(apiUrl('/api/checkout/paypal/create-order'), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                items: cartItems.map((beat: Beat) => ({
-                                    beatId: beat.id,
-                                    quantity: 1,
-                                })),
-                            }),
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.error || 'Failed to create order');
-                        }
-
-                        const data = await response.json();
+                        const data = await validatedFetch(
+                            apiUrl('/api/checkout/paypal/create-order'),
+                            PayPalCreateOrderResponseSchema,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    items: cartItems.map((beat: Beat) => ({
+                                        beatId: beat.id,
+                                        quantity: 1,
+                                    })),
+                                }),
+                            }
+                        );
                         return data.orderId;
                     } catch (error: any) {
                         console.error('Error creating PayPal order:', error);
@@ -64,22 +62,19 @@ export default function PayPalCheckoutButton({
                 onApprove={async (data) => {
                     try {
                         // Capture the order on our backend
-                        const response = await fetch(apiUrl('/api/checkout/paypal/capture-order'), {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                orderId: data.orderID,
-                            }),
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.error || 'Failed to capture payment');
-                        }
-
-                        const result = await response.json();
+                        const result = await validatedFetch(
+                            apiUrl('/api/checkout/paypal/capture-order'),
+                            PayPalCaptureOrderResponseSchema,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                        orderId: data.orderID,
+                                    }),
+                            }
+                        );
 
                         // Call success handler with our database order ID
                         onSuccess(result.orderId);

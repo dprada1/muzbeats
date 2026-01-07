@@ -110,3 +110,17 @@ export function validateSearchQuery(query: string | null | undefined): {
 
     return { isValid: true, query: trimmed, wasTruncated: false };
 }
+
+/**
+ * Truncates text for display in the UI
+ * Shows first part of text with ellipsis if it exceeds max length
+ * @param text - Text to truncate
+ * @param maxLength - Maximum length before truncation (default: 60)
+ * @returns Truncated text with ellipsis if needed
+ */
+export function truncateForDisplay(text: string, maxLength: number = 60): string {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.substring(0, maxLength) + '...';
+}

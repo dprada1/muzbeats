@@ -8,6 +8,8 @@ import 'nprogress/nprogress.css';
 import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
 import { SkeletonTheme } from "react-loading-skeleton";
 import { apiUrl, transformBeatsAssets } from "@/utils/api";
+import { validatedFetch, BeatSchema, z, type Beat as ValidatedBeat } from "@/utils/apiValidation";
+import { truncateForDisplay } from "@/utils/validation";
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
@@ -22,13 +24,11 @@ export default function StorePage() {
             ? apiUrl(`/api/beats?q=${encodeURIComponent(searchQuery.trim())}`)
             : apiUrl('/api/beats');
 
-        fetch(url)
-            .then(async (res) => {
-                if (!res.ok) {
-                    throw new Error(`${res.status} ${res.statusText}`);
-                }
-                const data: Beat[] = await res.json();
-                const transformedBeats = transformBeatsAssets(data);
+        validatedFetch(url, z.array(BeatSchema))
+            .then((data: ValidatedBeat[]) => {
+                // Transform relative asset paths to full URLs
+                // Type assertion is safe because ValidatedBeat matches Beat structure
+                const transformedBeats = transformBeatsAssets(data) as Beat[];
                 setBeats(transformedBeats);
                 setVisibleBeats(transformedBeats);
             })
@@ -43,15 +43,39 @@ export default function StorePage() {
             });
     }, [searchQuery]);
 
-    const subtitle = isLoading
-        ? "Loading..."
-        : searchQuery
-        ? beats.length === 0
-            ? `No results found for "${searchQuery}"`
-            : `Showing ${beats.length} result${
-                  beats.length !== 1 ? "s" : ""
-              } for "${searchQuery}"`
-        : `All beats (${beats.length})`;
+    // Truncate search query for display (keep full query for API calls)
+    // Show full query in tooltip if truncated
+    const getSubtitle = () => {
+        if (isLoading) return "Loading...";
+        if (!searchQuery) return `All beats (${beats.length})`;
+        
+        const displayQuery = truncateForDisplay(searchQuery, 60);
+        const isTruncated = searchQuery.length > 60;
+        
+        if (beats.length === 0) {
+            return (
+                <>
+                    No results found for "
+                    <span title={isTruncated ? searchQuery : undefined}>
+                        {displayQuery}
+                    </span>
+                    "
+                </>
+            );
+        }
+        
+        return (
+            <>
+                Showing {beats.length} result{beats.length !== 1 ? "s" : ""} for "
+                <span title={isTruncated ? searchQuery : undefined}>
+                    {displayQuery}
+                </span>
+                "
+            </>
+        );
+    };
+    
+    const subtitle = getSubtitle();
 
     return (
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">

@@ -5,6 +5,7 @@ import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { apiUrl, transformBeatAssets } from '@/utils/api';
 import { isValidBeatId } from '@/utils/validation';
+import { validatedFetch, BeatSchema } from '@/utils/apiValidation';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
@@ -23,22 +24,17 @@ export default function BeatDetail() {
             return;
         }
 
-        fetch(apiUrl(`/api/beats/${beatId}`))
-            .then((res) => {
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        return null;
-                    }
-                    throw new Error('Failed to fetch beat');
-                }
-                return res.json();
-            })
-            .then((data: Beat | null) => {
+        validatedFetch(apiUrl(`/api/beats/${beatId}`), BeatSchema)
+            .then((data) => {
                 // Transform relative asset paths to full URLs
-                setBeat(data ? transformBeatAssets(data) : null);
+                setBeat(transformBeatAssets(data));
             })
             .catch((error) => {
-                console.error('Error fetching beat:', error);
+                // Handle 404 (beat not found) and validation errors gracefully
+                // All errors result in setting beat to null (not found)
+                if (import.meta.env.DEV && !error.message.includes('404')) {
+                    console.error('Error fetching beat:', error);
+                }
                 setBeat(null);
             });
     }, [beatId]);

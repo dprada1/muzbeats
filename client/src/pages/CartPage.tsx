@@ -7,6 +7,7 @@ import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
 import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
 import { apiUrl } from '@/utils/api';
+import { validatedFetch, PayPalConfigSchema, type PayPalConfig } from '@/utils/apiValidation';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
@@ -26,10 +27,8 @@ export default function CartPage() {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const response = await fetch(apiUrl('/api/checkout/config'));
-                if (!response.ok) throw new Error('Failed to fetch config');
-                const config = await response.json();
-                setPaypalClientId(config.paypal?.clientId || null);
+                const config: PayPalConfig = await validatedFetch(apiUrl('/api/checkout/config'), PayPalConfigSchema);
+                setPaypalClientId(config.paypal.clientId || null);
             } catch (err) {
                 console.error('Error fetching PayPal config:', err);
                 setError('Failed to load payment options');
