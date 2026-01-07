@@ -2,6 +2,7 @@ import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { apiUrl } from '@/utils/api';
 import type { Beat } from '@/types/Beat';
 import { validatedFetch, PayPalCreateOrderResponseSchema, PayPalCaptureOrderResponseSchema } from '@/utils/apiValidation';
+import { sanitizeErrorMessage } from '@/utils/errorSanitization';
 
 interface PayPalCheckoutButtonProps {
     cartItems: Beat[];
@@ -55,7 +56,9 @@ export default function PayPalCheckoutButton({
                         return data.orderId;
                     } catch (error: any) {
                         console.error('Error creating PayPal order:', error);
-                        onError(error.message || 'Failed to create order');
+                        // Sanitize error message before showing to user
+                        const userMessage = sanitizeErrorMessage(error, 'PayPal create order');
+                        onError(userMessage);
                         throw error;
                     }
                 }}
@@ -80,7 +83,9 @@ export default function PayPalCheckoutButton({
                         onSuccess(result.orderId);
                     } catch (error: any) {
                         console.error('Error capturing PayPal order:', error);
-                        onError(error.message || 'Failed to complete payment');
+                        // Sanitize error message before showing to user
+                        const userMessage = sanitizeErrorMessage(error, 'PayPal capture order');
+                        onError(userMessage);
                     }
                 }}
                 onError={(err) => {

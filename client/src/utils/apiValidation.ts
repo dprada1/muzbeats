@@ -117,16 +117,49 @@ export async function validatedFetch<T>(
     
     if (!response.ok) {
         // Try to parse error response
+        let backendErrorMessage: string | null = null;
         try {
             const errorData = await response.json();
             const validatedError = ErrorResponseSchema.safeParse(errorData);
             if (validatedError.success) {
-                throw new Error(validatedError.data.error);
+                backendErrorMessage = validatedError.data.error;
             }
         } catch {
-            // If error response parsing fails, use status text
+            // If error response parsing fails, continue with generic message
         }
-        throw new Error(`${response.status} ${response.statusText}`);
+        
+        // Log technical details in development
+        if (import.meta.env.DEV) {
+            console.error('API request failed:', {
+                url,
+                status: response.status,
+                statusText: response.statusText,
+                backendError: backendErrorMessage,
+            });
+        }
+        
+        // Use backend error message if available (it should already be user-friendly from backend)
+        // Otherwise, provide context-aware message based on status code
+        if (backendErrorMessage) {
+            throw new Error(backendErrorMessage);
+        }
+        
+        // If no backend message, provide user-friendly message based on status
+        // HTTP status codes are standard and safe to use for context
+        if (response.status >= 500) {
+            throw new Error('Server error. Please try again later.');
+        } else if (response.status === 404) {
+            throw new Error('Resource not found.');
+        } else if (response.status === 403) {
+            throw new Error('Access denied.');
+        } else if (response.status === 401) {
+            throw new Error('Authentication required.');
+        } else if (response.status >= 400) {
+            throw new Error('Request failed. Please check your input and try again.');
+        }
+        
+        // Fallback
+        throw new Error('Request failed. Please try again.');
     }
     
     const data = await response.json();
