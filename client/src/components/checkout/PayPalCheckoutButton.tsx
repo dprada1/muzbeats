@@ -63,8 +63,6 @@ export default function PayPalCheckoutButton({
                 }}
                 onApprove={async (data) => {
                     try {
-                        console.log('PayPal order approved:', data.orderID);
-
                         // Capture the order on our backend
                         const response = await fetch(apiUrl('/api/checkout/paypal/capture-order'), {
                             method: 'POST',
@@ -82,7 +80,6 @@ export default function PayPalCheckoutButton({
                         }
 
                         const result = await response.json();
-                        console.log('Payment captured successfully:', result);
 
                         // Call success handler with our database order ID
                         onSuccess(result.orderId);
@@ -96,7 +93,6 @@ export default function PayPalCheckoutButton({
                     onError('PayPal payment failed. Please try again.');
                 }}
                 onCancel={() => {
-                    console.log('PayPal payment cancelled by user');
                     onError('Payment was cancelled');
                 }}
             />

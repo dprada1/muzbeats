@@ -7,18 +7,13 @@ export default function CheckoutSuccessPage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log('CheckoutSuccessPage: Component mounted/updated');
-        console.log('CheckoutSuccessPage: searchParams:', Object.fromEntries(searchParams.entries()));
         window.scrollTo({ top: 0 });
         
         // Check for PayPal order_id parameter
         const orderId = searchParams.get('order_id');
         
-        console.log('CheckoutSuccessPage: order_id (PayPal):', orderId);
-        
         if (orderId) {
             // PayPal payment - order is already created, just show success
-            console.log('PayPal order ID found, showing success');
             setPaymentStatus('success');
         } else {
             // If no payment info in URL, something went wrong

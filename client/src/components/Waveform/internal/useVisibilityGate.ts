@@ -19,28 +19,25 @@ export function useVisibilityGate(
     // If this beat is active, mark visible and skip setting up IntersectionObserver
     useEffect(() => {
         // Beat's waveform is in playerbar, force visible and skip IO setup
-        if (isActive) { console.log("It's active!"); setVisible(true); return; }
+        if (isActive) {
+            setVisible(true);
+            return;
+        }
 
         const wrapperEl = wrapperRef.current;
         if (!wrapperEl) return;
 
-        console.debug("Creating new intersection observer...");
-
         const io = new IntersectionObserver(([entry]) => {
             if (entry.isIntersecting) {
                 setVisible(true);
-                console.log("I set visible to true!");
                 io.disconnect();
-                console.log("I disconnected the container! - IO");
             }
         }, { rootMargin: '300px' });
 
         io.observe(wrapperEl);
-        console.log("I observed the container!");
 
         return () => {
             io.disconnect();
-            console.log("I disconnected the container! - cleanup");
         };
     }, [isActive, wrapperRef]);
 
