@@ -50,6 +50,8 @@ docs/audits/
 *.jpg
 *.jpeg
 *.png
+# Exception: Logo file needed for offline availability
+!client/public/skimask.png
 *.gif
 *.svg
 
