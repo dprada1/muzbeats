@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { isValidOrderId } from '@/utils/validation';
 
 export default function CheckoutSuccessPage() {
     const [searchParams] = useSearchParams();
@@ -12,15 +13,24 @@ export default function CheckoutSuccessPage() {
         // Check for PayPal order_id parameter
         const orderId = searchParams.get('order_id');
         
-        if (orderId) {
-            // PayPal payment - order is already created, just show success
-            setPaymentStatus('success');
-        } else {
+        if (!orderId) {
             // If no payment info in URL, something went wrong
             console.error('No payment ID found in URL');
             setPaymentStatus('failed');
             setErrorMessage('Payment information not found. Please contact support if you were charged.');
+            return;
         }
+
+        // Validate orderId format before proceeding
+        if (!isValidOrderId(orderId)) {
+            console.error('Invalid order ID format:', orderId);
+            setPaymentStatus('failed');
+            setErrorMessage('Invalid payment information. Please contact support if you were charged.');
+            return;
+        }
+
+        // PayPal payment - order is already created, just show success
+        setPaymentStatus('success');
     }, [searchParams]);
 
     if (paymentStatus === 'loading') {

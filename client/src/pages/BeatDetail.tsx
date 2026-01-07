@@ -4,6 +4,7 @@ import type { Beat } from '@/types/Beat';
 import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { apiUrl, transformBeatAssets } from '@/utils/api';
+import { isValidBeatId } from '@/utils/validation';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
@@ -11,6 +12,13 @@ export default function BeatDetail() {
 
     useEffect(() => {
         if (!beatId) {
+            setBeat(null);
+            return;
+        }
+
+        // Validate beatId format before making API call
+        if (!isValidBeatId(beatId)) {
+            console.error('Invalid beat ID format:', beatId);
             setBeat(null);
             return;
         }
