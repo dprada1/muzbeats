@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearch } from '@/context/SearchContext';
 import { useNavigate, createSearchParams } from 'react-router-dom';
 import NProgress from 'nprogress';
-import { validateSearchQuery } from '@/utils/validation';
+import { validateSearchQuery, MAX_SEARCH_QUERY_LENGTH } from '@/utils/validation';
 
 /**
  * Drives the search flow:
@@ -38,15 +38,20 @@ export function useSearchBar() {
         const validation = validateSearchQuery(input);
         
         if (!validation.isValid) {
-            // Empty query - just navigate to store
+            // Invalid query (empty/whitespace) - clear input and navigate to store
+            setInput('');
             navigate('/store');
             NProgress.done();
             return;
         }
 
         // If query was truncated, update input to show truncated version
+        // and log a warning for user feedback (in development)
         if (validation.wasTruncated) {
             setInput(validation.query);
+            if (import.meta.env.DEV) {
+                console.warn(`Search query truncated to ${validation.query.length} characters (max: ${MAX_SEARCH_QUERY_LENGTH})`);
+            }
         }
 
         // Navigate with validated query
