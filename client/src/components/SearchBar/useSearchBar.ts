@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearch } from '@/context/SearchContext';
 import { useNavigate, createSearchParams } from 'react-router-dom';
 import NProgress from 'nprogress';
+import { validateSearchQuery } from '@/utils/validation';
 
 /**
  * Drives the search flow:
@@ -33,15 +34,26 @@ export function useSearchBar() {
         NProgress.start();
         window.scrollTo({ top: 0, behavior: 'auto' });
 
-        const q = input.trim();
-        if (q) {
-            navigate({
-                pathname: '/store',
-                search: createSearchParams({ q }).toString(),
-            });
-        } else {
+        // Validate and sanitize search query
+        const validation = validateSearchQuery(input);
+        
+        if (!validation.isValid) {
+            // Empty query - just navigate to store
             navigate('/store');
+            NProgress.done();
+            return;
         }
+
+        // If query was truncated, update input to show truncated version
+        if (validation.wasTruncated) {
+            setInput(validation.query);
+        }
+
+        // Navigate with validated query
+        navigate({
+            pathname: '/store',
+            search: createSearchParams({ q: validation.query }).toString(),
+        });
 
         NProgress.done();
     };

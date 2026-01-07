@@ -64,3 +64,49 @@ export function isValidOrderId(orderId: string | undefined | null): boolean {
     
     return false;
 }
+
+/**
+ * Maximum length for search queries
+ * Prevents DoS attacks and URL length issues
+ */
+export const MAX_SEARCH_QUERY_LENGTH = 200;
+
+/**
+ * Validates and sanitizes a search query
+ * @param query - The search query to validate
+ * @returns Object with isValid flag and sanitized query (truncated if too long)
+ */
+export function validateSearchQuery(query: string | null | undefined): {
+    isValid: boolean;
+    query: string;
+    wasTruncated: boolean;
+} {
+    if (!query || typeof query !== 'string') {
+        return { isValid: false, query: '', wasTruncated: false };
+    }
+
+    const trimmed = query.trim();
+    
+    if (trimmed.length === 0) {
+        return { isValid: false, query: '', wasTruncated: false };
+    }
+
+    // Check if query exceeds maximum length
+    if (trimmed.length > MAX_SEARCH_QUERY_LENGTH) {
+        // Truncate to max length (preserve word boundaries if possible)
+        const truncated = trimmed.substring(0, MAX_SEARCH_QUERY_LENGTH);
+        // Try to truncate at a space to avoid cutting words
+        const lastSpace = truncated.lastIndexOf(' ');
+        const finalQuery = lastSpace > MAX_SEARCH_QUERY_LENGTH * 0.8 
+            ? truncated.substring(0, lastSpace) 
+            : truncated;
+        
+        return { 
+            isValid: true, 
+            query: finalQuery.trim(), 
+            wasTruncated: true 
+        };
+    }
+
+    return { isValid: true, query: trimmed, wasTruncated: false };
+}

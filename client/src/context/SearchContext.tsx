@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Beat } from '@/types/Beat';
 import { useSearchParams } from 'react-router-dom';
+import { validateSearchQuery } from '@/utils/validation';
 
 interface SearchContextProps {
     searchQuery: string;
@@ -22,12 +23,17 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         searchParams = new URLSearchParams();
     }
 
-    const [searchQuery, _setSearchQuery] = useState(() => searchParams.get('q') || '');
+    // Validate search query from URL on initial load
+    const initialQuery = searchParams.get('q') || '';
+    const initialValidation = validateSearchQuery(initialQuery);
+    const [searchQuery, _setSearchQuery] = useState(initialValidation.query);
 
-    // When URL changes, sync into state
+    // When URL changes, sync into state (with validation)
     useEffect(() => {
         if (!hasSearchParams) return;
-        _setSearchQuery(searchParams.get('q') || '');
+        const urlQuery = searchParams.get('q') || '';
+        const validation = validateSearchQuery(urlQuery);
+        _setSearchQuery(validation.query);
     }, [searchParams, hasSearchParams]);
 
     // State-only setter; URL updates come from navigate() in the UI

@@ -1,6 +1,7 @@
 import React from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import { useSearchBar } from "./useSearchBar";
+import { MAX_SEARCH_QUERY_LENGTH } from "@/utils/validation";
 
 const SearchBar: React.FC = () => {
     const {
@@ -43,6 +44,7 @@ const SearchBar: React.FC = () => {
                     onChange={(e) => setInput(e.target.value)}
                     onFocus={onFocus}
                     onBlur={onBlur}
+                    maxLength={MAX_SEARCH_QUERY_LENGTH}
                     className="bg-transparent focus:outline-none text-sm text-white placeholder-[#808080] w-full pr-12"
                     inputMode="search"
                 />
