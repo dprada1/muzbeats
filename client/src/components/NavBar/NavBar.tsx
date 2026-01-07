@@ -5,17 +5,21 @@ import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
 import { useState } from 'react';
+import { getR2PublicUrl } from '@/utils/api';
 
 export default function Navbar() {
     const { cartItems } = useCart();
     const qty = cartItems.length;
     const [logoError, setLogoError] = useState(false);
 
-    // Logo is served from client public folder (always available, even when server is down)
-    // Fallback to backend if local logo fails to load
-    const logoUrl = logoError 
-        ? '/assets/images/skimask.png' // Fallback to backend (if available)
-        : '/skimask.png'; // Local logo in public folder
+    // Logo is served from R2 CDN (fast, no bundle bloat)
+    // Fallback to local public folder if R2 fails
+    const r2Url = getR2PublicUrl();
+    const logoUrl = logoError
+        ? '/skimask.png' // Fallback to local if R2 fails
+        : r2Url
+            ? `${r2Url}/assets/images/skimask.png` // R2 CDN (preferred)
+            : '/skimask.png'; // Local fallback if R2 not configured
 
     return (
         <nav
@@ -33,7 +37,7 @@ export default function Navbar() {
                         alt="MuzBeats Logo" 
                         className="w-10 h-10 object-cover"
                         onError={() => {
-                            // If local logo fails, try backend fallback
+                            // If R2 logo fails, try local fallback
                             if (!logoError) {
                                 setLogoError(true);
                             }
