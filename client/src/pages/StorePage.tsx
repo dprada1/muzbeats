@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import LazyBeatCard from "@/components/beatcards/store/LazyBeatCard";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
@@ -15,6 +16,7 @@ export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const { searchQuery, setBeats: setVisibleBeats } = useSearch();
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setIsLoading(true);
@@ -45,12 +47,15 @@ export default function StorePage() {
 
     // Truncate search query for display (keep full query for API calls)
     // Show full query in tooltip if truncated
+    // Use responsive truncation: shorter on mobile, longer on desktop
     const getSubtitle = () => {
         if (isLoading) return "Loading...";
         if (!searchQuery) return `All beats (${beats.length})`;
         
-        const displayQuery = truncateForDisplay(searchQuery, 60);
-        const isTruncated = searchQuery.length > 60;
+        // Use responsive truncation: shorter on mobile (30), longer on desktop (60)
+        const truncateThreshold = isMobile ? 30 : 60;
+        const displayQuery = truncateForDisplay(searchQuery, truncateThreshold);
+        const isTruncated = searchQuery.length > truncateThreshold;
         
         if (beats.length === 0) {
             return (

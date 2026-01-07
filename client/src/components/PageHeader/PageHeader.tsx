@@ -37,7 +37,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-0.5 sm:mb-1">
                     {title}
                 </h1>
-                <p className="text-base sm:text-lg text-zinc-400">
+                <p className="text-base sm:text-lg text-zinc-400 break-words">
                     {subtitle}
                 </p>
             </div>
