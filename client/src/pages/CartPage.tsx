@@ -29,9 +29,11 @@ export default function CartPage() {
             try {
                 const config: PayPalConfig = await validatedFetch(apiUrl('/api/checkout/config'), PayPalConfigSchema);
                 setPaypalClientId(config.paypal.clientId || null);
+                setError(null); // Clear error on success
             } catch (err) {
                 console.error('Error fetching PayPal config:', err);
-                setError('Failed to load payment options');
+                // Set professional error message for server connectivity issues
+                setError('Unable to connect to the server. Payment options are temporarily unavailable. Please check your connection and try again.');
             }
         };
         fetchConfig();
@@ -93,8 +95,8 @@ export default function CartPage() {
 
                             {/* PayPal Checkout */}
                             {error ? (
-                                <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-4">
-                                    <p className="text-red-400 text-sm">{error}</p>
+                                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
+                                    <p className="text-red-400 text-sm font-medium">{error}</p>
                                 </div>
                             ) : paypalClientId ? (
                                 <div className="mb-5">
@@ -154,8 +156,8 @@ export default function CartPage() {
                         
                         {/* PayPal Checkout Mobile */}
                         {error ? (
-                            <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-3">
-                                <p className="text-red-400 text-xs">{error}</p>
+                            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-3">
+                                <p className="text-red-400 text-xs font-medium">{error}</p>
                             </div>
                         ) : paypalClientId ? (
                             <div className="mb-3">

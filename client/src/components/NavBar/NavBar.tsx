@@ -4,14 +4,18 @@ import { FaCartShopping } from "react-icons/fa6";
 import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
-import { assetUrl } from '@/utils/api';
+import { useState } from 'react';
 
 export default function Navbar() {
     const { cartItems } = useCart();
     const qty = cartItems.length;
+    const [logoError, setLogoError] = useState(false);
 
-    // Logo is always served from backend static files (not R2)
-    const logoUrl = assetUrl('/assets/images/skimask.png');
+    // Logo is served from client public folder (always available, even when server is down)
+    // Fallback to backend if local logo fails to load
+    const logoUrl = logoError 
+        ? '/assets/images/skimask.png' // Fallback to backend (if available)
+        : '/skimask.png'; // Local logo in public folder
 
     return (
         <nav
@@ -24,7 +28,17 @@ export default function Navbar() {
                     className="flex items-center gap-2 group no-ring"
                     onClick={() => { NProgress.start(); (NProgress.done()); }}
                 >
-                    <img src={logoUrl} alt="Logo" className="w-10 h-10 object-cover" />
+                    <img 
+                        src={logoUrl} 
+                        alt="MuzBeats Logo" 
+                        className="w-10 h-10 object-cover"
+                        onError={() => {
+                            // If local logo fails, try backend fallback
+                            if (!logoError) {
+                                setLogoError(true);
+                            }
+                        }}
+                    />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
                                MuzBeats
                     </span>

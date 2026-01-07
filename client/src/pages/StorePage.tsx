@@ -15,11 +15,13 @@ import { truncateForDisplay } from "@/utils/validation";
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const { searchQuery, setBeats: setVisibleBeats } = useSearch();
     const isMobile = useIsMobile();
 
     useEffect(() => {
         setIsLoading(true);
+        setError(null); // Clear previous errors
         NProgress.start();
         
         const url = searchQuery.trim() 
@@ -33,11 +35,14 @@ export default function StorePage() {
                 const transformedBeats = transformBeatsAssets(data) as Beat[];
                 setBeats(transformedBeats);
                 setVisibleBeats(transformedBeats);
+                setError(null); // Clear error on success
             })
             .catch((error) => {
                 console.error('Failed to fetch beats:', error.message);
                 setBeats([]);
                 setVisibleBeats([]);
+                // Set user-friendly error message
+                setError('Unable to connect to the server. Please check your connection and try again.');
             })
             .finally(() => {
                 setIsLoading(false);
@@ -50,6 +55,12 @@ export default function StorePage() {
     // Use responsive truncation: shorter on mobile, longer on desktop
     const getSubtitle = () => {
         if (isLoading) return "Loading...";
+        
+        // Show error message if server connection failed
+        if (error) {
+            return null; // Error will be shown separately
+        }
+        
         if (!searchQuery) return `All beats (${beats.length})`;
         
         // Use responsive truncation: shorter on mobile (30), longer on desktop (60)
@@ -86,11 +97,20 @@ export default function StorePage() {
         <div className="pt-12 flex flex-col gap-2 sm:gap-6 max-w-3xl mx-auto">
             <PageHeader title="Beat Store" subtitle={subtitle} />
 
+            {/* Error message when server is down */}
+            {error && (
+                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
+                    <p className="text-red-400 text-sm font-medium">
+                        {error}
+                    </p>
+                </div>
+            )}
+
             <div className="flex flex-col gap-3 sm:gap-4">
                 <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
-                    {isLoading && beats.length === 0
+                    {isLoading && beats.length === 0 && !error
                         ? Array.from({ length: 8 }).map((_, i) => <BeatCardSkeleton key={i} />)
-                        : beats.map((beat: Beat) => (
+                        : !error && beats.map((beat: Beat) => (
                             <LazyBeatCard 
                                 key={beat.id} 
                                 beat={beat}
