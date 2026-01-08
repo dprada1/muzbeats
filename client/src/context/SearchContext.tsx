@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Beat } from '@/types/Beat';
 import { useSearchParams } from 'react-router-dom';
-import { validateSearchQuery } from '@/utils/validation';
+import { validateSearchQuery } from '@/validation/validation';
 
 interface SearchContextProps {
     searchQuery: string;

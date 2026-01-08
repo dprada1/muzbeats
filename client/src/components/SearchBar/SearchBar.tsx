@@ -1,7 +1,7 @@
 import React from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import { useSearchBar } from "./useSearchBar";
-import { MAX_SEARCH_QUERY_LENGTH } from "@/utils/validation";
+import { MAX_SEARCH_QUERY_LENGTH } from "@/validation/validation";
 
 const SearchBar: React.FC = () => {
     const {

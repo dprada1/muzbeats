@@ -6,7 +6,7 @@ import {
     type ReactNode,
 } from 'react';
 import type { Beat } from '@/types/Beat';
-import { validateCartData } from '@/utils/validation';
+import { validateCartData } from '@/validation/validation';
 
 interface CartContextType {
     cartItems: Beat[];

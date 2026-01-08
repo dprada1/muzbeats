@@ -1,8 +1,8 @@
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
-import { apiUrl } from '@/utils/api';
+import { apiUrl } from '@/api/api';
 import type { Beat } from '@/types/Beat';
-import { validatedFetch, PayPalCreateOrderResponseSchema, PayPalCaptureOrderResponseSchema } from '@/utils/apiValidation';
-import { sanitizeErrorMessage } from '@/utils/errorSanitization';
+import { validatedFetch, PayPalCreateOrderResponseSchema, PayPalCaptureOrderResponseSchema } from '@/api/apiValidation';
+import { sanitizeErrorMessage } from '@/security/errorSanitization';
 
 interface PayPalCheckoutButtonProps {
     cartItems: Beat[];

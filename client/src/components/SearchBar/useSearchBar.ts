@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSearch } from '@/context/SearchContext';
 import { useNavigate, createSearchParams } from 'react-router-dom';
 import NProgress from 'nprogress';
-import { validateSearchQuery, MAX_SEARCH_QUERY_LENGTH } from '@/utils/validation';
+import { validateSearchQuery, MAX_SEARCH_QUERY_LENGTH } from '@/validation/validation';
 
 /**
  * Drives the search flow:

@@ -6,8 +6,8 @@ import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import ConfirmDialog from '@/components/ui/Dialog/ConfirmDialog';
 import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
 import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
-import { apiUrl } from '@/utils/api';
-import { validatedFetch, PayPalConfigSchema, type PayPalConfig } from '@/utils/apiValidation';
+import { apiUrl } from '@/api/api';
+import { validatedFetch, PayPalConfigSchema, type PayPalConfig } from '@/api/apiValidation';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();

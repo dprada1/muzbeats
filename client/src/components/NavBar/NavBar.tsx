@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import NProgress from 'nprogress';
 import SearchCluster from '@/components/SearchBar/SearchCluster';
 import { useState } from 'react';
-import { getR2PublicUrl } from '@/utils/api';
+import { getR2PublicUrl } from '@/api/api';
 
 export default function Navbar() {
     const { cartItems } = useCart();

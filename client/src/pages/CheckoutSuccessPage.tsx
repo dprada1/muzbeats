@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { isValidOrderId } from '@/utils/validation';
+import { isValidOrderId } from '@/validation/validation';
 
 export default function CheckoutSuccessPage() {
     const [searchParams] = useSearchParams();

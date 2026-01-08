@@ -8,9 +8,9 @@ import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
 import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
 import { SkeletonTheme } from "react-loading-skeleton";
-import { apiUrl, transformBeatsAssets } from "@/utils/api";
-import { validatedFetch, BeatSchema, z, type Beat as ValidatedBeat } from "@/utils/apiValidation";
-import { truncateForDisplay } from "@/utils/validation";
+import { apiUrl, transformBeatsAssets } from "@/api/api";
+import { validatedFetch, BeatSchema, z, type Beat as ValidatedBeat } from "@/api/apiValidation";
+import { truncateForDisplay } from "@/validation/validation";
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);

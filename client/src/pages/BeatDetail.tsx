@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import type { Beat } from '@/types/Beat';
 import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
-import { apiUrl, transformBeatAssets } from '@/utils/api';
-import { isValidBeatId } from '@/utils/validation';
-import { validatedFetch, BeatSchema } from '@/utils/apiValidation';
+import { apiUrl, transformBeatAssets } from '@/api/api';
+import { isValidBeatId } from '@/validation/validation';
+import { validatedFetch, BeatSchema } from '@/api/apiValidation';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
