@@ -6,6 +6,7 @@ import {
     type ReactNode,
 } from 'react';
 import type { Beat } from '@/types/Beat';
+import { validateCartData } from '@/utils/validation';
 
 interface CartContextType {
     cartItems: Beat[];
@@ -19,12 +20,36 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'muz-cart-v1';
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    /* Hydrate synchronously */
+    /* Hydrate synchronously with validation */
     const [cartItems, setCartItems] = useState<Beat[]>(() => {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            return raw ? JSON.parse(raw) : [];
-        } catch {
+            if (!raw) {
+                return [];
+            }
+            
+            const parsed = JSON.parse(raw);
+            // Validate and sanitize cart data
+            const validated = validateCartData(parsed);
+            
+            // If validation removed items, clean up localStorage immediately
+            // (before useEffect runs to avoid double-write)
+            const originalLength = Array.isArray(parsed) ? parsed.length : 0;
+            if (validated.length !== originalLength) {
+                if (validated.length === 0) {
+                    localStorage.removeItem(STORAGE_KEY);
+                } else {
+                    // Update with cleaned data
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
+                }
+            }
+            
+            return validated;
+        } catch (error) {
+            // JSON parse error or other issues - clear corrupted data
+            if (import.meta.env.DEV) {
+                console.error('Error loading cart from localStorage:', error);
+            }
             localStorage.removeItem(STORAGE_KEY);
             return [];
         }

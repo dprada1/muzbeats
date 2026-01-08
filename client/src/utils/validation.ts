@@ -124,3 +124,66 @@ export function truncateForDisplay(text: string, maxLength: number = 60): string
     }
     return text.substring(0, maxLength) + '...';
 }
+
+/**
+ * Validates a Beat object structure
+ * @param item - Object to validate
+ * @returns true if valid Beat structure, false otherwise
+ */
+export function isValidBeat(item: unknown): item is import('@/types/Beat').Beat {
+    if (!item || typeof item !== 'object') {
+        return false;
+    }
+    
+    const beat = item as Record<string, unknown>;
+    
+    // Check required fields with correct types
+    return (
+        typeof beat.id === 'string' &&
+        beat.id.length > 0 &&
+        typeof beat.title === 'string' &&
+        beat.title.length > 0 &&
+        typeof beat.key === 'string' &&
+        beat.key.length > 0 &&
+        typeof beat.bpm === 'number' &&
+        beat.bpm > 0 &&
+        Number.isInteger(beat.bpm) &&
+        typeof beat.price === 'number' &&
+        beat.price >= 0 &&
+        typeof beat.audio === 'string' &&
+        beat.audio.length > 0 &&
+        typeof beat.cover === 'string' &&
+        beat.cover.length > 0
+    );
+}
+
+/**
+ * Validates and sanitizes cart data from localStorage
+ * @param data - Raw data from localStorage
+ * @returns Validated array of Beat objects, or empty array if invalid
+ */
+export function validateCartData(data: unknown): import('@/types/Beat').Beat[] {
+    // Must be an array
+    if (!Array.isArray(data)) {
+        if (import.meta.env.DEV) {
+            console.warn('Cart data is not an array, clearing cart');
+        }
+        return [];
+    }
+    
+    // Validate each item and filter out invalid ones
+    const validBeats = data.filter((item): item is import('@/types/Beat').Beat => {
+        const isValid = isValidBeat(item);
+        if (!isValid && import.meta.env.DEV) {
+            console.warn('Invalid beat item in cart, removing:', item);
+        }
+        return isValid;
+    });
+    
+    // If we filtered out items, log in development
+    if (validBeats.length < data.length && import.meta.env.DEV) {
+        console.warn(`Cart validation: ${data.length - validBeats.length} invalid item(s) removed`);
+    }
+    
+    return validBeats;
+}
