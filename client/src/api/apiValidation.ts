@@ -42,7 +42,7 @@ export const PayPalConfigSchema = z.object({
  */
 export const PayPalCreateOrderResponseSchema = z.object({
     orderId: z.string().min(1),
-    approvalUrl: z.string().url().optional(),
+    approvalUrl: z.string().optional(),
     amount: z.number().nonnegative().optional(),
     currency: z.string().optional(),
 });
@@ -61,17 +61,6 @@ export const PayPalCaptureOrderResponseSchema = z.object({
 export const ErrorResponseSchema = z.object({
     error: z.string(),
 });
-
-/**
- * Validates a response against a schema
- * @param schema - Zod schema to validate against
- * @param data - Data to validate
- * @returns Validated data if successful
- * @throws ZodError if validation fails
- */
-export function validateResponse<T>(schema: z.ZodSchema<T>, data: unknown): T {
-    return schema.parse(data);
-}
 
 /**
  * Safely validates a response, returning a result object instead of throwing
