@@ -35,67 +35,67 @@ export default function PayPalCheckoutButton({
                         tagline: false, // Remove "Safer way to pay" tagline
                     }}
                     createOrder={async () => {
-                    try {
-                        // Create PayPal order on our backend
-                        const data = await validatedFetch(
-                            apiUrl('/api/checkout/paypal/create-order'),
-                            PayPalCreateOrderResponseSchema,
-                            {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    items: cartItems.map((beat: Beat) => ({
-                                        beatId: beat.id,
-                                        quantity: 1,
-                                    })),
-                                }),
-                            }
-                        );
-                        return data.orderId;
-                    } catch (error: any) {
-                        console.error('Error creating PayPal order:', error);
-                        // Sanitize error message before showing to user
-                        const userMessage = sanitizeErrorMessage(error, 'PayPal create order');
-                        onError(userMessage);
-                        throw error;
-                    }
-                }}
-                onApprove={async (data) => {
-                    try {
-                        // Capture the order on our backend
-                        const result = await validatedFetch(
-                            apiUrl('/api/checkout/paypal/capture-order'),
-                            PayPalCaptureOrderResponseSchema,
-                            {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
+                        try {
+                            // Create PayPal order on our backend
+                            const data = await validatedFetch(
+                                apiUrl('/api/checkout/paypal/create-order'),
+                                PayPalCreateOrderResponseSchema,
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        items: cartItems.map((beat: Beat) => ({
+                                            beatId: beat.id,
+                                            quantity: 1,
+                                        })),
+                                    }),
+                                }
+                            );
+                            return data.orderId;
+                        } catch (error: any) {
+                            console.error('Error creating PayPal order:', error);
+                            // Sanitize error message before showing to user
+                            const userMessage = sanitizeErrorMessage(error, 'PayPal create order');
+                            onError(userMessage);
+                            throw error;
+                        }
+                    }}
+                    onApprove={async (data) => {
+                        try {
+                            // Capture the order on our backend
+                            const result = await validatedFetch(
+                                apiUrl('/api/checkout/paypal/capture-order'),
+                                PayPalCaptureOrderResponseSchema,
+                                {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
                                         orderId: data.orderID,
                                     }),
-                            }
-                        );
+                                }
+                            );
 
-                        // Call success handler with our database order ID
-                        onSuccess(result.orderId);
-                    } catch (error: any) {
-                        console.error('Error capturing PayPal order:', error);
-                        // Sanitize error message before showing to user
-                        const userMessage = sanitizeErrorMessage(error, 'PayPal capture order');
-                        onError(userMessage);
-                    }
-                }}
-                onError={(err) => {
-                    console.error('PayPal Buttons error:', err);
-                    onError('PayPal payment failed. Please try again.');
-                }}
-                onCancel={() => {
-                    onError('Payment was cancelled');
-                }}
-            />
+                            // Call success handler with our database order ID
+                            onSuccess(result.orderId);
+                        } catch (error: any) {
+                            console.error('Error capturing PayPal order:', error);
+                            // Sanitize error message before showing to user
+                            const userMessage = sanitizeErrorMessage(error, 'PayPal capture order');
+                            onError(userMessage);
+                        }
+                    }}
+                    onError={(err) => {
+                        console.error('PayPal Buttons error:', err);
+                        onError('PayPal payment failed. Please try again.');
+                    }}
+                    onCancel={() => {
+                        onError('Payment was cancelled');
+                    }}
+                />
             </div>
             <style>{`
                 /* Reduce excessive spacing in PayPal container */
