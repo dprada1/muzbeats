@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSearch } from '@/context/SearchContext';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
@@ -8,6 +8,7 @@ import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
 import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
 import { apiUrl } from '@/api/api';
 import { validatedFetch, PayPalConfigSchema, type PayPalConfig } from '@/api/apiValidation';
+import { deduplicateRequest } from '@/utils/rateLimiting';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
@@ -23,20 +24,59 @@ export default function CartPage() {
 
     useEffect(() => window.scrollTo({ top: 0 }), []);
 
+    // Request cancellation for rate limiting
+    const requestCancellerRef = useRef<{ controller: AbortController | null }>({ controller: null });
+
     // Fetch PayPal config from backend
     useEffect(() => {
-        const fetchConfig = async () => {
-            try {
-                const config: PayPalConfig = await validatedFetch(apiUrl('/api/checkout/config'), PayPalConfigSchema);
+        const url = apiUrl('/api/checkout/config');
+        
+        // Create abort controller for this specific request
+        const abortController = new AbortController();
+        let isCancelled = false;
+        
+        // Cancel previous request if it exists
+        if (requestCancellerRef.current.controller) {
+            requestCancellerRef.current.controller.abort();
+        }
+        // Store this controller for potential cancellation
+        requestCancellerRef.current.controller = abortController;
+        
+        // Use deduplication to prevent duplicate requests
+        deduplicateRequest(url, async () => {
+            return validatedFetch(url, PayPalConfigSchema, {
+                signal: abortController.signal,
+            });
+        })
+            .then((config: PayPalConfig) => {
+                // Check if request was aborted or cancelled
+                if (abortController.signal.aborted || isCancelled) {
+                    return;
+                }
+                
                 setPaypalClientId(config.paypal.clientId || null);
                 setError(null); // Clear error on success
-            } catch (err) {
+            })
+            .catch((err) => {
+                // Ignore aborted requests
+                if (err.name === 'AbortError' || err.message === 'Request was cancelled' || isCancelled) {
+                    return;
+                }
+                
                 console.error('Error fetching PayPal config:', err);
                 // Set professional error message for server connectivity issues
                 setError('Unable to connect to the server. Payment options are temporarily unavailable. Please check your connection and try again.');
+            });
+        
+        // Cleanup: cancel request when component unmounts
+        return () => {
+            isCancelled = true;
+            abortController.abort();
+            // Clear the stored controller if it's this one
+            if (requestCancellerRef.current.controller === abortController) {
+                requestCancellerRef.current.controller = null;
             }
         };
-        fetchConfig();
     }, []);
 
     const [showConfirm, setShowConfirm] = useState(false);
@@ -66,8 +106,8 @@ export default function CartPage() {
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
-                                   bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
-                                   active:scale-[1.02] transition no-ring"
+                        bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                        active:scale-[1.02] transition no-ring"
                 >
                     ← Continue Shopping
                 </Link>
