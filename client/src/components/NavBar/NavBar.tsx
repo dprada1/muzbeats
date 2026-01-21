@@ -18,7 +18,7 @@ export default function Navbar() {
     const logoUrl = logoError
         ? '/skimask.png' // Fallback to local if R2 fails
         : r2Url
-            ? `${r2Url}/assets/images/skimask.png` // R2 CDN (preferred)
+            ? `${r2Url}/images/skimask.png` // R2 CDN (preferred) - R2 structure: images/skimask.png
             : '/skimask.png'; // Local fallback if R2 not configured
 
     return (
