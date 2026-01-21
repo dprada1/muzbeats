@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import LazyBeatCard from "@/components/beatcards/store/LazyBeatCard";
 import type { Beat } from "@/types/Beat";
@@ -18,6 +18,10 @@ export default function StorePage() {
     const [error, setError] = useState<string | null>(null);
     const { searchQuery, setBeats: setVisibleBeats } = useSearch();
     const isMobile = useIsMobile();
+    
+    // Request cancellation for rate limiting
+    // Store the current abort controller so we can cancel it when a new request starts
+    const requestCancellerRef = useRef<{ controller: AbortController | null }>({ controller: null });
 
     useEffect(() => {
         setIsLoading(true);
@@ -28,8 +32,39 @@ export default function StorePage() {
             ? apiUrl(`/api/beats?q=${encodeURIComponent(searchQuery.trim())}`)
             : apiUrl('/api/beats');
 
-        validatedFetch(url, z.array(BeatSchema))
+        // Create abort controller for this specific request
+        const abortController = new AbortController();
+        // Track if this specific request is still valid (not cancelled)
+        let isValid = true;
+        
+        // Cancel previous request if it exists
+        if (requestCancellerRef.current.controller) {
+            requestCancellerRef.current.controller.abort();
+        }
+        // Store this controller for potential cancellation
+        requestCancellerRef.current.controller = abortController;
+        
+        // Make the request directly (deduplication can be added back later if needed)
+        if (import.meta.env.DEV) {
+            console.log('Fetching beats from:', url);
+        }
+        
+        validatedFetch(url, z.array(BeatSchema), {
+            signal: abortController.signal,
+        })
             .then((data: ValidatedBeat[]) => {
+                // Check if this request is still valid (not cancelled by cleanup or new request)
+                if (!isValid || abortController.signal.aborted) {
+                    if (import.meta.env.DEV) {
+                        console.log('Request was cancelled, ignoring response');
+                    }
+                    return;
+                }
+                
+                if (import.meta.env.DEV) {
+                    console.log('Received beats:', data.length);
+                }
+                
                 // Transform relative asset paths to full URLs
                 // Type assertion is safe because ValidatedBeat matches Beat structure
                 const transformedBeats = transformBeatsAssets(data) as Beat[];
@@ -38,17 +73,41 @@ export default function StorePage() {
                 setError(null); // Clear error on success
             })
             .catch((error) => {
-                console.error('Failed to fetch beats:', error.message);
-                setBeats([]);
-                setVisibleBeats([]);
-                // Set user-friendly error message
-                setError('Unable to connect to the server. Please check your connection and try again.');
+                // Ignore aborted requests (they're expected when cancelling)
+                if (error.name === 'AbortError' || error.message === 'Request was cancelled') {
+                    if (import.meta.env.DEV) {
+                        console.log('Request was aborted (expected)');
+                    }
+                    return;
+                }
+                
+                // Only set error if request wasn't aborted and is still valid
+                if (isValid && !abortController.signal.aborted) {
+                    console.error('Failed to fetch beats:', error.message);
+                    setBeats([]);
+                    setVisibleBeats([]);
+                    // Set user-friendly error message
+                    setError('Unable to connect to the server. Please check your connection and try again.');
+                }
             })
             .finally(() => {
-                setIsLoading(false);
-                NProgress.done();
+                // Always update loading state if this request is still valid
+                if (isValid) {
+                    setIsLoading(false);
+                    NProgress.done();
+                }
             });
-    }, [searchQuery]);
+        
+        // Cleanup: cancel request when component unmounts or searchQuery changes
+        return () => {
+            isValid = false; // Mark this request as invalid
+            abortController.abort();
+            // Clear the stored controller if it's this one
+            if (requestCancellerRef.current.controller === abortController) {
+                requestCancellerRef.current.controller = null;
+            }
+        };
+    }, [searchQuery, setVisibleBeats]);
 
     // Truncate search query for display (keep full query for API calls)
     // Show full query in tooltip if truncated
@@ -58,7 +117,7 @@ export default function StorePage() {
         
         // Show error message if server connection failed
         if (error) {
-            return null; // Error will be shown separately
+            return "Error"; // Error will be shown separately
         }
         
         if (!searchQuery) return `All beats (${beats.length})`;
