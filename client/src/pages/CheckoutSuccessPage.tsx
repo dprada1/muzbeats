@@ -62,7 +62,7 @@ export default function CheckoutSuccessPage() {
                 <div className="space-y-4">
                     <Link
                         to="/store/cart"
-                        className="inline-block bg-[#0b84ff] hover:bg-[#0a74d1] text-white font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
+                        className="inline-block bg-button-blue hover:bg-button-blue-hover text-white font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
                     >
                         Try Again
                     </Link>
@@ -127,7 +127,7 @@ export default function CheckoutSuccessPage() {
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 px-5 py-3 rounded-full
-                    bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                    bg-button-yellow text-black font-semibold hover:bg-button-yellow-hover
                     active:scale-[1.02] transition no-ring"
                 >
                     ← Continue Shopping

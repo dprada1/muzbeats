@@ -23,7 +23,7 @@ export default function Navbar() {
 
     return (
         <nav
-            className="fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a] text-white border-b border-neutral-800 shadow-sm"
+            className="fixed top-0 left-0 right-0 z-50 bg-card-bg text-white border-b border-neutral-800 shadow-sm"
             style={{ height: "calc(64px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)" }}
         >
             <div className="h-16 px-4 flex items-center justify-between">
@@ -44,7 +44,7 @@ export default function Navbar() {
                         }}
                     />
                     <span className="text-white text-lg font-semibold whitespace-nowrap group-hover:text-brand-yellow transition-colors duration-200">
-                               MuzBeats
+                        MuzBeats
                     </span>
                 </Link>
 

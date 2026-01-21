@@ -6,10 +6,26 @@
 	--color-card-bg: #1a1a1a;
 	--color-waveform-bg: #2a2a2a;
 	--color-white: #ffffff;
+	
+	/* Additional color palette - centralized for consistency */
+	--color-card-secondary: #1e1e1e;      /* Used for cards, dialogs, skeletons */
+	--color-skeleton-highlight: #2c2c2c; /* Used for skeleton loading highlights */
+	--color-surface: #121212;            /* Used for search bars, player bars */
+	--color-surface-alt: #111111;       /* Used for headers, gradients */
+	--color-overlay-bg: #0d0d0d;         /* Used for mobile overlays */
+	--color-text-muted: #808080;        /* Used for icons, placeholders */
+	--color-outline: #333;               /* Used for subtle outlines */
+	--color-focus: #3ea6ff;             /* Used for focus states */
+	--color-hover-dark: #3a3a3a;        /* Used for dark hover states */
+	--color-hover-darker: #353535;      /* Used for darker hover states */
+	--color-button-yellow: #f3c000;     /* Used for yellow CTA buttons */
+	--color-button-yellow-hover: #e4b300; /* Used for yellow button hover */
+	--color-button-blue: #0b84ff;       /* Used for blue CTA buttons */
+	--color-button-blue-hover: #0a74d1;  /* Used for blue button hover */
 }
 
 body {
-	background-color: #111111;
+	background-color: var(--color-surface-alt);
 	color: white;
 }
 

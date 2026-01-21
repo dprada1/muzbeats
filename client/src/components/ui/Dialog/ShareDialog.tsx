@@ -85,7 +85,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             onClick={onClose}
         >
             <div
-                className="bg-[#1a1a1a] bg-opacity-95 rounded-lg p-4
+                className="bg-card-bg bg-opacity-95 rounded-lg p-4
                             sm:p-6 w-full max-w-sm sm:max-w-md md:max-w-lg
                             relative text-gray-100 max-h-[85vh]
                             overflow-y-auto border border-white/10"
@@ -132,7 +132,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                             type="text"
                             readOnly
                             value={url}
-                            className="flex-grow p-2.5 bg-[#2a2a2a] border border-[#3a3a3a] rounded-md text-sm text-gray-100 overflow-x-auto focus:outline-none focus:border-gray-500 transition-colors"
+                            className="flex-grow p-2.5 bg-waveform-bg border border-hover-dark rounded-md text-sm text-gray-100 overflow-x-auto focus:outline-none focus:border-gray-500 transition-colors"
                         />
                     </div>
                     <button
@@ -140,7 +140,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                         className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-medium transition-all focus:outline-none cursor-pointer ${
                             copied
                                 ? 'bg-green-600/80 hover:bg-green-600 text-white'
-                                : 'bg-[#0b84ff] hover:bg-[#0a74d1] text-white'
+                                : 'bg-button-blue hover:bg-button-blue-hover text-white'
                         } shadow-lg active:scale-[0.98]`}
                     >
                         <MdContentCopy className="w-5 h-5" />

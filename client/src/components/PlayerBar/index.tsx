@@ -10,7 +10,7 @@ export default function PlayerBar() {
 
     return (
         <PlayerBarProvider value={playerBarContext}>
-            <div className="fixed bottom-0 left-0 w-full bg-[#121212] text-white shadow-t z-50">
+            <div className="fixed bottom-0 left-0 w-full bg-surface text-white shadow-t z-50">
                 <Progress />
                 <div className="flex items-center h-[calc(5rem-0.25rem)] px-4"
                 >

@@ -26,8 +26,8 @@ const SearchBar: React.FC = () => {
             onSubmit={onSubmit}
             className={`
                 flex items-center w-full max-w-xl transition-all duration-200
-                ${isFocused ? "outline-1 outline-[#3ea6ff]" : "outline-1 outline-[#333]"}
-                rounded-full bg-[#121212]
+                ${isFocused ? "outline-1 outline-focus" : "outline-1 outline-outline"}
+                rounded-full bg-surface
             `}
             style={{ height: "40px" }}
         >
@@ -35,7 +35,7 @@ const SearchBar: React.FC = () => {
                 className="relative flex items-center px-3 flex-grow h-full rounded-l-full cursor-text"
                 onClick={() => inputRef.current?.focus()}
             >
-                <FiSearch className="text-[#808080] text-lg mr-2" />
+                <FiSearch className="text-text-muted text-lg mr-2" />
                 <input
                     ref={inputRef}
                     type="text"
@@ -45,7 +45,7 @@ const SearchBar: React.FC = () => {
                     onFocus={onFocus}
                     onBlur={onBlur}
                     maxLength={MAX_SEARCH_QUERY_LENGTH}
-                    className="bg-transparent focus:outline-none text-sm text-white placeholder-[#808080] w-full pr-12"
+                    className="bg-transparent focus:outline-none text-sm text-white placeholder-text-muted w-full pr-12"
                     inputMode="search"
                 />
                 {input && (
@@ -56,14 +56,14 @@ const SearchBar: React.FC = () => {
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center active:scale-[0.97] z-10"
                         style={{ WebkitTapHighlightColor: "transparent" }}
                     >
-                        <FiX className="text-[#808080] hover:text-white cursor-pointer text-xl" />
+                        <FiX className="text-text-muted hover:text-white cursor-pointer text-xl" />
                     </button>
                 )}
             </div>
 
             <button
                 type="submit"
-                className="flex items-center justify-center bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white px-7 h-full rounded-r-full cursor-pointer"
+                className="flex items-center justify-center bg-waveform-bg hover:bg-hover-dark text-white px-7 h-full rounded-r-full cursor-pointer"
             >
                 <FiSearch className="text-lg" />
             </button>

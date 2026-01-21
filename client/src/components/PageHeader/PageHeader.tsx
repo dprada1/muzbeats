@@ -20,7 +20,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
         <>
             {/* Mobile: tight sticky search under the fixed NavBar */}
             <div
-                className="fixed inset-x-0 z-40 md:hidden bg-[#111111] px-4 top-1 pt-3"
+                className="fixed inset-x-0 z-40 md:hidden bg-surface-alt px-4 top-1 pt-3"
                 style={{ top: "calc(64px + env(safe-area-inset-top))" }}
             >
                 <SearchCluster className="pb-0.5"/>
@@ -28,7 +28,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
                 {/* push the fade OUTSIDE the bar so it shows */}
                 <div
                     className="pointer-events-none absolute left-0 right-0 pt-1
-                                h-4 bg-gradient-to-b from-[#111111]/60 via-[#111111]/25 to-transparent"
+                                h-4 bg-gradient-to-b from-surface-alt/60 via-surface-alt/25 to-transparent"
                     aria-hidden
                 />
             </div>

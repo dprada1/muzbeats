@@ -14,7 +14,7 @@ export default function NotFoundPage() {
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full
-                               bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                               bg-button-yellow text-black font-semibold hover:bg-button-yellow-hover
                                active:scale-[1.02] transition no-ring"
                 >
                     ← Back to Store

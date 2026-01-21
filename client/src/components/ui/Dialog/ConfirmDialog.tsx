@@ -50,7 +50,7 @@ export default function ConfirmDialog({
 
             {/* panel */}
             <div
-                className="relative w-full max-w-sm sm:max-w-md rounded-2xl bg-[#1e1e1e] shadow-2xl border border-white/10
+                className="relative w-full max-w-sm sm:max-w-md rounded-2xl bg-card-secondary shadow-2xl border border-white/10
                             p-4 sm:p-6 max-h-[85vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()} // prevent bubbling to backdrop
             >

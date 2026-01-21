@@ -13,7 +13,7 @@ export default function BeatCardCart({ beat }: Props) {
     const active = currentBeat?.id === beat.id && isPlaying;
 
     return (
-        <div className="w-full max-w-full overflow-hidden rounded-2xl bg-[#1e1e1e] p-3 sm:p-4
+        <div className="w-full max-w-full overflow-hidden rounded-2xl bg-card-secondary p-3 sm:p-4
                         flex items-start gap-3 sm:gap-4">
             {/* Cover + overlay play */}
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
@@ -50,7 +50,7 @@ export default function BeatCardCart({ beat }: Props) {
                     <button
                         onClick={() => removeFromCart(beat.id)}
                         className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-full
-                                   bg-[#2a2a2a] text-red-400 hover:bg-[#353535] hover:text-red-300
+                                   bg-waveform-bg text-red-400 hover:bg-hover-darker hover:text-red-300
                                    active:scale-[1.02] transition no-ring cursor-pointer"
                         aria-label="Remove from cart"
                     >
