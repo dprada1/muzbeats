@@ -11,6 +11,7 @@ import { SkeletonTheme } from "react-loading-skeleton";
 import { apiUrl, transformBeatsAssets } from "@/api/api";
 import { validatedFetch, BeatSchema, z, type Beat as ValidatedBeat } from "@/api/apiValidation";
 import { truncateForDisplay } from "@/validation/validation";
+import { deduplicateRequest } from "@/utils/rateLimiting";
 
 export default function StorePage() {
     const [beats, setBeats] = useState<Beat[]>([]);
@@ -44,13 +45,15 @@ export default function StorePage() {
         // Store this controller for potential cancellation
         requestCancellerRef.current.controller = abortController;
         
-        // Make the request directly (deduplication can be added back later if needed)
+        // Use deduplication to prevent duplicate requests
         if (import.meta.env.DEV) {
             console.log('Fetching beats from:', url);
         }
         
-        validatedFetch(url, z.array(BeatSchema), {
-            signal: abortController.signal,
+        deduplicateRequest(url, async () => {
+            return validatedFetch(url, z.array(BeatSchema), {
+                signal: abortController.signal,
+            });
         })
             .then((data: ValidatedBeat[]) => {
                 // Check if this request was cancelled by cleanup or new request
