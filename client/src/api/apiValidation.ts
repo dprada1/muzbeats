@@ -17,8 +17,13 @@ export { z };
  * Beat schema - matches the Beat type
  * Note: id is validated as UUID since we validate beatId as UUID in URLs
  */
+// UUID regex pattern for validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const BeatSchema = z.object({
-    id: z.string().min(1), // UUID format validated separately in URL params
+    id: z.string().min(1).refine((val) => UUID_REGEX.test(val), {
+        message: 'Invalid UUID format',
+    }), // Beat IDs are UUIDs from database
     title: z.string().min(1),
     key: z.string().min(1),
     bpm: z.number().int().positive(),
@@ -105,7 +110,7 @@ export async function validatedFetch<T>(
     const response = await fetch(url, options);
     
     if (!response.ok) {
-        // Try to parse error response
+        // Try to extract backend error message
         let backendErrorMessage: string | null = null;
         try {
             const errorData = await response.json();
@@ -114,40 +119,34 @@ export async function validatedFetch<T>(
                 backendErrorMessage = validatedError.data.error;
             }
         } catch {
-            // If error response parsing fails, continue with generic message
+            // If error response parsing fails, use generic message
         }
         
         // Log technical details in development
         if (import.meta.env.DEV) {
-            console.error('API request failed:', {
-                url,
-                status: response.status,
-                statusText: response.statusText,
-                backendError: backendErrorMessage,
-            });
+            console.error('API request failed:', { url, status: response.status, statusText: response.statusText, backendError: backendErrorMessage });
         }
         
-        // Use backend error message if available (it should already be user-friendly from backend)
-        // Otherwise, provide context-aware message based on status code
+        // Use backend error message if available, otherwise provide context-aware message
         if (backendErrorMessage) {
             throw new Error(backendErrorMessage);
         }
         
-        // If no backend message, provide user-friendly message based on status
-        // HTTP status codes are standard and safe to use for context
+        // Provide user-friendly message based on HTTP status code
+        const statusMessages: Record<number, string> = {
+            401: 'Authentication required.',
+            403: 'Access denied.',
+            404: 'Resource not found.',
+        };
+        
         if (response.status >= 500) {
             throw new Error('Server error. Please try again later.');
-        } else if (response.status === 404) {
-            throw new Error('Resource not found.');
-        } else if (response.status === 403) {
-            throw new Error('Access denied.');
-        } else if (response.status === 401) {
-            throw new Error('Authentication required.');
+        } else if (statusMessages[response.status]) {
+            throw new Error(statusMessages[response.status]);
         } else if (response.status >= 400) {
             throw new Error('Request failed. Please check your input and try again.');
         }
         
-        // Fallback
         throw new Error('Request failed. Please try again.');
     }
     
