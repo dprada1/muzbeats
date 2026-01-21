@@ -28,7 +28,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
                 {/* push the fade OUTSIDE the bar so it shows */}
                 <div
                     className="pointer-events-none absolute left-0 right-0 pt-1
-                                h-4 bg-gradient-to-b from-surface-alt/60 via-surface-alt/25 to-transparent"
+                                h-4 bg-linear-to-b from-surface-alt/60 via-surface-alt/25 to-transparent"
                     aria-hidden
                 />
             </div>
@@ -37,7 +37,7 @@ export default function PageHeader({ title, subtitle }: PageHeaderProps) {
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-0.5 sm:mb-1">
                     {title}
                 </h1>
-                <p className="text-base sm:text-lg text-zinc-400 break-words">
+                <p className="text-base sm:text-lg text-zinc-400 wrap-break-word">
                     {subtitle}
                 </p>
             </div>

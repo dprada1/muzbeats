@@ -127,12 +127,12 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 </div>
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                        <FiLink className="text-gray-400 flex-shrink-0"/>
+                        <FiLink className="text-gray-400 shrink-0"/>
                         <input
                             type="text"
                             readOnly
                             value={url}
-                            className="flex-grow p-2.5 bg-waveform-bg border border-hover-dark rounded-md text-sm text-gray-100 overflow-x-auto focus:outline-none focus:border-gray-500 transition-colors"
+                            className="grow p-2.5 bg-waveform-bg border border-hover-dark rounded-md text-sm text-gray-100 overflow-x-auto focus:outline-none focus:border-gray-500 transition-colors"
                         />
                     </div>
                     <button

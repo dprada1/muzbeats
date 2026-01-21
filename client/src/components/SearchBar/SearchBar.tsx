@@ -32,7 +32,7 @@ const SearchBar: React.FC = () => {
             style={{ height: "40px" }}
         >
             <div
-                className="relative flex items-center px-3 flex-grow h-full rounded-l-full cursor-text"
+                className="relative flex items-center px-3 grow h-full rounded-l-full cursor-text"
                 onClick={() => inputRef.current?.focus()}
             >
                 <FiSearch className="text-text-muted text-lg mr-2" />
