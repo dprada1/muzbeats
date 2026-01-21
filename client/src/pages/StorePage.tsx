@@ -34,8 +34,8 @@ export default function StorePage() {
 
         // Create abort controller for this specific request
         const abortController = new AbortController();
-        // Track if this specific request is still valid (not cancelled)
-        let isValid = true;
+        // Track if this specific request was cancelled
+        let isCancelled = false;
         
         // Cancel previous request if it exists
         if (requestCancellerRef.current.controller) {
@@ -53,8 +53,8 @@ export default function StorePage() {
             signal: abortController.signal,
         })
             .then((data: ValidatedBeat[]) => {
-                // Check if this request is still valid (not cancelled by cleanup or new request)
-                if (!isValid || abortController.signal.aborted) {
+                // Check if this request was cancelled by cleanup or new request
+                if (isCancelled || abortController.signal.aborted) {
                     if (import.meta.env.DEV) {
                         console.log('Request was cancelled, ignoring response');
                     }
@@ -81,8 +81,8 @@ export default function StorePage() {
                     return;
                 }
                 
-                // Only set error if request wasn't aborted and is still valid
-                if (isValid && !abortController.signal.aborted) {
+                // Only set error if request wasn't aborted and wasn't cancelled
+                if (!isCancelled && !abortController.signal.aborted) {
                     console.error('Failed to fetch beats:', error.message);
                     setBeats([]);
                     setVisibleBeats([]);
@@ -91,8 +91,8 @@ export default function StorePage() {
                 }
             })
             .finally(() => {
-                // Always update loading state if this request is still valid
-                if (isValid) {
+                // Always update loading state if this request wasn't cancelled
+                if (!isCancelled) {
                     setIsLoading(false);
                     NProgress.done();
                 }
@@ -100,7 +100,7 @@ export default function StorePage() {
         
         // Cleanup: cancel request when component unmounts or searchQuery changes
         return () => {
-            isValid = false; // Mark this request as invalid
+            isCancelled = true; // Mark this request as cancelled
             abortController.abort();
             // Clear the stored controller if it's this one
             if (requestCancellerRef.current.controller === abortController) {
