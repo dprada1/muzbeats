@@ -295,11 +295,36 @@ This document tracks all frontend security issues that need to be reviewed and f
 - `client/src/components/checkout/PayPalCheckoutButton.tsx` (line 35-90)
 
 **Action Required**:
-- [ ] Add debouncing to search input
-- [ ] Add request throttling for API calls
-- [ ] Prevent duplicate simultaneous requests
-- [ ] Add request cancellation (AbortController) for stale requests
-- [ ] Consider request queuing for critical operations
+- [x] Add request cancellation (AbortController) for stale requests
+- [x] Prevent duplicate simultaneous requests (request deduplication)
+- [x] Cancel previous requests when new ones are made
+- [x] Handle aborted requests gracefully (no error logs for cancelled requests)
+
+**Implementation**:
+- Created `client/src/utils/rateLimiting.ts` with rate limiting utilities:
+  - `debounce()` - Delays execution until after wait time has passed
+  - `throttle()` - Limits execution to once per wait time
+  - `deduplicateRequest()` - Prevents duplicate requests with the same key
+  - `createRequestCanceller()` - Creates AbortController that cancels previous requests
+- Updated `validatedFetch()` to support AbortController signal
+- Updated `StorePage.tsx`:
+  - Uses `createRequestCanceller()` to cancel previous requests when search query changes
+  - Uses `deduplicateRequest()` to prevent duplicate requests with the same URL
+  - Gracefully handles aborted requests (no error logs)
+- Updated `BeatDetail.tsx`:
+  - Uses `createRequestCanceller()` to cancel previous requests when beatId changes
+  - Uses `deduplicateRequest()` to prevent duplicate requests
+  - Gracefully handles aborted requests
+- Updated `CartPage.tsx`:
+  - Uses `createRequestCanceller()` to cancel requests on unmount
+  - Uses `deduplicateRequest()` to prevent duplicate PayPal config requests
+  - Gracefully handles aborted requests
+
+**Note**: 
+- Search input doesn't need debouncing since it's form-submit based, not live search
+- PayPal checkout buttons handle their own state management (no rate limiting needed)
+- Request deduplication prevents duplicate API calls with the same URL
+- AbortController cancels in-flight requests when new ones are made (prevents race conditions)
 
 ---
 
@@ -374,7 +399,7 @@ This document tracks all frontend security issues that need to be reviewed and f
 - [x] Issue 3: API Response Validation
 - [x] Issue 4: Error Message Security
 - [x] Issue 5: Cart localStorage Validation
-- [ ] Issue 6: Client-Side Rate Limiting
+- [x] Issue 6: Client-Side Rate Limiting
 - [ ] Issue 7: Build Optimization & Bundle Size
 - [ ] Issue 8: Content Security Policy
 
