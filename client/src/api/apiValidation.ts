@@ -102,12 +102,85 @@ export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
  * @returns Validated data
  * @throws Error if fetch fails or validation fails
  */
+/**
+ * Create a fetch request with timeout
+ * Respects AbortController signal if provided
+ */
+function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 10000): Promise<Response> {
+    return new Promise((resolve, reject) => {
+        // Check if already aborted
+        if (options.signal?.aborted) {
+            const abortError = new Error('Request was cancelled');
+            abortError.name = 'AbortError';
+            reject(abortError);
+            return;
+        }
+        
+        const timeoutId = setTimeout(() => {
+            // Check if request was aborted before rejecting with timeout
+            if (options.signal?.aborted) {
+                const abortError = new Error('Request was cancelled');
+                abortError.name = 'AbortError';
+                reject(abortError);
+                return;
+            }
+            reject(new Error('Request timeout. The server took too long to respond.'));
+        }, timeoutMs);
+        
+        fetch(url, options)
+            .then((response) => {
+                clearTimeout(timeoutId);
+                resolve(response);
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                // If it's an abort error, preserve it
+                if (error.name === 'AbortError' || options.signal?.aborted) {
+                    const abortError = new Error('Request was cancelled');
+                    abortError.name = 'AbortError';
+                    reject(abortError);
+                    return;
+                }
+                reject(error);
+            });
+    });
+}
+
 export async function validatedFetch<T>(
     url: string,
     schema: z.ZodSchema<T>,
     options?: RequestInit
 ): Promise<T> {
-    const response = await fetch(url, options);
+    let response: Response;
+    
+    try {
+        // Use fetchWithTimeout to prevent hanging requests (10 second timeout)
+        response = await fetchWithTimeout(url, options, 10000);
+    } catch (error: any) {
+        // Check if it's an abort error (expected in React Strict Mode, don't log as error)
+        const isAbortError = 
+            error.name === 'AbortError' || 
+            error.message?.includes('aborted') || 
+            error.message?.includes('cancelled') ||
+            error.message === 'Request was cancelled';
+        
+        if (isAbortError) {
+            // Silently re-throw abort errors - they're expected and handled by the caller
+            throw error;
+        }
+        
+        // Handle actual network errors (server not running, CORS, timeout, etc.)
+        if (import.meta.env.DEV) {
+            console.error('Network error fetching:', url, {
+                error: error.message,
+                name: error.name,
+                stack: error.stack,
+            });
+        }
+        
+        // Network errors (server down, CORS, etc.)
+        throw new Error('Unable to connect to the server. Please check your connection and try again.');
+    }
     
     if (!response.ok) {
         // Try to extract backend error message

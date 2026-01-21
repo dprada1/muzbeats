@@ -8,7 +8,6 @@ import LazyBeatCardCart from '@/components/beatcards/cart/LazyBeatCardCart';
 import PayPalCheckoutButton from '@/components/checkout/PayPalCheckoutButton';
 import { apiUrl } from '@/api/api';
 import { validatedFetch, PayPalConfigSchema, type PayPalConfig } from '@/api/apiValidation';
-import { deduplicateRequest } from '@/utils/rateLimiting';
 
 export default function CartPage() {
     const { cartItems, clearCart } = useCart();
@@ -27,48 +26,73 @@ export default function CartPage() {
     // Request cancellation for rate limiting
     const requestCancellerRef = useRef<{ controller: AbortController | null }>({ controller: null });
 
-    // Fetch PayPal config from backend
+    // Fetch PayPal config from backend (only once on mount)
     useEffect(() => {
         const url = apiUrl('/api/checkout/config');
+        
+        if (import.meta.env.DEV) {
+            console.log('Fetching PayPal config from:', url);
+        }
         
         // Create abort controller for this specific request
         const abortController = new AbortController();
         let isCancelled = false;
         
-        // Cancel previous request if it exists
-        if (requestCancellerRef.current.controller) {
-            requestCancellerRef.current.controller.abort();
-        }
         // Store this controller for potential cancellation
         requestCancellerRef.current.controller = abortController;
         
-        // Use deduplication to prevent duplicate requests
-        deduplicateRequest(url, async () => {
-            return validatedFetch(url, PayPalConfigSchema, {
-                signal: abortController.signal,
-            });
+        // Fetch PayPal config (no deduplication needed for one-time fetch)
+        validatedFetch(url, PayPalConfigSchema, {
+            signal: abortController.signal,
         })
             .then((config: PayPalConfig) => {
                 // Check if request was aborted or cancelled
                 if (abortController.signal.aborted || isCancelled) {
+                    if (import.meta.env.DEV) {
+                        console.log('PayPal config request was cancelled, ignoring response');
+                    }
                     return;
                 }
                 
-                setPaypalClientId(config.paypal.clientId || null);
+                // Check if PayPal is enabled and has a client ID
+                if (!config.paypal.enabled || !config.paypal.clientId) {
+                    if (import.meta.env.DEV) {
+                        console.warn('PayPal is not configured on the server. Check PAYPAL_CLIENT_ID environment variable.');
+                    }
+                    setError('Payment options are not available. Please contact support.');
+                    setPaypalClientId(null);
+                    return;
+                }
+                
+                if (import.meta.env.DEV) {
+                    console.log('PayPal config loaded successfully');
+                }
+                
+                setPaypalClientId(config.paypal.clientId);
                 setError(null); // Clear error on success
             })
             .catch((err) => {
-                // Ignore aborted requests
-                if (err.name === 'AbortError' || err.message === 'Request was cancelled' || isCancelled) {
+                // Ignore aborted requests (only log in dev, don't set error)
+                if (err.name === 'AbortError' || err.message?.includes('aborted') || err.message?.includes('cancelled') || isCancelled) {
+                    if (import.meta.env.DEV) {
+                        console.log('PayPal config request was cancelled (component unmounted)');
+                    }
                     return;
                 }
                 
-                console.error('Error fetching PayPal config:', err);
+                if (import.meta.env.DEV) {
+                    console.error('Error fetching PayPal config:', {
+                        error: err.message,
+                        name: err.name,
+                        url: url,
+                    });
+                }
+                
                 // Set professional error message for server connectivity issues
-                setError('Unable to connect to the server. Payment options are temporarily unavailable. Please check your connection and try again.');
+                setError(err.message || 'Unable to connect to the server. Payment options are temporarily unavailable. Please check your connection and try again.');
             });
         
-        // Cleanup: cancel request when component unmounts
+        // Cleanup: cancel request only when component unmounts
         return () => {
             isCancelled = true;
             abortController.abort();
@@ -106,7 +130,7 @@ export default function CartPage() {
                 <Link
                     to="/store"
                     className="inline-flex items-center gap-2 mt-4 px-5 py-3 rounded-full
-                        bg-[#f3c000] text-black font-semibold hover:bg-[#e4b300]
+                        bg-button-yellow text-black font-semibold hover:bg-button-yellow-hover
                         active:scale-[1.02] transition no-ring"
                 >
                     ← Continue Shopping
@@ -124,7 +148,7 @@ export default function CartPage() {
 
                     {/* sidebar summary (desktop/tablet) */}
                     <div className="hidden lg:block">
-                        <div className="bg-[#1e1e1e] rounded-2xl p-6 sticky top-4">
+                        <div className="bg-card-secondary rounded-2xl p-6 sticky top-4">
                             <h2 className="text-xl font-semibold mb-4">Cart Summary</h2>
                             
                             {/* Total */}
@@ -187,7 +211,7 @@ export default function CartPage() {
             {/* sticky checkout bar for mobile */}
             {!isEmpty && (
                 <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
-                    <div className="pointer-events-auto backdrop-blur-xl bg-[#0d0d0d]/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
+                    <div className="pointer-events-auto backdrop-blur-xl bg-overlay-bg/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
                         {/* Total */}
                         <div className="flex items-center justify-between mb-3 pb-3 border-b border-zinc-800">
                             <span className="text-sm text-zinc-400">Total</span>
