@@ -1,15 +1,19 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { Beat } from '@/types/Beat';
 import BeatCard from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { apiUrl, transformBeatAssets } from '@/api/api';
 import { isValidBeatId } from '@/validation/validation';
 import { validatedFetch, BeatSchema } from '@/api/apiValidation';
+import { deduplicateRequest } from '@/utils/rateLimiting';
 
 export default function BeatDetail() {
     const { beatId } = useParams<{ beatId: string }>();
     const [beat, setBeat] = useState<Beat | null | undefined>(undefined);
+    
+    // Request cancellation for rate limiting
+    const requestCancellerRef = useRef<{ controller: AbortController | null }>({ controller: null });
 
     useEffect(() => {
         if (!beatId) {
@@ -24,12 +28,40 @@ export default function BeatDetail() {
             return;
         }
 
-        validatedFetch(apiUrl(`/api/beats/${beatId}`), BeatSchema)
+        const url = apiUrl(`/api/beats/${beatId}`);
+        
+        // Create abort controller for this specific request
+        const abortController = new AbortController();
+        let isCancelled = false;
+        
+        // Cancel previous request if it exists
+        if (requestCancellerRef.current.controller) {
+            requestCancellerRef.current.controller.abort();
+        }
+        // Store this controller for potential cancellation
+        requestCancellerRef.current.controller = abortController;
+        
+        // Use deduplication to prevent duplicate requests
+        deduplicateRequest(url, async () => {
+            return validatedFetch(url, BeatSchema, {
+                signal: abortController.signal,
+            });
+        })
             .then((data) => {
+                // Check if request was aborted or cancelled
+                if (abortController.signal.aborted || isCancelled) {
+                    return;
+                }
+                
                 // Transform relative asset paths to full URLs
                 setBeat(transformBeatAssets(data));
             })
             .catch((error) => {
+                // Ignore aborted requests
+                if (error.name === 'AbortError' || error.message === 'Request was cancelled' || isCancelled) {
+                    return;
+                }
+                
                 // Handle 404 (beat not found) and validation errors gracefully
                 // All errors result in setting beat to null (not found)
                 if (import.meta.env.DEV && !error.message.includes('404')) {
@@ -37,6 +69,16 @@ export default function BeatDetail() {
                 }
                 setBeat(null);
             });
+        
+        // Cleanup: cancel request when component unmounts or beatId changes
+        return () => {
+            isCancelled = true;
+            abortController.abort();
+            // Clear the stored controller if it's this one
+            if (requestCancellerRef.current.controller === abortController) {
+                requestCancellerRef.current.controller = null;
+            }
+        };
     }, [beatId]);
 
     // still loading?
