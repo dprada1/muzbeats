@@ -4,6 +4,59 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Content Security Policy -->
+    <!-- 
+      CSP Configuration:
+      - default-src 'self': Only allow resources from same origin
+      - script-src: Allow self, PayPal SDK (production & sandbox), and 'unsafe-inline' for Vite HMR in dev
+      - style-src: Allow self, PayPal SDK, and 'unsafe-inline' (needed for PayPal buttons and Tailwind)
+      - img-src: Allow self, data URIs (for icons), R2 CDN (if configured), and PayPal
+      - media-src: Allow self, blob URIs (for WaveSurfer audio processing), and data URIs
+      - connect-src: Allow self (API calls), PayPal API endpoints
+      - font-src: Allow self and data URIs (for icon fonts)
+      - frame-src: Allow PayPal iframes for payment flow
+      - object-src: Block all (security best practice)
+      - base-uri: Restrict to self (prevent base tag injection)
+      - form-action: Allow self (form submissions)
+    -->
+    <meta 
+      http-equiv="Content-Security-Policy" 
+      content="
+        default-src 'self';
+        script-src 'self' 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com 
+          'unsafe-inline';
+        style-src 'self' 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com 
+          'unsafe-inline';
+        img-src 'self' 
+          data: 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com
+          https://*.r2.cloudflarestorage.com
+          https://*.r2.dev;
+        media-src 'self' 
+          blob: 
+          data:;
+        connect-src 'self' 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com
+          https://api.paypal.com
+          https://api.sandbox.paypal.com;
+        font-src 'self' 
+          data:;
+        frame-src 'self' 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+      "
+    />
+    
     <title>MuzBeats</title>
   </head>
   <body>

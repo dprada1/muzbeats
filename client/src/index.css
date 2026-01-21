@@ -13,10 +13,21 @@ body {
 	color: white;
 }
 
-html, body {
+html {
+	overflow-y: scroll;
+	overflow-x: hidden;
 	scroll-behavior: smooth;
 	overscroll-behavior-y: contain;
-    overflow-x: hidden;
+}
+
+body {
+	overflow-x: hidden;
+	overflow-y: visible;
+	min-height: 100vh;
+}
+
+#root {
+	min-height: 100vh;
 }
 
 /* Remove keyboard focus outline from player controls */

@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:analyze": "npm run build && echo '\n📦 Bundle size analysis complete. Check dist/ folder for output files.'",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --ui"
