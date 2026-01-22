@@ -55,7 +55,9 @@ export default function PayPalCheckoutButton({
                             );
                             return data.orderId;
                         } catch (error: any) {
-                            console.error('Error creating PayPal order:', error);
+                            if (import.meta.env.DEV) {
+                                console.error('Error creating PayPal order:', error);
+                            }
                             // Sanitize error message before showing to user
                             const userMessage = sanitizeErrorMessage(error, 'PayPal create order');
                             onError(userMessage);
@@ -82,14 +84,18 @@ export default function PayPalCheckoutButton({
                             // Call success handler with our database order ID
                             onSuccess(result.orderId);
                         } catch (error: any) {
-                            console.error('Error capturing PayPal order:', error);
+                            if (import.meta.env.DEV) {
+                                console.error('Error capturing PayPal order:', error);
+                            }
                             // Sanitize error message before showing to user
                             const userMessage = sanitizeErrorMessage(error, 'PayPal capture order');
                             onError(userMessage);
                         }
                     }}
                     onError={(err) => {
-                        console.error('PayPal Buttons error:', err);
+                        if (import.meta.env.DEV) {
+                            console.error('PayPal Buttons error:', err);
+                        }
                         onError('PayPal payment failed. Please try again.');
                     }}
                     onCancel={() => {

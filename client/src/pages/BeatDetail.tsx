@@ -23,7 +23,9 @@ export default function BeatDetail() {
 
         // Validate beatId format before making API call
         if (!isValidBeatId(beatId)) {
-            console.error('Invalid beat ID format:', beatId);
+            if (import.meta.env.DEV) {
+                console.error('Invalid beat ID format:', beatId);
+            }
             setBeat(null);
             return;
         }

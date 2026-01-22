@@ -15,7 +15,9 @@ export default function CheckoutSuccessPage() {
         
         if (!orderId) {
             // If no payment info in URL, something went wrong
-            console.error('No payment ID found in URL');
+            if (import.meta.env.DEV) {
+                console.error('No payment ID found in URL');
+            }
             setPaymentStatus('failed');
             setErrorMessage('Payment information not found. Please contact support if you were charged.');
             return;
@@ -23,7 +25,9 @@ export default function CheckoutSuccessPage() {
 
         // Validate orderId format before proceeding
         if (!isValidOrderId(orderId)) {
-            console.error('Invalid order ID format:', orderId);
+            if (import.meta.env.DEV) {
+                console.error('Invalid order ID format:', orderId);
+            }
             setPaymentStatus('failed');
             setErrorMessage('Invalid payment information. Please contact support if you were charged.');
             return;
