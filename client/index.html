@@ -9,16 +9,22 @@
     <!-- 
       CSP Configuration:
       - default-src 'self': Only allow resources from same origin
-      - script-src: Allow self, PayPal SDK (production & sandbox), and 'unsafe-inline' for Vite HMR in dev
-      - style-src: Allow self, PayPal SDK, and 'unsafe-inline' (needed for PayPal buttons and Tailwind)
+      - script-src: 
+          * Development: Includes 'unsafe-inline' for Vite HMR (Hot Module Replacement)
+          * Production: Removes 'unsafe-inline' for better security (automatically via vite.config.ts plugin)
+          * Always includes 'unsafe-eval' (PayPal SDK requires it)
+      - style-src: Always includes 'unsafe-inline' (needed for PayPal buttons and Tailwind CSS)
       - img-src: Allow self, data URIs (for icons), R2 CDN (if configured), and PayPal
       - media-src: Allow self, blob URIs (for WaveSurfer audio processing), and data URIs
-      - connect-src: Allow self (API calls), PayPal API endpoints
+      - connect-src: Allow self (API calls), PayPal API endpoints, R2 CDN
       - font-src: Allow self and data URIs (for icon fonts)
       - frame-src: Allow PayPal iframes for payment flow
       - object-src: Block all (security best practice)
       - base-uri: Restrict to self (prevent base tag injection)
       - form-action: Allow self (form submissions)
+      
+      Security Note: The vite.config.ts plugin automatically removes 'unsafe-inline' from script-src
+      in production builds, making the CSP more secure while maintaining functionality.
     -->
     <meta 
       http-equiv="Content-Security-Policy" 
@@ -28,7 +34,8 @@
           https://www.paypal.com 
           https://www.sandbox.paypal.com 
           https://static.cloudflareinsights.com 
-          'unsafe-inline';
+          'unsafe-inline'
+          'unsafe-eval';
         style-src 'self' 
           https://www.paypal.com 
           https://www.sandbox.paypal.com 

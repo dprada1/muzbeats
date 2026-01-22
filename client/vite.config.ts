@@ -2,6 +2,41 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import type { Plugin } from 'vite'
+
+// Plugin to inject production CSP (removes unsafe-inline from script-src)
+// This makes production more secure while keeping dev functionality
+function cspPlugin(): Plugin {
+  return {
+    name: 'csp-plugin',
+    transformIndexHtml(html, ctx) {
+      // In production builds, remove 'unsafe-inline' from script-src
+      // Development keeps it for Vite HMR (Hot Module Replacement)
+      // We keep unsafe-eval (PayPal SDK requires it)
+      // We keep unsafe-inline for style-src (PayPal buttons and Tailwind need it)
+      const isProduction = !ctx.server // ctx.server is undefined in production builds
+      
+      if (isProduction) {
+        // Production: Remove unsafe-inline from script-src for better security
+        // Match the entire script-src directive including all whitespace
+        const productionScriptSrc = `script-src 'self' 
+          https://www.paypal.com 
+          https://www.sandbox.paypal.com 
+          https://static.cloudflareinsights.com 
+          'unsafe-eval';`
+        
+        // More flexible regex that handles any whitespace between tokens
+        return html.replace(
+          /script-src\s+'self'[\s\S]*?'unsafe-inline'[\s\S]*?'unsafe-eval';/,
+          productionScriptSrc
+        )
+      }
+      
+      // Development: Keep unsafe-inline for Vite HMR
+      return html
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,6 +44,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     tsconfigPaths(),
+    cspPlugin(),
   ],
 
   test: {
