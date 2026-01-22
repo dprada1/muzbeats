@@ -37,7 +37,7 @@ html {
 }
 
 body {
-	overflow-x: hidden;
+    overflow-x: hidden;
 	overflow-y: visible;
 	min-height: 100vh;
 }

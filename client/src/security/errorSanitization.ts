@@ -38,7 +38,10 @@ export function sanitizeErrorMessage(
         .replace(/at\s+.*/g, '')
         // Remove absolute file paths (reveal server structure)
         .replace(/\/[^\s]+\.[a-z]+:\d+:\d+/g, '')
-        .replace(/\/[A-Z]:\\[^\s]+/g, '') // Windows paths
+        // Remove Windows paths (C:\Users\..., D:\path\...)
+        .replace(/[A-Z]:\\[^\s]+/gi, '')
+        // Remove file:// URLs
+        .replace(/file:\/\/[^\s]*/g, '')
         // Remove internal URLs with paths (but keep simple domain references)
         .replace(/https?:\/\/[^\s]+\/[^\s]+/g, '')
         // Remove technical error type prefixes (not useful to users)
