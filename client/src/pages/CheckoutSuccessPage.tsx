@@ -80,25 +80,25 @@ export default function CheckoutSuccessPage() {
     }
 
     return (
-        <div className="pt-12 max-w-3xl mx-auto text-center">
+        <div className="pt-12 md:pt-14 max-w-3xl mx-auto text-center">
             <div className="bg-green-500/20 border border-green-500 rounded-2xl p-4 md:p-8 mb-4">
-                <div className="text-6xl mb-4">
+                <div className="text-6xl md:text-7xl mb-4 md:mb-5">
                     ✓
                 </div>
-                <h1 className="text-3xl font-bold text-green-400 mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-green-400 mb-2 md:mb-3">
                     Payment Successful!
                 </h1>
-                <p className="text-zinc-300 mb-2 text-lg">
+                <p className="text-zinc-300 mb-2 md:mb-3 text-lg md:text-xl">
                     Thank you for your purchase!
                 </p>
                 <div className="rounded-xl p-2 md:p-6 mb-0 max-w-2xl mx-auto">
-                    <h2 className="text-xl font-semibold text-white md:mb-3 text-center">
+                    <h2 className="text-xl md:text-2xl font-semibold text-white mb-2 md:mb-3 text-center">
                         📧 Check Your Email
                     </h2>
-                    <p className="text-zinc-300 mb-3 text-base leading-relaxed">
+                    <p className="text-zinc-300 mb-3 md:mb-4 text-base md:text-lg leading-relaxed">
                         We've sent your download links to the email you provided during checkout.
                     </p>
-                    <ul className="space-y-1.5 md:space-y-2 text-sm text-zinc-400">
+                    <ul className="space-y-1.5 md:space-y-2 text-sm md:text-base text-zinc-400">
                         <li className="flex items-center gap-2">
                             <span className="text-green-400 shrink-0">•</span>
                             <span>Download links valid for 30 days</span>
@@ -113,7 +113,7 @@ export default function CheckoutSuccessPage() {
                         </li>
                     </ul>
                 </div>
-                <p className="text-zinc-400 text-sm mt-2 mb-0">
+                <p className="text-zinc-400 text-sm md:text-base  mb-0">
                     Didn't receive the email? Contact support and we'll resend your download links.
                 </p>
             </div>
