@@ -33,7 +33,7 @@ function Layout() {
     return (
         <div className="min-h-screen flex flex-col bg-[--color-dark-bg] text-white">
             <Navbar />
-            <main className="flex-1 px-4 py-8">
+            <main className="flex-1 px-2 md:px-4 py-8">
                 <Suspense fallback={<PageLoader />}>
                     <Outlet />
                 </Suspense>
