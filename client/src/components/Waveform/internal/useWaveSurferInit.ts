@@ -88,7 +88,11 @@ export function useWaveSurferInit({
         }
 
         const handleReady = () => {
-            const buf = (ws as any)?.backend?.buffer as AudioBuffer | undefined;
+            // WaveSurfer v7+ uses getDecodedData() instead of backend.buffer
+            const decodedData = (ws as any).getDecodedData?.() as AudioBuffer | undefined;
+            // Fallback to old API for older versions
+            const buf = decodedData || (ws as any)?.backend?.buffer as AudioBuffer | undefined;
+            
             if (buf) setBuffer(beat.id, buf);
 
             const duration = ws.getDuration();
