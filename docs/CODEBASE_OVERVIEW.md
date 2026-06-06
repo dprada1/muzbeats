@@ -88,7 +88,7 @@ muzbeats/
 │   │   ├── utils/           # Utility functions
 │   │   │   └── r2.ts        # R2 URL helpers
 │   │   ├── db/              # Database scripts
-│   │   │   ├── init-db.ts   # Table creation
+│   │   │   ├── initializeDatabase.ts   # Schema bootstrap (server + npm run init-db)
 │   │   │   └── migrations/  # Schema migrations
 │   │   └── index.ts         # Server entry point
 │   ├── public/              # Static assets (served by Express)

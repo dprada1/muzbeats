@@ -21,7 +21,7 @@
     "organize-covers": "tsx src/db/organize-covers-complete.ts",
     "recover-artist-org": "tsx src/db/recover-artist-organization.ts",
     "move-artist-organized": "tsx src/db/move-artist-to-unused-organized.ts",
-    "init-db": "tsx src/db/init-db.ts",
+    "init-db": "tsx src/db/initializeDatabase.ts",
     "test-db": "tsx src/test-db.ts",
     "update-prices": "tsx src/db/update-prices.ts",
     "test": "vitest --ui",
