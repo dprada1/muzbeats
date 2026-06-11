@@ -7,6 +7,7 @@ import {
     getPrivateR2Object,
     isPrivateR2Enabled,
     getWavPath,
+    type DownloadTokenValidation,
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
@@ -60,7 +61,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         }
 
         // Validate token
-        const validation = await validateDownloadToken(token);
+        const validation: DownloadTokenValidation = await validateDownloadToken(token);
 
         if (!validation) {
             res.status(404).json({ error: 'Download token not found' });
@@ -90,7 +91,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // Security: Always check if WAV exists before deciding to redirect
         // The database stores MP3 paths, but we prefer WAVs when available
         // WAVs must ALWAYS be served through protected endpoint (never publicly accessible)
-        const wavExists = await hasWavFile(validation.audioPath);
+        const wavExists: boolean = await hasWavFile(validation.audioPath);
         const isMp3Path = validation.audioPath.includes('/mp3/') || validation.audioPath.endsWith('.mp3');
 
         // If WAV exists, always serve through protected endpoint (never redirect to R2)

@@ -96,13 +96,30 @@ function getPrivateS3Client(): S3Client | null {
     return privateS3Client;
 }
 
+export type DownloadTokenInvalidReason = 'expired' | 'limit_reached';
+
+export type DownloadTokenValidation =
+    | null
+    | { valid: false; reason: DownloadTokenInvalidReason }
+    | {
+          valid: true;
+          downloadId: string;
+          beatId: string;
+          beatTitle: string;
+          audioPath: string;
+          downloadCount: number;
+          maxDownloads: number;
+      };
+
 /**
  * Validate a download token and return the associated beat information
  *
  * @param token - The download token to validate
  * @returns Beat information and file path if token is valid, null otherwise
  */
-export async function validateDownloadToken(token: string) {
+export async function validateDownloadToken(
+    token: string
+): Promise<DownloadTokenValidation> {
     try {
         const result = await pool.query(
             `
@@ -161,7 +178,7 @@ export async function validateDownloadToken(token: string) {
  *
  * @param downloadId - The download record ID
  */
-export async function incrementDownloadCount(downloadId: string) {
+export async function incrementDownloadCount(downloadId: string): Promise<void> {
     try {
         await pool.query(
             `

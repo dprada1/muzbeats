@@ -3,7 +3,7 @@ import type { OrderStatus } from '@/types/Order.js';
 import { randomBytes } from 'crypto';
 
 // PayPal order capture type (simplified for our needs)
-interface PayPalOrderCapture {
+export interface PayPalOrderCapture {
     id: string;
     status: string;
     purchaseUnits: Array<{
@@ -22,6 +22,12 @@ interface PayPalOrderCapture {
     };
 }
 
+export interface OrderCaptureResult {
+    orderId: string;
+    customerEmail: string;
+    totalAmount: number;
+    beatIds: string[];
+}
 
 /**
  * Create an order and related order_items/downloads from a PayPal Order Capture.
@@ -34,7 +40,7 @@ interface PayPalOrderCapture {
 export async function createOrderFromPayPalCapture(
     paypalOrder: PayPalOrderCapture,
     storedData?: { beatIds: string[] } | null
-) {
+): Promise<OrderCaptureResult> {
     const client = await pool.connect();
 
     try {

@@ -4,13 +4,23 @@ import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { getR2Url } from '@/utils/r2.js';
 
+interface BeatDbRow {
+    id: string;
+    title: string;
+    key: string;
+    bpm: number;
+    price: string | number;
+    audio_path: string;
+    cover_path: string | null;
+}
+
 /**
  * Map database row to Beat type
  * Converts audio_path -> audio, cover_path -> cover
  * Transforms paths to R2 URLs if R2 is configured
  * Uses fallback image if cover_path is null/empty
 */
-function mapDbRowToBeat(row: any): Beat {
+function mapDbRowToBeat(row: BeatDbRow): Beat {
     // Use fallback image if cover_path is null or empty
     const coverPath = row.cover_path || '/assets/images/skimask.png';
     
@@ -19,7 +29,7 @@ function mapDbRowToBeat(row: any): Beat {
         title: row.title,
         key: row.key,
         bpm: row.bpm,
-        price: parseFloat(row.price),
+        price: typeof row.price === 'number' ? row.price : parseFloat(row.price),
         audio: getR2Url(row.audio_path),
         cover: getR2Url(coverPath),
     };
@@ -31,7 +41,7 @@ function mapDbRowToBeat(row: any): Beat {
 export async function getAllBeats(searchParams?: SearchParams): Promise<Beat[]> {
     try {
         let query = 'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats';
-        let params: any[] = [];
+        let params: unknown[] = [];
 
         // Apply search filters if provided
         if (searchParams) {

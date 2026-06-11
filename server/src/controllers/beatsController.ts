@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getAllBeats, getBeatById } from '@/services/beatsService.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
+import type { Beat } from '@/types/Beat.js';
 
 /**
  * GET /api/beats
@@ -63,7 +64,7 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
             }
         }
 
-        const beats = await getAllBeats(searchParams);
+        const beats: Beat[] = await getAllBeats(searchParams);
         res.json(beats);
     } catch (error) {
         console.error('Error fetching all beats:', error);
@@ -84,7 +85,7 @@ export async function getBeatByIdHandler(req: Request, res: Response): Promise<v
             return;
         }
 
-        const beat = await getBeatById(id);
+        const beat: Beat | null = await getBeatById(id);
         
         if (!beat) {
             res.status(404).json({ error: 'Beat not found' });
