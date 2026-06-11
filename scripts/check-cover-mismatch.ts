@@ -1,5 +1,9 @@
+/**
+ * Run from repo root:
+ *   npx tsx --tsconfig scripts/tsconfig.json scripts/check-cover-mismatch.ts
+ */
 import dotenv from 'dotenv';
-import pool from '../server/src/config/database.js';
+import pool from '@/config/database.js';
 import { readdir } from 'fs/promises';
 import { join } from 'path';
 

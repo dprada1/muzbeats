@@ -1,4 +1,4 @@
-import type { SearchParams } from '../types/SearchParams.js';
+import type { SearchParams } from '@/types/SearchParams.js';
 import { normalizeKeyNotation, getEnharmonicEquivalents } from './keyUtils.js';
 
 /**

@@ -8,7 +8,7 @@
  * - Keywords: any other text (searches in title)
 */
 
-import type { SearchParams } from '../types/SearchParams.js';
+import type { SearchParams } from '@/types/SearchParams.js';
 
 /**
  * Parse a raw search query string into SearchParams

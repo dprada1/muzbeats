@@ -1,7 +1,11 @@
+/**
+ * Run from repo root:
+ *   npx tsx --tsconfig scripts/tsconfig.json scripts/find-missing-covers.ts
+ */
 import dotenv from 'dotenv';
 import { readdir } from 'fs/promises';
 import { join } from 'path';
-import pool from '../server/src/config/database.js';
+import pool from '@/config/database.js';
 
 dotenv.config();
 

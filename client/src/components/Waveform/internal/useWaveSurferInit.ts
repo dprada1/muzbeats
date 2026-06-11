@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type WaveSurfer from 'wavesurfer.js';
-import { createWaveSurfer } from '../loader';
+import { createWaveSurfer } from '@/components/Waveform/loader';
 import type { Beat } from '@/types/Beat';
 import type { WSInternals } from './wsInternals';
 

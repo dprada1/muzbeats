@@ -27,7 +27,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readdir } from 'fs/promises';
-import pool from '../config/database.js';
+import pool from '@/config/database.js';
 
 dotenv.config();
 
