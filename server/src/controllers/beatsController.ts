@@ -16,11 +16,16 @@ import type { Beat } from '@/types/Beat.js';
  * - key: Musical key (e.g., "C#min", "A maj")
  * - search: Keyword search in title (e.g., "pierre")
 */
-export async function getAllBeatsHandler(req: Request, res: Response): Promise<void> {
+export async function getBeatsHandler(req: Request, res: Response): Promise<void> {
     try {
         const { q, bpm, bpmMin, bpmMax, key, search } = req.query;
 
-        let searchParams: SearchParams | undefined;
+        let searchParams: SearchParams = {
+            bpmRanges: [],
+            bpmValues: [],
+            keys: [],
+            queryTokens: []
+        };
 
         // If 'q' parameter is provided, parse it as a full search query
         if (q && typeof q === 'string') {
@@ -28,13 +33,6 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
         }
         // Otherwise, build SearchParams from individual query parameters
         else if (bpm || bpmMin || bpmMax || key || search) {
-            searchParams = {
-                bpmRanges: [],
-                bpmValues: [],
-                keys: [],
-                queryTokens: []
-            };
-
             // BPM filtering
             if (bpm && typeof bpm === 'string') {
                 const bpmValue = parseInt(bpm);

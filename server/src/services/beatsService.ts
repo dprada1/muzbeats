@@ -38,27 +38,19 @@ function mapDbRowToBeat(row: BeatDbRow): Beat {
 }
 
 /**
- * Get all beats from PostgreSQL with optional search/filtering
+ * Get beats from PostgreSQL, filtered by the given search criteria.
+ * Empty search criteria (all empty arrays) returns every beat.
 */
-export async function getBeats(searchParams?: SearchParams): Promise<Beat[]> {
+export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
     try {
-        let query = 'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats';
-        let params: unknown[] = [];
-
-        // Apply search filters if provided
-        if (searchParams) {
-            const { whereClause, params: queryParams } = buildSearchQuery(searchParams);
-            query += ` ${whereClause}`;
-            params = queryParams;
-        }
-
-        // Always order by created_at DESC
-        query += ' ORDER BY created_at DESC';
+        const { whereClause, params } = buildSearchQuery(searchParams);
+        const query =
+            `SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats ${whereClause} ORDER BY created_at DESC`;
 
         const result = await pool.query(query, params);
         return result.rows.map(mapDbRowToBeat);
     } catch (error) {
-        console.error('Error fetching all beats from database:', error);
+        console.error('Error fetching beats from database:', error);
         throw new Error('Failed to fetch beats from database');
     }
 }
