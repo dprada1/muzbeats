@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getAllBeats, getBeatById } from '@/services/beatsService.js';
+import { getBeats, getBeatById } from '@/services/beatsService.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import type { Beat } from '@/types/Beat.js';
@@ -25,7 +25,7 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
         // If 'q' parameter is provided, parse it as a full search query
         if (q && typeof q === 'string') {
             searchParams = parseSearchQuery(q);
-        } 
+        }
         // Otherwise, build SearchParams from individual query parameters
         else if (bpm || bpmMin || bpmMax || key || search) {
             searchParams = {
@@ -64,7 +64,7 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
             }
         }
 
-        const beats: Beat[] = await getAllBeats(searchParams);
+        const beats: Beat[] = await getBeats(searchParams);
         res.json(beats);
     } catch (error) {
         console.error('Error fetching all beats:', error);

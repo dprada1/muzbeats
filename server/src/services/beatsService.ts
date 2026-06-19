@@ -2,6 +2,7 @@ import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
+import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
 import { getR2Url } from '@/utils/r2.js';
 
 interface BeatDbRow {
@@ -19,6 +20,7 @@ interface BeatDbRow {
  * Converts audio_path -> audio, cover_path -> cover
  * Transforms paths to R2 URLs if R2 is configured
  * Uses fallback image if cover_path is null/empty
+ * Denormalizes the canonical key ("c#min") back to display form ("C♯ min")
 */
 function mapDbRowToBeat(row: BeatDbRow): Beat {
     // Use fallback image if cover_path is null or empty
@@ -27,7 +29,7 @@ function mapDbRowToBeat(row: BeatDbRow): Beat {
     return {
         id: row.id,
         title: row.title,
-        key: row.key,
+        key: denormalizeKeyNotation(row.key),
         bpm: row.bpm,
         price: typeof row.price === 'number' ? row.price : parseFloat(row.price),
         audio: getR2Url(row.audio_path),
@@ -38,7 +40,7 @@ function mapDbRowToBeat(row: BeatDbRow): Beat {
 /**
  * Get all beats from PostgreSQL with optional search/filtering
 */
-export async function getAllBeats(searchParams?: SearchParams): Promise<Beat[]> {
+export async function getBeats(searchParams?: SearchParams): Promise<Beat[]> {
     try {
         let query = 'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats';
         let params: unknown[] = [];

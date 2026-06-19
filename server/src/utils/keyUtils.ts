@@ -70,6 +70,32 @@ export function normalizeKeyNotation(input: string): string {
 }
 
 /**
+ * Convert a normalized key back to display format.
+ * Inverse of normalizeKeyNotation for the canonical key domain.
+ *
+ * Format: <UppercaseNote><♯|♭ if any> <min|maj>
+ *
+ * @example
+ * denormalizeKeyNotation("c#min") // "C♯ min"
+ * denormalizeKeyNotation("amin")  // "A min"
+ * denormalizeKeyNotation("dbmaj") // "D♭ maj"
+ * denormalizeKeyNotation("bbmin") // "B♭ min"
+ */
+export function denormalizeKeyNotation(input: string): string {
+    const match = input.match(/^([a-g])([#b]?)(maj|min)$/);
+    if (!match) {
+        // Not a recognized normalized key; return unchanged rather than corrupt it.
+        return input;
+    }
+
+    const note = match[1].toUpperCase();
+    const accidental = match[2] === '#' ? '♯' : match[2] === 'b' ? '♭' : '';
+    const quality = match[3];
+
+    return `${note}${accidental} ${quality}`;
+}
+
+/**
  * Given a normalized key, return its enharmonic and relative equivalents.
  *
  * - "Enharmonic" keys name the same pitches differently (C♯maj ↔ D♭maj)
