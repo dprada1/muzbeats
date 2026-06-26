@@ -69,18 +69,22 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         }
 
         if (!validation.valid) {
-            if (validation.reason === 'expired') {
-                res.status(410).json({ error: 'Download token has expired' });
-                return;
+            switch (validation.reason) {
+                case 'expired':
+                    res.status(410).json({ error: 'Download token has expired' });
+                    return;
+                case 'limit_reached':
+                    res.status(410).json({ error: 'Download limit reached. Maximum downloads exceeded.' });
+                    return;
+                default: {
+                    // If a new reason is ever added to the union and not handled here,
+                    // THIS LINE STOPS COMPILING; the compiler forces you to handle it.
+                    const _exhaustive: never = validation.reason;
+                    void _exhaustive;
+                    res.status(400).json({ error: 'Download token is invalid' });
+                    return;
+                }
             }
-            if (validation.reason === 'limit_reached') {
-                res.status(410).json({
-                    error: 'Download limit reached. Maximum downloads exceeded.',
-                });
-                return;
-            }
-            res.status(404).json({ error: 'Download token is invalid' });
-            return;
         }
 
         // Increment download count (do this before redirect/stream)
