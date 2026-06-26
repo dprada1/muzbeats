@@ -74,12 +74,12 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 return;
             }
             if (validation.reason === 'limit_reached') {
-                res.status(403).json({
+                res.status(410).json({
                     error: 'Download limit reached. Maximum downloads exceeded.',
                 });
                 return;
             }
-            res.status(403).json({ error: 'Download token is invalid' });
+            res.status(404).json({ error: 'Download token is invalid' });
             return;
         }
 
