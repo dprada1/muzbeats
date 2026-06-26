@@ -174,20 +174,26 @@ export async function validateDownloadToken(
 }
 
 /**
- * Increment the download count for a token
+ * Atomically consume one download for a token.
+ *
+ * The check (count < max) and the increment happen in a single statement, so
+ * concurrent requests can never push the count past max_downloads (no TOCTOU race).
  *
  * @param downloadId - The download record ID
+ * @returns true if a slot was consumed; false if the token was already at its limit
  */
-export async function incrementDownloadCount(downloadId: string): Promise<void> {
+export async function incrementDownloadCount(downloadId: string): Promise<boolean> {
     try {
-        await pool.query(
+        const result = await pool.query(
             `
             UPDATE downloads
             SET download_count = download_count + 1
-            WHERE id = $1
+            WHERE id = $1 AND download_count < max_downloads
+            RETURNING download_count
         `,
             [downloadId]
         );
+        return (result.rowCount ?? 0) > 0;
     } catch (error) {
         console.error('downloadService.incrementDownloadCount error:', error);
         throw error;

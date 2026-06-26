@@ -87,9 +87,17 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             }
         }
 
-        // Increment download count (do this before redirect/stream)
-        await incrementDownloadCount(validation.downloadId).catch((error) => {
-            console.error('downloadController: Failed to increment download count:', error);
+        // Count a download only once the response has been fully and successfully
+        // streamed to the client. `finish` fires when all bytes are flushed; the 2xx
+        // guard excludes error responses (4xx/5xx) and dev redirects (3xx), and a
+        // failed/aborted transfer never emits `finish` at all. Registered once here so
+        // it applies to every serve path below (private R2, redirect, or local file).
+        res.on('finish', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+                incrementDownloadCount(validation.downloadId).catch((error) => {
+                    console.error('downloadController: Failed to increment download count:', error);
+                });
+            }
         });
 
         // Security: Always check if WAV exists before deciding to redirect
