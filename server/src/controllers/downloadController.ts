@@ -94,7 +94,13 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // it applies to every serve path below (private R2, redirect, or local file).
         res.on('finish', () => {
             if (res.statusCode >= 200 && res.statusCode < 300) {
-                incrementDownloadCount(validation.downloadId).catch((error) => {
+                incrementDownloadCount(validation.downloadId)
+                .then((consumed) => {
+                    if (!consumed) {
+                        console.warn(`Served beyond download limit (race) for download ${validation.downloadId}`);
+                    }
+                })
+                .catch((error) => {
                     console.error('downloadController: Failed to increment download count:', error);
                 });
             }
