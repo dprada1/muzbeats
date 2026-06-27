@@ -129,6 +129,22 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 - [ ] `server/src/db/initializeDatabase.ts` — runtime schema bootstrap
 - [ ] `server/src/db/schema.sql` — reference schema
 - [ ] Skim migration/import scripts only when needed for catalog ops
+- [ ] Retire `server/public/assets/data.json` and one-off import scripts once DB folder is audited
+
+### PostgreSQL major-version upgrade (before live PayPal / prod launch)
+
+Local dev is on **PostgreSQL 14** (Homebrew: `/opt/homebrew/var/postgresql@14/`). **PG 14 EOL: November 12, 2026** — no security patches after that date.
+
+**Target:** PostgreSQL **18** (latest stable as of mid-2026; supported until ~2030). Also acceptable: 17.
+
+- [ ] Check Railway Postgres major version: `SELECT version();` on staging/production
+- [ ] Backup local DBs: `pg_dump` for `muzbeats_test` (and any other local DBs in use)
+- [ ] Upgrade local Homebrew: install `postgresql@18`, migrate via dump/restore (simplest for our data size)
+- [ ] Verify app: beats API, search, download token flow, checkout against upgraded local DB
+- [ ] Upgrade Railway Postgres (dashboard or new service + `DATABASE_URL` swap) before production goes live on EOL 14
+- [ ] Document final PG version in ops notes / `.env.example` if helpful
+
+**Note:** App code (`pg` pool, SQL in `initializeDatabase.ts`) needs no changes for 14→18; this is infra only.
 
 ---
 
@@ -154,6 +170,8 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 - [ ] Health endpoint DB check (optional)
 
 See [SERVER_SECURITY_REVIEW.md](../SERVER_SECURITY_REVIEW.md) for detailed action items.
+
+**Schedule before Phase 8:** complete [PostgreSQL major-version upgrade](#postgresql-major-version-upgrade-before-live-paypal--prod-launch) (Phase 6).
 
 ---
 
@@ -183,13 +201,25 @@ See [SERVER_SECURITY_REVIEW.md](../SERVER_SECURITY_REVIEW.md) for detailed actio
 
 ---
 
+## Client backlog (track separately from backend review)
+
+Items to fix on the frontend; listed here so they are not forgotten during backend work.
+
+- [ ] **Waveform visual bug** — investigate/fix in `client/src/components/Waveform/` (and related hooks: `useWaveform.ts`, `WaveformContext.tsx`, beat cards). _Add repro steps (page, beat, browser) when debugging._
+
+---
+
 ## Suggested session order
 
 | Session | Focus |
 |---------|--------|
 | ~~1~~ ✅ | Phase 0–1 complete (beats route reviewed + key search refactor) |
-| **Now** | Phase 2: download route |
+| **Now** | Phase 2: download route (in progress — token validation, counter, serve tree) |
 | **3** | Phase 3: checkout + PayPal |
 | **4** | Phase 4–5: webhooks plan + config sweep |
-| **5** | Phase 7: rate limiting + Zod on checkout/download |
-| **6** | Phase 8: live PayPal on staging, then production |
+| **5** | Phase 6: tests + `db/` audit; retire `data.json` / stale scripts |
+| **6** | Phase 7: security hardening |
+| **7** | Phase 6: **PostgreSQL 14 → 18** (local + Railway) — before prod |
+| **8** | Phase 8: live PayPal on staging, then production |
+| **9** | Phase 9: docs overhaul |
+| _Anytime_ | Client: waveform visual bug (`client/src/components/Waveform/`) |
