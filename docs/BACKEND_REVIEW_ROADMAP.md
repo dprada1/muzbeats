@@ -66,6 +66,19 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 - [ ] No server-side rate limiting on `GET /api/downloads/:token`
 - [ ] Prod refuses MP3 fallback — confirm private R2 is configured on Railway
 
+### Cleanups identified (implement, then verify on staging)
+Private bucket is now flat `wav/<file>.wav` (confirmed in Cloudflare dashboard). The
+legacy `beats/wav/...` layout is **not used by any live code** — only stale docs.
+- [ ] Use a single canonical R2 key: `wav/${basename}` (NOT `stripAssetsPrefix`, which yields `beats/wav/...` and 404s)
+- [ ] Delete `getPrivateWavKeyCandidatesFromWavPath` + `getPrivateWavKeyCandidatesFromKey` (+ `seen` Set, `beats/wav/` branch)
+- [ ] Collapse `headPrivateR2Any` and `getPrivateR2Object` loops to a single key
+- [ ] Split `hasWavFile` → `hasR2WavFile` (HEAD private bucket) + `hasLocalWavFile` (`existsSync`)
+- [ ] Restructure controller serve-tree around `isPrivateR2Enabled()` (stream WAV; never send private link)
+- [ ] De-dupe `stripLeadingSlash` / `stripAssetsPrefix` (defined in both controller and service)
+- [ ] Drop debug `console.log`s; `Accept-Ranges: bytes` advertised but not honored
+- [ ] **Verify private-R2 streaming on staging** (local `.env` can include full `R2_PRIVATE_*` set for dev testing)
+- [x] Fix stale docs referencing `beats/wav/` (`R2_WAV_PRIVACY_FIX.md`, `CLOUDFLARE_R2_SETUP.md`, `RECENT_CHANGES_2025_12.md`)
+
 **Phase 2 done when:** You understand token → validate → stream/redirect end-to-end.
 
 ---
@@ -206,6 +219,11 @@ See [SERVER_SECURITY_REVIEW.md](../SERVER_SECURITY_REVIEW.md) for detailed actio
 Items to fix on the frontend; listed here so they are not forgotten during backend work.
 
 - [ ] **Waveform visual bug** — investigate/fix in `client/src/components/Waveform/` (and related hooks: `useWaveform.ts`, `WaveformContext.tsx`, beat cards). _Add repro steps (page, beat, browser) when debugging._
+
+### Static assets / SEO (uses the kept `public/assets/` structure)
+- [ ] `robots.txt` — crawler rules, incl. AI crawlers (`GPTBot`, `ClaudeBot`, etc.); decide allow/deny per path
+- [ ] Open Graph tags + `og:image` — link-preview cards for shared beats (iMessage/Discord/social)
+- [ ] Confirm favicon strategy (currently client-served; fine — revisit only if load-flash returns)
 
 ---
 
