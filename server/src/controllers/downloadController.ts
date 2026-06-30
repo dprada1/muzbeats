@@ -3,53 +3,128 @@ import {
     validateDownloadToken,
     incrementDownloadCount,
     getAudioFilePath,
-    hasWavFile,
+    hasR2WavFile,
+    hasLocalWavFile,
     getPrivateR2Object,
     isPrivateR2Enabled,
-    getWavPath,
     type DownloadTokenValidation,
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
-import { getR2Url, isR2Configured } from '@/utils/r2.js';
+import { getR2Url, isR2PublicConfigured } from '@/utils/r2.js';
 
-function stripLeadingSlash(p: string): string {
-    return p.startsWith('/') ? p.slice(1) : p;
+/**
+ * Builds the canonical attachment filename for a download from the DB audio path (with extra sanitization).
+ *
+ * - **WAV example:** audioPath = "/assets/beats/wav/example.wav" -> "example.wav"
+ * - **MP3 example:** audioPath = "/assets/beats/mp3/example.mp3" -> "example.mp3"
+ * @param audioPath - Beat `audio_path` from the database (usually MP3 under `/assets/beats/mp3/...`)
+ * @param ext - Extension being served (e.g. `'.wav'` or `'.mp3'`)
+ * @returns Sanitized basename with the correct extension for `Content-Disposition`
+ */
+function getCanonicalDownloadFilenameFromAudioPath(audioPath: string): string {
+    const base = path.basename(audioPath);
+    // Remove characters that break `Content-Disposition` or filesystem save dialogs
+    // Beat titles are not used here (they can contain quotes); storage basenames are trusted but sanitized.
+    const sanitizedBase = base.replace(/[\\/"<>|:*?]/g, '_')
+                              .replace(/[\r\n]/g, '')
+                              .replace(/\s+/g, ' ')
+                              .trim() || 'download';
+    return sanitizedBase;
 }
 
-function stripAssetsPrefix(p: string): string {
-    const clean = stripLeadingSlash(p);
-    return clean.startsWith('assets/') ? clean.slice(7) : clean;
+/**
+ * Maps a file extension to a MIME type for download responses.
+ *
+ * @param ext - File extension including the dot (e.g. `'.wav'`)
+ * @returns MIME type string for `Content-Type`
+ */
+function contentTypeForExtension(ext: string): string {
+    if (ext === '.wav') return 'audio/wav';
+    if (ext === '.mp3') return 'audio/mpeg';
+    return 'application/octet-stream';
 }
 
-function sanitizeDownloadFilename(name: string): string {
-    // Conservative: keep it ASCII-ish and remove header-breaking characters.
-    // We intentionally avoid using the human title (can contain quotes/special chars).
-    return (
-        name
-            .replace(/[\\/"<>|:*?]/g, '_')
-            .replace(/[\r\n]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim() || 'download'
+/**
+ * Sets download headers, pipes a readable stream to the HTTP response, and handles stream errors.
+ *
+ * Used for both private R2 bodies and local filesystem reads. Does not increment the download counter;
+ * the handler registers `res.on('finish')` once for all success paths.
+ *
+ * @param res - Express response
+ * @param stream - Source stream (R2 `GetObject` body or `createReadStream`)
+ * @param audioPath - DB audio path (for canonical filename)
+ * @param ext - Extension being served (e.g. `'.wav'`)
+ * @param contentType - Optional MIME from S3; falls back to {@link contentTypeForExtension}
+ * @param contentLength - Optional byte length; omitted from headers when null/undefined
+ * @param errorLabel - Short label for stream error logs (e.g. `'Private R2'`, `'File'`)
+ */
+function streamDownloadToClient(
+    res: Response,
+    stream: NodeJS.ReadableStream,
+    audioPath: string,
+    ext: string,
+    contentType?: string | null,
+    contentLength?: number | null,
+    errorLabel = 'Download'
+): void {
+    const filename = getCanonicalDownloadFilenameFromAudioPath(audioPath);
+    const resolvedContentType = contentType || contentTypeForExtension(ext);
+
+    res.setHeader('Content-Type', resolvedContentType);
+    if (contentLength != null && contentLength > 0) {
+        res.setHeader('Content-Length', contentLength);
+    }
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    // TODO: implement Range request handling before advertising partial content support
+    // res.setHeader('Accept-Ranges', 'bytes');
+
+    stream.pipe(res);
+    stream.on('error', (error) => {
+        console.error(`downloadController: ${errorLabel} stream error:`, error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Error streaming file' });
+        }
+    });
+}
+
+/**
+ * Streams a file from the local `server/public/` tree through the download endpoint.
+ *
+ * @param res - Express response
+ * @param filePath - Absolute path from {@link getAudioFilePath}
+ * @param audioPath - DB audio path (for canonical filename)
+ * @param ext - Extension being served (e.g. `'.wav'`, `'.mp3'`)
+ */
+function streamLocalFile(
+    res: Response,
+    filePath: string,
+    audioPath: string,
+    ext: string
+): void {
+    const stats = statSync(filePath);
+    streamDownloadToClient(
+        res,
+        createReadStream(filePath),
+        audioPath,
+        ext,
+        contentTypeForExtension(ext),
+        stats.size,
+        'File'
     );
-}
-
-function getCanonicalDownloadFilenameFromAudioPath(audioPath: string, ext: string): string {
-    // Prefer the storage basename, e.g. playboi_carti__placid_Amaj_142.wav
-    const base =
-        ext === '.wav'
-            ? path.basename(getWavPath(audioPath))
-            : path.basename(audioPath);
-    // Ensure extension matches what we're serving
-    const withExt = base.toLowerCase().endsWith(ext) ? base : `${base}${ext}`;
-    return sanitizeDownloadFilename(withExt);
 }
 
 /**
  * GET /api/downloads/:token
  *
- * Download endpoint for purchased beats.
- * Validates the token, checks expiration and download limits, then serves the file.
+ * Token-protected download for purchased beats. Validates the token, then serves audio using this order:
+ *
+ * 1. **Private R2 WAV** — stream through this endpoint (all environments).
+ * 2. **Prod/staging, no R2 WAV** — 500 (no MP3 fallback for paid downloads).
+ * 3. **Dev only** — local WAV, then public MP3 redirect (if configured), then local MP3, else 404.
+ *
+ * WAV masters are never exposed via public R2 URLs. Download count increments on successful 2xx stream only
+ * (`res.on('finish')`); 3xx redirects do not consume a slot.
  */
 export async function downloadBeatHandler(req: Request, res: Response): Promise<void> {
     try {
@@ -95,145 +170,101 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         res.on('finish', () => {
             if (res.statusCode >= 200 && res.statusCode < 300) {
                 incrementDownloadCount(validation.downloadId)
-                .then((consumed) => {
-                    if (!consumed) {
-                        console.warn(`Served beyond download limit (race) for download ${validation.downloadId}`);
-                    }
-                })
-                .catch((error) => {
-                    console.error('downloadController: Failed to increment download count:', error);
-                });
+                    .then((consumed) => {
+                        if (!consumed) {
+                            console.warn(
+                                `Served beyond download limit (race) for download ${validation.downloadId}`
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('downloadController: Failed to increment download count:', error);
+                    });
             }
         });
 
         // Security: Always check if WAV exists before deciding to redirect
         // The database stores MP3 paths, but we prefer WAVs when available
         // WAVs must ALWAYS be served through protected endpoint (never publicly accessible)
-        const wavExists: boolean = await hasWavFile(validation.audioPath);
-        const isMp3Path = validation.audioPath.includes('/mp3/') || validation.audioPath.endsWith('.mp3');
+        const r2WavAvailable: boolean = await hasR2WavFile(validation.audioPath);
+        const localWavAvailable: boolean = hasLocalWavFile(validation.audioPath);
 
-        // If WAV exists, always serve through protected endpoint (never redirect to R2)
-        // This ensures WAVs are never publicly accessible
-        if (wavExists) {
-            console.log(`downloadController: WAV file exists, serving through protected endpoint`);
-            // Continue to serve through endpoint below
-        }
-        // If no WAV exists:
-        // - In production-like environments, DO NOT fall back to MP3 for a paid download.
-        //   This almost always means private R2 is misconfigured or WAVs are missing.
-        // - In local dev, we allow MP3 fallback to keep testing unblocked.
-        else if (!wavExists && isMp3Path) {
-            const prodLike = process.env.NODE_ENV === 'production';
-            if (prodLike) {
-                console.warn(
-                    'downloadController: WAV not found for purchased download (prod-like). Refusing MP3 fallback.',
-                    {
-                        audioPath: validation.audioPath,
-                        privateR2Enabled: isPrivateR2Enabled(),
-                        r2PublicConfigured: isR2Configured(),
-                    }
-                );
-                res.status(500).json({
-                    error:
-                        'WAV master is not available. Please contact support (server is likely missing private R2 configuration).',
-                });
-                return;
-            }
+        const prodLikeEnvironment =
+            process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging';
 
-            if (isR2Configured()) {
-                const r2Url = getR2Url(validation.audioPath);
-                console.log(`downloadController: Dev fallback to MP3, redirecting to R2 URL: ${r2Url}`);
-                res.redirect(302, r2Url);
-                return;
-            }
-        }
-
-        // If WAV exists and private R2 is enabled, stream WAV from private bucket
-        if (wavExists && isPrivateR2Enabled()) {
-            const wavPath = getWavPath(validation.audioPath);
-            const key = stripAssetsPrefix(wavPath); // beats/wav/...
+        if (r2WavAvailable) {
             try {
-                const { stream, contentType, contentLength } = await getPrivateR2Object(key);
-                const ext = path.extname(key).toLowerCase() || '.wav';
-                const filename = getCanonicalDownloadFilenameFromAudioPath(validation.audioPath, ext);
-                const resolvedContentType =
-                    contentType ||
-                    (ext === '.wav' ? 'audio/wav' : ext === '.mp3' ? 'audio/mpeg' : 'application/octet-stream');
-
-                res.setHeader('Content-Type', resolvedContentType);
-                if (contentLength) {
-                    res.setHeader('Content-Length', contentLength);
-                }
-                res.setHeader(
-                    'Content-Disposition',
-                    `attachment; filename="${filename}"`
+                const { stream, contentType, contentLength } = await getPrivateR2Object(validation.audioPath);
+                streamDownloadToClient(
+                    res,
+                    stream,
+                    validation.audioPath,
+                    '.wav',
+                    contentType,
+                    contentLength,
+                    'Private R2'
                 );
-                res.setHeader('Accept-Ranges', 'bytes');
-
-                stream.pipe(res);
-                stream.on('error', (error) => {
-                    console.error('downloadController: Private R2 stream error:', error);
-                    if (!res.headersSent) {
-                        res.status(500).json({ error: 'Error streaming file' });
-                    }
-                });
                 return;
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('downloadController: Failed to fetch WAV from private R2:', error);
-                // fall through to local filesystem attempt
+                if (prodLikeEnvironment) {
+                    res.status(500).json({
+                        error: 'WAV master is not available. Please contact support (server is likely missing private R2 configuration).',
+                    });
+                    return;
+                }
+                // dev: fall through to local WAV / MP3 fallback below
             }
         }
 
-        // Otherwise, serve from local filesystem (dev / non-R2 setups)
-        const filePath = getAudioFilePath(validation.audioPath);
-
-        if (!filePath) {
-            console.error(
-                `downloadController: Audio file not found for path: ${validation.audioPath}`
+        // R2 WAV not available in prod/staging — reject (no MP3 fallback for paid downloads)
+        if (prodLikeEnvironment) {
+            console.warn(
+                'downloadController: WAV not found for purchased download (prod-like). Refusing MP3 fallback.',
+                {
+                    audioPath: validation.audioPath,
+                    privateR2Enabled: isPrivateR2Enabled(),
+                    r2PublicConfigured: isR2PublicConfigured(),
+                }
             );
+            res.status(500).json({
+                error: 'WAV master is not available. Please contact support (server is likely missing private R2 configuration).',
+            });
+            return;
+        }
+
+        // R2 is NOT available, but we are in dev environment, stream wav file locally to the client
+        if (localWavAvailable) {
+            const filePath = getAudioFilePath(validation.audioPath);
+            if (!filePath) {
+                // hasLocalWavFile was true but path missing - rare (deleted between checks)
+                res.status(404).json({ error: 'Audio file not found' });
+                return;
+            }
+            streamLocalFile(res, filePath, validation.audioPath, '.wav');
+            return;
+        }
+
+        // Dev MP3 fallback: redirect to public R2 when configured (see getR2Url NODE_ENV behavior in r2.ts)
+        if (isR2PublicConfigured()) {
+            const redirectUrl = getR2Url(validation.audioPath);
+            res.redirect(302, redirectUrl);
+            return;
+        }
+
+        // R2 is NOT available, we are in dev environment, local wav file is NOT available: stream mp3 file to the client
+        const filePath = getAudioFilePath(validation.audioPath);
+        if (!filePath) {
             res.status(404).json({ error: 'Audio file not found' });
             return;
         }
 
-        // Get file stats for Content-Length header
-        const stats = statSync(filePath);
-        const fileSize = stats.size;
-
-        // Determine content type based on file extension
-        const ext = path.extname(filePath).toLowerCase();
-        const contentType =
-            ext === '.wav'
-                ? 'audio/wav'
-                : ext === '.mp3'
-                ? 'audio/mpeg'
-                : 'application/octet-stream';
-        const filename = getCanonicalDownloadFilenameFromAudioPath(validation.audioPath, ext);
-
-        // Set headers for file download
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Length', fileSize);
-        res.setHeader(
-            'Content-Disposition',
-            `attachment; filename="${filename}"`
-        );
-        res.setHeader('Accept-Ranges', 'bytes');
-
-        // Stream the file
-        const fileStream = createReadStream(filePath);
-        fileStream.pipe(res);
-
-        // Handle stream errors
-        fileStream.on('error', (error) => {
-            console.error('downloadController: File stream error:', error);
-            if (!res.headersSent) {
-                res.status(500).json({ error: 'Error streaming file' });
-            }
-        });
-    } catch (error: any) {
+        streamLocalFile(res, filePath, validation.audioPath, path.extname(filePath));
+    } catch (error: unknown) {
         console.error('downloadController.downloadBeatHandler error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: error.message || 'Internal server error' });
+            const message = error instanceof Error ? error.message : 'Internal server error';
+            res.status(500).json({ error: message });
         }
     }
 }
-

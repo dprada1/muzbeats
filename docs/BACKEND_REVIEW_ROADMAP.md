@@ -75,7 +75,8 @@ legacy `beats/wav/...` layout is **not used by any live code** — only stale do
 - [ ] Split `hasWavFile` → `hasR2WavFile` (HEAD private bucket) + `hasLocalWavFile` (`existsSync`)
 - [ ] Restructure controller serve-tree around `isPrivateR2Enabled()` (stream WAV; never send private link)
 - [ ] De-dupe `stripLeadingSlash` / `stripAssetsPrefix` (defined in both controller and service)
-- [ ] Drop debug `console.log`s; `Accept-Ranges: bytes` advertised but not honored
+- [ ] Drop debug `console.log`s
+- [ ] **`Accept-Ranges: bytes` on `GET /api/downloads/:token`** — header is commented out in `downloadController.ts` until implemented. To support properly: parse `Range` request header, respond with `206 Partial Content` + `Content-Range` when appropriate, stream only requested byte range from R2 or local file; otherwise omit the header (full-file download only). Ref: [MDN Range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests).
 - [ ] **Verify private-R2 streaming on staging** (local `.env` can include full `R2_PRIVATE_*` set for dev testing)
 - [x] Fix stale docs referencing `beats/wav/` (`R2_WAV_PRIVACY_FIX.md`, `CLOUDFLARE_R2_SETUP.md`, `RECENT_CHANGES_2025_12.md`)
 
@@ -224,6 +225,7 @@ Items to fix on the frontend; listed here so they are not forgotten during backe
 - [ ] `robots.txt` — crawler rules, incl. AI crawlers (`GPTBot`, `ClaudeBot`, etc.); decide allow/deny per path
 - [ ] Open Graph tags + `og:image` — link-preview cards for shared beats (iMessage/Discord/social)
 - [ ] Confirm favicon strategy (currently client-served; fine — revisit only if load-flash returns)
+- _Full server-rendered HTML for beat pages → see **Phase 10** (after backend review)._
 
 ---
 
@@ -240,4 +242,37 @@ Items to fix on the frontend; listed here so they are not forgotten during backe
 | **7** | Phase 6: **PostgreSQL 14 → 18** (local + Railway) — before prod |
 | **8** | Phase 8: live PayPal on staging, then production |
 | **9** | Phase 9: docs overhaul |
+| _Later_ | Phase 10: SSR / SEO (after backend hardening + payments stable) |
 | _Anytime_ | Client: waveform visual bug (`client/src/components/Waveform/`) |
+
+---
+
+## Phase 10 — Server-rendered pages (SEO) — future
+
+**Goal:** Crawlers and link previews get real HTML for key routes (homepage, beat detail, maybe genre/search), not an empty SPA shell.
+
+**Prerequisite:** Phases 1–9 stable; Phase 9 SEO quick wins done first (`robots.txt`, `og:*` tags, sitemap).
+
+### Complexity (honest)
+- **Not trivial**, but **not necessarily a full rewrite** — depends on scope.
+- **Low effort (do first):** meta tags, Open Graph, `sitemap.xml`, structured data (`JSON-LD`) — mostly client or a thin Express meta endpoint; fixes Discord/iMessage previews without SSR.
+- **Medium effort (likely sweet spot):** **hybrid SSR** — Express (or a small SSR layer) renders HTML for `/beats/:id` (and a few public routes), injects beat JSON, React **hydrates** on the client. Player/waveform/cart stay client-only. Vite + React Router 7 can support SSR, but wiring build + deploy on Railway is real work.
+- **High effort:** migrate the whole client to **Next.js**, **Remix**, or React Router **framework mode** — weeks+, touches routing, data loading, env, CI, and how API vs frontend are hosted.
+
+### Likely pain points
+- Duplicate data-fetch paths (server render vs client navigation)
+- Deployment: today API and static SPA are separate; SSR needs a Node process serving HTML per request (or prerender + ISR-style regen)
+- Anything browser-only (audio, waveform, Stripe) must stay behind `useEffect` / client components
+
+### Suggested approach when the time comes
+1. Ship Phase 9 SEO backlog items and measure (Search Console, link unfurl tests).
+2. If crawl/index is still weak, prototype **one route** (`GET /beats/:slug` or `:id`) with hybrid SSR.
+3. Only consider full framework migration if hybrid SSR becomes awkward across many routes.
+
+### Checklist (placeholder)
+- [ ] Decide scope: meta-only vs hybrid SSR vs full migration
+- [ ] List SEO-critical routes (beat detail, landing, legal pages)
+- [ ] Spike: SSR one beat page locally
+- [ ] Structured data for products/beats (`JSON-LD`)
+- [ ] Staging crawl test (Google Rich Results, social debuggers)
+- [ ] Production deploy model (SSR on same Railway service vs separate frontend service)

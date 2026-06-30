@@ -7,16 +7,17 @@
 1. **`server/src/utils/r2.ts`** (NEW)
    - Utility functions to transform relative paths to R2 URLs
    - `getR2Url()` - Converts `/assets/beats/mp3/...` to R2 URL
-   - `isR2Configured()` - Checks if R2 is set up
+   - `isR2PublicConfigured()` - Checks if public R2 is set up
 
 2. **`server/src/services/beatsService.ts`**
    - Updated `mapDbRowToBeat()` to use `getR2Url()` for audio and cover paths
    - Now returns R2 URLs when R2 is configured, relative paths otherwise
 
 3. **`server/src/controllers/downloadController.ts`**
-   - Updated to redirect to R2 URLs when R2 is configured
-   - Falls back to local file streaming for development
-   - Download tracking still works (increments before redirect)
+   - Token-validated downloads; WAV masters streamed from **private** R2 via `getPrivateR2Object()` (not public URLs)
+   - Prod/staging: WAV from private R2 only; no MP3 fallback
+   - Dev: local WAV, then optional redirect to **public** MP3 (`isR2PublicConfigured()` + `getR2Url()`), then local MP3
+   - Download count increments on successful **2xx** stream (`res.on('finish')`); 302 redirects do not count
 
 ### Frontend Changes
 
@@ -37,10 +38,11 @@
    - Backend returns R2 URLs: `https://pub-xxxxx.r2.dev/beats/mp3/beat.mp3`
    - Frontend receives full URLs and uses them directly
 
-2. **Download Links:**
+2. **Download links (paid WAV):**
    - Download endpoint validates token
-   - Redirects to R2 URL (uses R2's free egress)
-   - Download count still tracked
+   - Streams WAV from **private** R2 through the API (buyer never gets a direct R2 URL for masters)
+   - Public `R2_PUBLIC_URL` / `isR2PublicConfigured()` is for MP3 previews and dev MP3 fallback only
+   - Download count increments after a successful 2xx stream
 
 3. **Cover Images:**
    - Served directly from R2 URLs

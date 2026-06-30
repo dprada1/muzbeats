@@ -43,7 +43,6 @@ export function getR2Url(assetPath: string): string {
 /**
  * Check if R2 is configured
  */
-export function isR2Configured(): boolean {
+export function isR2PublicConfigured(): boolean {
     return !!process.env.R2_PUBLIC_URL;
 }
-
