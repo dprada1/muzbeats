@@ -45,9 +45,9 @@
     "@types/express": "^5.0.5",
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.6",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/ui": "^3.2.6",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   }
 }
