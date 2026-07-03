@@ -11,7 +11,7 @@ import {
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
-import { getR2Url, isR2PublicConfigured } from '@/utils/r2.js';
+import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
 
 /**
  * Builds the canonical attachment filename for a download from the DB audio path (with extra sanitization).
@@ -247,7 +247,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
 
         // Dev MP3 fallback: redirect to public R2 when configured (see getR2Url NODE_ENV behavior in r2.ts)
         if (isR2PublicConfigured()) {
-            const redirectUrl = getR2Url(validation.audioPath);
+            const redirectUrl = getR2PublicUrl(validation.audioPath);
             res.redirect(302, redirectUrl);
             return;
         }

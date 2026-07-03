@@ -20,32 +20,6 @@ function stripLeadingSlash(p: string): string {
 }
 
 /**
- * Checks whether an object exists in the private R2 bucket (S3 HEAD).
- *
- * Returns false when private R2 is not configured, the key is missing, or the
- * request fails for any reason. Does not throw.
- *
- * @param key - Object key in the private bucket (e.g. `wav/beat.wav`)
- * @returns `true` if the object exists; `false` otherwise
- */
-async function headPrivateR2Any(key: string): Promise<boolean> {
-    const client = getPrivateS3Client();
-    if (!client) return false;
-
-    try {
-        await client.send(
-            new HeadObjectCommand({
-                Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
-                Key: key,
-            })
-        );
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-/**
  * Returns whether all required private R2 environment variables are set.
  *
  * Required:
@@ -236,8 +210,20 @@ function getPrivateWavR2Key(audioPath: string): string {
  * @returns `true` if private R2 is configured and HEAD succeeds for the derived key; `false` if R2 is unconfigured, the object is missing, or HEAD fails
  */
 export async function hasR2WavFile(audioPath: string): Promise<boolean> {
-    if (!getPrivateS3Client()) return false;
-    return headPrivateR2Any(getPrivateWavR2Key(audioPath));
+    const client = getPrivateS3Client();
+    if (!client) return false;
+
+    try {
+        await client.send(
+            new HeadObjectCommand({
+                Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+                Key: getPrivateWavR2Key(audioPath),
+            })
+        );
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /**

@@ -9,7 +9,7 @@
  * @param assetPath - Relative path (e.g., "/assets/beats/mp3/beat.mp3" or "/assets/beats/wav/beat.wav")
  * @returns Full R2 URL for MP3s, original path for WAVs (to be served through protected download endpoint)
  */
-export function getR2Url(assetPath: string): string {
+export function getR2PublicUrl(assetPath: string): string {
     const r2PublicUrl = process.env.R2_PUBLIC_URL;
 
     // Serve from R2 only when it's configured AND we're in a deployed environment.

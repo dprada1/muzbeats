@@ -3,7 +3,7 @@ import type { Beat } from '@/types/Beat.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
-import { getR2Url } from '@/utils/r2.js';
+import { getR2PublicUrl } from '@/utils/r2.js';
 
 interface BeatDbRow {
     id: string;
@@ -32,8 +32,8 @@ function mapDbRowToBeat(row: BeatDbRow): Beat {
         key: denormalizeKeyNotation(row.key),
         bpm: row.bpm,
         price: typeof row.price === 'number' ? row.price : parseFloat(row.price),
-        audio: getR2Url(row.audio_path),
-        cover: getR2Url(coverPath),
+        audio: getR2PublicUrl(row.audio_path),
+        cover: getR2PublicUrl(coverPath),
     };
 }
 
