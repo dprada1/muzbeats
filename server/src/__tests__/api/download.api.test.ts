@@ -23,8 +23,8 @@ vi.mock('fs', async (importOriginal) => {
     const actual = await importOriginal<typeof import('fs')>();
     return {
         ...actual,
-        statSync: vi.fn(() => ({ size: 11 })),
-        createReadStream: vi.fn(() => Readable.from(['local-bytes'])),
+        statSync: vi.fn(() => ({ size: MOCK_LOCAL_BODY.length })),
+        createReadStream: vi.fn(() => Readable.from([MOCK_LOCAL_BODY])),
     };
 });
 
@@ -43,6 +43,9 @@ import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
 const TOKEN = 'test-download-token';
 const AUDIO_PATH = '/assets/beats/mp3/test_beat.mp3';
 const LOCAL_FILE = '/tmp/test_beat.wav';
+const MOCK_WAV_BODY = 'wav-bytes';
+const MOCK_WAV_CONTENT_TYPE = 'audio/wav';
+const MOCK_LOCAL_BODY = 'local-bytes';
 
 const validValidation: Extract<DownloadTokenValidation, { valid: true }> = {
     valid: true,
@@ -138,17 +141,18 @@ describe('GET /api/downloads/:token', () => {
     describe('serve branches (B1–B8)', () => {
         test('B1: streams WAV from private R2 when HEAD succeeds', async () => {
             vi.mocked(hasR2WavFile).mockResolvedValue(true);
+
             vi.mocked(getPrivateR2Object).mockResolvedValue({
-                stream: Readable.from(['wav-bytes']),
-                contentType: 'audio/wav',
-                contentLength: 9,
+                stream: Readable.from([MOCK_WAV_BODY]),
+                contentType: MOCK_WAV_CONTENT_TYPE,
+                contentLength: MOCK_WAV_BODY.length,
             });
 
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`);
 
             expect(res.status).toBe(200);
             expect(res.headers['content-type']).toMatch(/audio\/wav/);
-            expect(res.headers['content-length']).toBe('9');
+            expect(res.headers['content-length']).toBe(String(MOCK_WAV_BODY.length));
             expect(getPrivateR2Object).toHaveBeenCalledWith(AUDIO_PATH);
             await vi.waitFor(() =>
                 expect(incrementDownloadCount).toHaveBeenCalledWith(validValidation.downloadId)
