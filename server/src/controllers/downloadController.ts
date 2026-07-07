@@ -188,12 +188,6 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 return;
             } catch (error: unknown) {
                 console.error('downloadController: Failed to fetch WAV from private R2:', error);
-                if (prodLikeEnvironment) {
-                    res.status(500).json({
-                        error: 'WAV master is not available. Please contact support (server is likely missing private R2 configuration).',
-                    });
-                    return;
-                }
                 // dev: fall through to local WAV / MP3 fallback below
             }
         }
@@ -214,9 +208,10 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             return;
         }
 
+        const filePath = getAudioFilePath(validation.audioPath);
+
         // R2 is NOT available, but we are in dev environment, stream wav file locally to the client
         if (localWavAvailable) {
-            const filePath = getAudioFilePath(validation.audioPath);
             if (!filePath) {
                 // hasLocalWavFile was true but path missing - rare (deleted between checks)
                 res.status(404).json({ error: 'Audio file not found' });
@@ -233,13 +228,12 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
             return;
         }
 
-        // R2 is NOT available, we are in dev environment, local wav file is NOT available: stream mp3 file to the client
-        const filePath = getAudioFilePath(validation.audioPath);
         if (!filePath) {
             res.status(404).json({ error: 'Audio file not found' });
             return;
         }
 
+        // R2 is NOT available, we are in dev environment, local wav file is NOT available: stream mp3 file to the client
         streamLocalFile(res, filePath, validation.audioPath, path.extname(filePath));
     } catch (error: unknown) {
         console.error('downloadController.downloadBeatHandler error:', error);
