@@ -7,43 +7,12 @@ import {
     hasLocalWavFile,
     getPrivateR2Object,
     isPrivateR2Enabled,
+    getWavPath,
     type DownloadTokenValidation,
 } from '@/services/downloadService.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
-
-/**
- * Builds the canonical attachment filename for a download from the DB audio path (with extra sanitization).
- *
- * - **WAV example:** audioPath = "/assets/beats/wav/example.wav" -> "example.wav"
- * - **MP3 example:** audioPath = "/assets/beats/mp3/example.mp3" -> "example.mp3"
- * @param audioPath - Beat `audio_path` from the database (usually MP3 under `/assets/beats/mp3/...`)
- * @param ext - Extension being served (e.g. `'.wav'` or `'.mp3'`)
- * @returns Sanitized basename with the correct extension for `Content-Disposition`
- */
-function getCanonicalDownloadFilenameFromAudioPath(audioPath: string): string {
-    const base = path.basename(audioPath);
-    // Remove characters that break `Content-Disposition` or filesystem save dialogs
-    // Beat titles are not used here (they can contain quotes); storage basenames are trusted but sanitized.
-    const sanitizedBase = base.replace(/[\\/"<>|:*?]/g, '_')
-                              .replace(/[\r\n]/g, '')
-                              .replace(/\s+/g, ' ')
-                              .trim() || 'download';
-    return sanitizedBase;
-}
-
-/**
- * Maps a file extension to a MIME type for download responses.
- *
- * @param ext - File extension including the dot (e.g. `'.wav'`)
- * @returns MIME type string for `Content-Type`
- */
-function contentTypeForExtension(ext: string): string {
-    if (ext === '.wav') return 'audio/wav';
-    if (ext === '.mp3') return 'audio/mpeg';
-    return 'application/octet-stream';
-}
 
 /**
  * Sets download headers, pipes a readable stream to the HTTP response, and handles stream errors.
@@ -53,9 +22,9 @@ function contentTypeForExtension(ext: string): string {
  *
  * @param res - Express response
  * @param stream - Source stream (R2 `GetObject` body or `createReadStream`)
- * @param audioPath - DB audio path (for canonical filename)
- * @param ext - Extension being served (e.g. `'.wav'`)
- * @param contentType - Optional MIME from S3; falls back to {@link contentTypeForExtension}
+ * @param audioPath - Path for `Content-Disposition` basename (use {@link getWavPath} when serving WAV)
+ * @param ext - Extension being served (e.g. `'.wav'`); used to derive MIME when `contentType` is absent
+ * @param contentType - Optional MIME from S3; falls back to a type derived from `ext`
  * @param contentLength - Optional byte length; omitted from headers when null/undefined
  * @param errorLabel - Short label for stream error logs (e.g. `'Private R2'`, `'File'`)
  */
@@ -68,8 +37,20 @@ function streamDownloadToClient(
     contentLength?: number | null,
     errorLabel = 'Download'
 ): void {
-    const filename = getCanonicalDownloadFilenameFromAudioPath(audioPath);
-    const resolvedContentType = contentType || contentTypeForExtension(ext);
+    // Sanitize the basename so it can't break `Content-Disposition` or filesystem save dialogs.
+    // Beat titles are not used here (they can contain quotes); storage basenames are trusted but sanitized.
+    const base = path.basename(audioPath);
+    const filename = base.replace(/[\\/"<>|:*?]/g, '_')
+                         .replace(/[\r\n]/g, '')
+                         .replace(/\s+/g, ' ')
+                         .trim() || 'download';
+
+    let resolvedContentType = contentType;
+    if (!resolvedContentType) {
+        if (ext === '.wav') resolvedContentType = 'audio/wav';
+        else if (ext === '.mp3') resolvedContentType = 'audio/mpeg';
+        else resolvedContentType = 'application/octet-stream';
+    }
 
     res.setHeader('Content-Type', resolvedContentType);
     if (contentLength != null && contentLength > 0) {
@@ -106,9 +87,9 @@ function streamLocalFile(
     streamDownloadToClient(
         res,
         createReadStream(filePath),
-        audioPath,
+        audioPath, 
         ext,
-        contentTypeForExtension(ext),
+        null,
         stats.size,
         'File'
     );
@@ -198,7 +179,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 streamDownloadToClient(
                     res,
                     stream,
-                    validation.audioPath,
+                    getWavPath(validation.audioPath),
                     '.wav',
                     contentType,
                     contentLength,
@@ -241,7 +222,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 res.status(404).json({ error: 'Audio file not found' });
                 return;
             }
-            streamLocalFile(res, filePath, validation.audioPath, '.wav');
+            streamLocalFile(res, filePath, getWavPath(validation.audioPath), '.wav');
             return;
         }
 

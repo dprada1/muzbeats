@@ -4,15 +4,19 @@ import request from 'supertest';
 import { Readable } from 'stream';
 import type { DownloadTokenValidation } from '@/services/downloadService.js';
 
-vi.mock('@/services/downloadService.js', () => ({
-    validateDownloadToken: vi.fn(),
-    incrementDownloadCount: vi.fn(),
-    getAudioFilePath: vi.fn(),
-    hasR2WavFile: vi.fn(),
-    hasLocalWavFile: vi.fn(),
-    getPrivateR2Object: vi.fn(),
-    isPrivateR2Enabled: vi.fn(),
-}));
+vi.mock('@/services/downloadService.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/services/downloadService.js')>();
+    return {
+        validateDownloadToken: vi.fn(),
+        incrementDownloadCount: vi.fn(),
+        getAudioFilePath: vi.fn(),
+        hasR2WavFile: vi.fn(),
+        hasLocalWavFile: vi.fn(),
+        getPrivateR2Object: vi.fn(),
+        isPrivateR2Enabled: vi.fn(),
+        getWavPath: actual.getWavPath,
+    };
+});
 
 vi.mock('@/utils/r2.js', () => ({
     getR2PublicUrl: vi.fn(),
