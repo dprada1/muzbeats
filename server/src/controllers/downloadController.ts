@@ -57,8 +57,8 @@ function streamDownloadToClient(
         res.setHeader('Content-Length', contentLength);
     }
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    // TODO: implement Range request handling before advertising partial content support
-    // res.setHeader('Accept-Ranges', 'bytes');
+    // Deferred: HTTP Range / Accept-Ranges (206 partial content). Whole-file 200 is sufficient
+    // for token-based WAV delivery; partial ranges complicate download counting without clear product benefit.
 
     stream.pipe(res);
     stream.on('error', (error) => {

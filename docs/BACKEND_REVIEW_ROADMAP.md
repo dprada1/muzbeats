@@ -7,6 +7,7 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 **Related docs:**
 - [BACKEND_FIRST_PRINCIPLES.md](./BACKEND_FIRST_PRINCIPLES.md) — `index.ts` walkthrough
 - [BACKEND_FLOW_EXPLANATION.md](./BACKEND_FLOW_EXPLANATION.md) — request flows (beats, checkout, download)
+- [CAPACITY_AND_SCALING.md](./CAPACITY_AND_SCALING.md) — traffic funnel math, Railway limits, rate-limit plan
 - [SERVER_SECURITY_REVIEW.md](../SERVER_SECURITY_REVIEW.md) — security audit checklist
 
 ---
@@ -36,6 +37,8 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 - [x] `server/src/utils/searchQueryBuilder.ts` — `SearchParams` → SQL `WHERE` (refactored: canonical keys via `ANY`, title via `LIKE ALL`)
 - [x] `server/src/utils/keyUtils.ts` — key normalization, enharmonics (+ `denormalizeKeyNotation` round-trip)
 - [ ] `server/src/__tests__/search/**` — treat 519 tests as the spec _(deferred: deeper pass + JSON→YAML eval later)_
+- [x] `server/src/__tests__/api/beats.api.test.ts` — API tests (mocked service; query param wiring)
+- [ ] Review `beats.api.test.ts` + `download.api.test.ts`
 
 ### Service + types
 - [x] `server/src/services/beatsService.ts` — `mapDbRowToBeat`, queries, R2 URLs
@@ -52,35 +55,45 @@ Master checklist for reviewing the MuzBeats server, then implementing security, 
 
 ## Phase 2 — Download route (security-sensitive)
 
+**Progress (Mar 2026):** Phase 2 implementation complete. Staging private R2 verified. Remaining optional: rate limiting (Phase 7). HTTP Range/206 **deferred** (see below).
+
 ### Route
-- [ ] `server/src/routes/downloadRoutes.ts`
+- [x] `server/src/routes/downloadRoutes.ts` — single `GET /:token` → `downloadBeatHandler`
 
 ### Controller
-- [ ] `server/src/controllers/downloadController.ts` — token validation, WAV vs MP3, R2 stream vs local file
+- [x] `server/src/controllers/downloadController.ts` — token validation, serve tree, `streamDownloadToClient` / `streamLocalFile`, post-delivery `incrementDownloadCount` on 2xx only
 
 ### Service + types
-- [ ] `server/src/services/downloadService.ts` — token limits, private R2, `hasWavFile`
-- [ ] `server/src/types/Order.ts` — `DownloadToken` shape
+- [x] `server/src/services/downloadService.ts` — token limits, flat `wav/<basename>` private R2, `hasR2WavFile` + `hasLocalWavFile`, `getPrivateR2Object(audioPath)`
+- [x] `server/src/types/Order.ts` — `DownloadToken` shape reviewed
+- [x] `server/src/utils/r2.ts` — `isR2PublicConfigured()` rename; public MP3 URLs vs private WAV stream
+
+### Testing
+- [x] Manual branch matrix (A1–A3, B1, B4–B8; B2–B3 skipped locally) — passed
+- [x] `server/src/__tests__/api/download.api.test.ts` — 13 mocked API tests (supertest)
+- [ ] **Review** download route test suite — maintainer review (largely done; optional final pass)
 
 ### Gaps to note while reviewing
-- [ ] No server-side rate limiting on `GET /api/downloads/:token`
-- [ ] Prod refuses MP3 fallback — confirm private R2 is configured on Railway
+- [ ] No server-side rate limiting on `GET /api/downloads/:token` — deferred to Phase 7
+- [x] Prod refuses MP3 fallback — private R2 verified on Railway staging (Jul 2026)
 
 ### Cleanups identified (implement, then verify on staging)
-Private bucket is now flat `wav/<file>.wav` (confirmed in Cloudflare dashboard). The
-legacy `beats/wav/...` layout is **not used by any live code** — only stale docs.
-- [ ] Use a single canonical R2 key: `wav/${basename}` (NOT `stripAssetsPrefix`, which yields `beats/wav/...` and 404s)
-- [ ] Delete `getPrivateWavKeyCandidatesFromWavPath` + `getPrivateWavKeyCandidatesFromKey` (+ `seen` Set, `beats/wav/` branch)
-- [ ] Collapse `headPrivateR2Any` and `getPrivateR2Object` loops to a single key
-- [ ] Split `hasWavFile` → `hasR2WavFile` (HEAD private bucket) + `hasLocalWavFile` (`existsSync`)
-- [ ] Restructure controller serve-tree around `isPrivateR2Enabled()` (stream WAV; never send private link)
-- [ ] De-dupe `stripLeadingSlash` / `stripAssetsPrefix` (defined in both controller and service)
-- [ ] Drop debug `console.log`s
-- [ ] **`Accept-Ranges: bytes` on `GET /api/downloads/:token`** — header is commented out in `downloadController.ts` until implemented. To support properly: parse `Range` request header, respond with `206 Partial Content` + `Content-Range` when appropriate, stream only requested byte range from R2 or local file; otherwise omit the header (full-file download only). Ref: [MDN Range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests).
-- [ ] **Verify private-R2 streaming on staging** (local `.env` can include full `R2_PRIVATE_*` set for dev testing)
+Private bucket is flat `wav/<file>.wav` (confirmed in Cloudflare dashboard). Legacy
+`beats/wav/...` layout is **not used by any live code**.
+- [x] Use a single canonical R2 key: `wav/${basename}` (via `getPrivateWavR2Key`)
+- [x] Delete `getPrivateWavKeyCandidatesFromWavPath` + `getPrivateWavKeyCandidatesFromKey`
+- [x] Collapse `getPrivateR2Object` to a single key (HEAD via `headPrivateR2Any` remains separate)
+- [x] Split `hasWavFile` → `hasR2WavFile` + `hasLocalWavFile`
+- [x] Restructure controller serve-tree (private R2 stream → prod/staging 500 → dev fallbacks)
+- [x] De-dupe path helpers — removed from controller; `stripLeadingSlash` only in service
+- [x] Drop temporary debug `console.log`s (keep `console.error` / `console.warn` for failures)
+- [x] **`Content-Disposition` filename on WAV serves** — use `getWavPath(audioPath)` at WAV stream call sites
+- [x] **HTTP Range / `Accept-Ranges` (206)** — **deferred.** Whole-file `200` stream is sufficient for email-link WAV delivery. Partial ranges add controller complexity and awkward download-count semantics (206 is 2xx). Revisit only if in-browser preview or resumable downloads become a product requirement. Ref: [MDN Range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests).
+- [x] **Verify private-R2 streaming on staging** — curl 200 `audio/wav` + download counter increment (Jul 2026)
 - [x] Fix stale docs referencing `beats/wav/` (`R2_WAV_PRIVACY_FIX.md`, `CLOUDFLARE_R2_SETUP.md`, `RECENT_CHANGES_2025_12.md`)
+- [x] Update `R2_IMPLEMENTATION.md` for private stream + download counting behavior
 
-**Phase 2 done when:** You understand token → validate → stream/redirect end-to-end.
+**Phase 2 done when:** Token → validate → stream/redirect understood, staging confirms private R2 WAV delivery, automated tests in place. *(Met — proceed to Phase 3.)*
 
 ---
 
@@ -136,7 +149,9 @@ legacy `beats/wav/...` layout is **not used by any live code** — only stale do
 
 ### Tests
 - [x] Search parser — 519 tests, strong coverage
-- [ ] Integration tests: beats API, download token flow, checkout capture (mock PayPal)
+- [x] Document testing layers (mock now, real DB later) — `docs/testing/TESTING_LAYERS.md`
+- [x] Service unit tests: `downloadService.test.ts`, `beatsService.test.ts` (mock `pool`)
+- [ ] Integration tests: beats API, download token flow, checkout capture (mock PayPal) — **deferred** until comfortable with real-DB setup; see `TESTING_LAYERS.md` (local `muzbeats_test` before Docker)
 - [ ] Webhook tests (after Phase 4 implementation)
 
 ### DB
