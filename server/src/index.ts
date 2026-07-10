@@ -80,7 +80,7 @@ app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+    res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // API routes

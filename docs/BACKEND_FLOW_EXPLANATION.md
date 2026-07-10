@@ -273,7 +273,7 @@ Response: File stream with proper headers
    - MP3 previews can be public (stored in public R2)
 
 3. **Download counting:**
-   - Incremented **before** serving file (prevents race conditions)
+   - Incremented **after** serving file
    - Prevents unlimited downloads
 
 ### Key Files:
