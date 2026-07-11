@@ -116,7 +116,7 @@ export async function createPayPalOrderHandler(
     } catch (error: any) {
         console.error('Error in createPayPalOrderHandler:', error);
         res.status(500).json({
-            error: error.message || 'Failed to create PayPal order',
+            error: 'Failed to create PayPal order',
         });
     }
 }
