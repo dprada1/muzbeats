@@ -14,6 +14,7 @@ export const MAX_CART_TOTAL_USD = MAX_CART_ITEMS * MAX_BEAT_PRICE_USD; // 20 * 9
 export const BEAT_ID_UUID_REGEX: RegExp =
     /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export function isValidBeatId(id: string) {
-    return BEAT_ID_UUID_REGEX.test(id);
+/** Returns true when value is a UUID v4 string (RegExformat only, not DB lookup). */
+export function isValidUUIDv4(value: unknown): value is string {
+    return typeof value === 'string' && BEAT_ID_UUID_REGEX.test(value);
 }

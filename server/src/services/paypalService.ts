@@ -15,12 +15,10 @@ const ordersController = new OrdersController(paypalSDK as any);
 // Maps PayPal order ID -> beat IDs (email comes from PayPal payer info)
 const orderDataStore = new Map<string, StoredOrderData>();
 
-/**
- * Cart item from client (just beat IDs)
- */
-export interface CartItem {
+/** Validated cart line passed from controller to create-order */
+export interface CartLine {
     beatId: string;
-    quantity?: number; // Defaults to 1
+    quantity: number;
 }
 
 export interface StoredOrderData {
@@ -54,15 +52,15 @@ export interface PayPalOrderSummary {
  * @returns PayPal Order with ID and approval URL
  */
 export async function createPayPalOrder(
-    items: CartItem[]
+    items: CartLine[]
 ): Promise<PayPalOrderCreateResult> {
     try {
         // Fetch all beats from database to get prices
-        const beatPromises = items.map(item => getBeatById(item.beatId));
-        const beats = await Promise.all(beatPromises);
+        const beatPromises: Promise<Beat | null>[] = items.map(item => getBeatById(item.beatId));
+        const beats: (Beat | null)[] = await Promise.all(beatPromises);
 
         // Filter out any null beats (invalid IDs)
-        const validBeats = beats.filter((beat): beat is Beat => beat !== null);
+        const validBeats: Beat[] = beats.filter((beat): beat is Beat => beat !== null);
 
         if (validBeats.length === 0) {
             throw new Error('No valid beats found in cart');
@@ -74,7 +72,7 @@ export async function createPayPalOrder(
         const purchaseUnits: any[] = [];
 
         items.forEach((item) => {
-            const beat = validBeats.find(b => b.id === item.beatId);
+            const beat: Beat | undefined = validBeats.find(b => b.id === item.beatId);
             if (beat) {
                 const quantity = item.quantity || 1;
                 const amount = beat.price * quantity;

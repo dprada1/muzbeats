@@ -6,7 +6,7 @@ import {
     getStoredOrderData,
 } from '@/services/paypalService.js';
 import type {
-    CartItem,
+    CartLine,
     PayPalOrderCreateResult,
     PayPalOrderSummary,
     StoredOrderData,
@@ -18,6 +18,29 @@ import {
 } from '@/services/orderService.js';
 import { sendDownloadEmail } from '@/services/emailService.js';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
+import {
+    MAX_CART_ITEMS,
+    MIN_ITEM_QUANTITY,
+    MAX_ITEM_QUANTITY,
+    isValidUUIDv4,
+} from '@/config/checkoutLimits.js';
+
+
+/**
+ * Parse cart line quantity from the request body (strict: quantity is required).
+ * @returns Parsed quantity, or `null` if missing/invalid (reject with 400).
+ */
+function parseCartQuantity(raw: unknown): number | null {
+    if (typeof raw !== 'number' || !Number.isInteger(raw)) return null;
+    if (raw < MIN_ITEM_QUANTITY || raw > MAX_ITEM_QUANTITY) return null;
+    return raw;
+}
+
+/** Type guard: after this passes, `ids` is narrowed to `string[]`. */
+function areValidBeatIds(ids: unknown[]): ids is string[] {
+    return ids.every((id) => isValidUUIDv4(id));
+}
 
 /**
  * POST /api/checkout/paypal/create-order
@@ -25,7 +48,7 @@ import pool from '@/config/database.js';
  *
  * Request body:
  * {
- *   items: [{ beatId: "uuid", quantity: 1 }]
+ *   items: [{ beatId: "uuid", quantity: 1 }]  // JSON field name is `items`; validated as rawCartLines
  * }
  * 
  * Note: Customer email is automatically retrieved from PayPal payer info during capture
@@ -35,35 +58,59 @@ export async function createPayPalOrderHandler(
     res: Response
 ): Promise<void> {
     try {
-        const { items } = req.body;
+        const { items: rawCartLines } = req.body;
 
         // Validate request body
-        if (!items || !Array.isArray(items) || items.length === 0) {
+        if (!rawCartLines || !Array.isArray(rawCartLines) || rawCartLines.length === 0) {
             res.status(400).json({
-                error: 'Items array is required and must not be empty',
+                error: 'Cart lines array is required and must not be empty',
             });
             return;
         }
 
-        // Validate each item has beatId
-        const invalidItems = items.filter(
-            (item: any) => !item.beatId || typeof item.beatId !== 'string'
-        );
-
-        if (invalidItems.length > 0) {
+        // Reject number of lines that is suspiciously too long
+        if (rawCartLines.length > MAX_CART_ITEMS) {
             res.status(400).json({
-                error: 'Each item must have a valid beatId (string)',
+                error: `Cart cannot exceed ${MAX_CART_ITEMS} lines`,
             });
             return;
         }
 
-        const cartItems: CartItem[] = items.map((item: any) => ({
-            beatId: item.beatId,
-            quantity: item.quantity || 1,
-        }));
+        // Validate each item has a beatId, and is of valid type (uuidv4 string)
+        const beatIds = rawCartLines.map((rawCartLine: { beatId?: unknown }) => rawCartLine.beatId);
+        if (!areValidBeatIds(beatIds)) {
+            res.status(400).json({
+                error: 'Each cart line must have a valid beatId (uuidv4 string)',
+            });
+            return;
+        }
+
+        // Reject if we find duplicate beat id's
+        // (we don't want to charge the user multiple times for the same beat later)
+        if (new Set(beatIds).size !== beatIds.length) {
+            res.status(400).json({
+                error: 'Cart cannot contain duplicate beatId values',
+            });
+            return;
+        }
+
+        // Reject line quantity that is not within bounds
+        const cartLines: CartLine[] = [];
+        for (let i = 0; i < rawCartLines.length; i++) {
+            const quantity = parseCartQuantity(
+                (rawCartLines[i] as { quantity?: unknown }).quantity
+            );
+            if (quantity === null) {
+                res.status(400).json({
+                    error: `Each line quantity must be an integer between ${MIN_ITEM_QUANTITY} and ${MAX_ITEM_QUANTITY}`,
+                });
+                return;
+            }
+            cartLines.push({ beatId: beatIds[i], quantity });
+        }
 
         // Email is no longer required - PayPal provides it automatically
-        const paypalOrder: PayPalOrderCreateResult = await createPayPalOrder(cartItems);
+        const paypalOrder: PayPalOrderCreateResult = await createPayPalOrder(cartLines);
 
         res.status(200).json(paypalOrder);
     } catch (error: any) {
@@ -108,7 +155,7 @@ export async function capturePayPalOrderHandler(
         console.log('PayPal captured order structure:', JSON.stringify(capturedOrder, null, 2));
 
         // Check if order already exists (idempotency)
-        const existingOrderResult = await pool.query(
+        const existingOrderResult: QueryResult<any> = await pool.query(
             'SELECT id FROM orders WHERE paypal_order_id = $1',
             [orderId]
         );
