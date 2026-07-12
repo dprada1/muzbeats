@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { getAllBeats, getBeatById } from '@/services/beatsService.js';
+import { getBeats, getBeatById } from '@/services/beatsService.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
+import type { Beat } from '@/types/Beat.js';
 
 /**
  * GET /api/beats
@@ -15,25 +16,23 @@ import type { SearchParams } from '@/types/SearchParams.js';
  * - key: Musical key (e.g., "C#min", "A maj")
  * - search: Keyword search in title (e.g., "pierre")
 */
-export async function getAllBeatsHandler(req: Request, res: Response): Promise<void> {
+export async function getBeatsHandler(req: Request, res: Response): Promise<void> {
     try {
         const { q, bpm, bpmMin, bpmMax, key, search } = req.query;
 
-        let searchParams: SearchParams | undefined;
+        let searchParams: SearchParams = {
+            bpmRanges: [],
+            bpmValues: [],
+            keys: [],
+            queryTokens: []
+        };
 
         // If 'q' parameter is provided, parse it as a full search query
         if (q && typeof q === 'string') {
             searchParams = parseSearchQuery(q);
-        } 
+        }
         // Otherwise, build SearchParams from individual query parameters
         else if (bpm || bpmMin || bpmMax || key || search) {
-            searchParams = {
-                bpmRanges: [],
-                bpmValues: [],
-                keys: [],
-                queryTokens: []
-            };
-
             // BPM filtering
             if (bpm && typeof bpm === 'string') {
                 const bpmValue = parseInt(bpm);
@@ -63,7 +62,7 @@ export async function getAllBeatsHandler(req: Request, res: Response): Promise<v
             }
         }
 
-        const beats = await getAllBeats(searchParams);
+        const beats: Beat[] = await getBeats(searchParams);
         res.json(beats);
     } catch (error) {
         console.error('Error fetching all beats:', error);
@@ -84,7 +83,7 @@ export async function getBeatByIdHandler(req: Request, res: Response): Promise<v
             return;
         }
 
-        const beat = await getBeatById(id);
+        const beat: Beat | null = await getBeatById(id);
         
         if (!beat) {
             res.status(404).json({ error: 'Beat not found' });

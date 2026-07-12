@@ -9,17 +9,15 @@
  * @param assetPath - Relative path (e.g., "/assets/beats/mp3/beat.mp3" or "/assets/beats/wav/beat.wav")
  * @returns Full R2 URL for MP3s, original path for WAVs (to be served through protected download endpoint)
  */
-export function getR2Url(assetPath: string): string {
+export function getR2PublicUrl(assetPath: string): string {
     const r2PublicUrl = process.env.R2_PUBLIC_URL;
-    
-    // In local development (NODE_ENV !== 'production'), prefer local files for faster dev experience
-    // Only use R2 URLs in production/staging environments
-    // If R2_PUBLIC_URL is set, assume we should use R2 (even if NODE_ENV isn't 'production')
+
+    // Serve from R2 only when it's configured AND we're in a deployed environment.
+    // In local dev we return the original path so assets load from the local filesystem.
     const isProduction = process.env.NODE_ENV === 'production';
     const isStaging = process.env.NODE_ENV === 'staging';
-    const shouldUseR2 = r2PublicUrl && (isProduction || isStaging || process.env.RAILWAY_ENVIRONMENT);
-    
-    // If R2 is not configured, or we're in local dev, return original path (serves from local filesystem)
+    const shouldUseR2 = r2PublicUrl && (isProduction || isStaging);
+
     if (!shouldUseR2) {
         return assetPath;
     }
@@ -45,7 +43,6 @@ export function getR2Url(assetPath: string): string {
 /**
  * Check if R2 is configured
  */
-export function isR2Configured(): boolean {
+export function isR2PublicConfigured(): boolean {
     return !!process.env.R2_PUBLIC_URL;
 }
-

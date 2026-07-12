@@ -22,16 +22,19 @@ In that bucket:
 - **Public Access:** **Disabled**
 
 ### 2) Upload WAVs to the private bucket
-Keep the same key structure:
-- `beats/wav/...`
+Use a **flat top-level `wav/` prefix** (not `beats/wav/`):
+
+- `wav/<filename>.wav` (e.g. `wav/gunna__versace_Cmin_130.wav`)
 
 Using AWS CLI (recommended):
 
 ```bash
 aws s3 sync server/public/assets/beats/wav/ \
-  s3://muzbeats-wav-private/beats/wav/ \
+  s3://muzbeats-wav-private/wav/ \
   --endpoint-url https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
 ```
+
+This mirrors local paths (`server/public/assets/beats/wav/`) into the bucket as `wav/<file>.wav`.
 
 ### 3) Remove WAVs from the public bucket
 If WAVs are currently in the public bucket, delete them there:
@@ -59,7 +62,7 @@ R2_SECRET_ACCESS_KEY=...
 ### 5) How the code behaves now
 With the above env vars:
 - **MP3s**: served from public R2 URL (fast + cheap)
-- **WAVs**: checked in private bucket; if they exist, they’re streamed via `/api/downloads/:token`
+- **WAVs**: checked in private bucket at `wav/<filename>.wav`; if present, streamed via `GET /api/downloads/:token` (server uses S3 client — never a public link)
 - WAVs are no longer retrievable by guessing URLs on the public bucket
 
 ## Logo Safety

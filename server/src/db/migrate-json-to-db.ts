@@ -2,8 +2,8 @@ import dotenv from 'dotenv';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pool from '../config/database.js';
-import type { Beat } from '../types/Beat.js';
+import pool from '@/config/database.js';
+import type { Beat } from '@/types/Beat.js';
 
 dotenv.config();
 

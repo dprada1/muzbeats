@@ -23,7 +23,7 @@
     "react-dom": "^19.2.3",
     "react-icons": "^5.5.0",
     "react-loading-skeleton": "^3.5.0",
-    "react-router-dom": "^7.7.1",
+    "react-router-dom": "^7.12.0",
     "wavesurfer.js": "^7.10.0",
     "zod": "^4.3.5"
   },
@@ -37,7 +37,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@vitejs/plugin-react": "^4.5.2",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/ui": "^3.2.6",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -48,6 +48,6 @@
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   }
 }

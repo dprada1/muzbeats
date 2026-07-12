@@ -88,7 +88,7 @@ muzbeats/
 │   │   ├── utils/           # Utility functions
 │   │   │   └── r2.ts        # R2 URL helpers
 │   │   ├── db/              # Database scripts
-│   │   │   ├── init-db.ts   # Table creation
+│   │   │   ├── initializeDatabase.ts   # Schema bootstrap (server + npm run init-db)
 │   │   │   └── migrations/  # Schema migrations
 │   │   └── index.ts         # Server entry point
 │   ├── public/              # Static assets (served by Express)
@@ -113,9 +113,9 @@ StorePage.tsx renders
     ↓
 Fetches: GET /api/beats?q=search
     ↓
-beatsController.getAllBeatsHandler()
+beatsController.getBeatsHandler()
     ↓
-beatsService.getAllBeats()
+beatsService.getBeats()
     ↓
 PostgreSQL query: SELECT * FROM beats WHERE ...
     ↓
@@ -341,7 +341,7 @@ await pool.query(`SELECT * FROM beats WHERE id = '${beatId}'`);
 **GET `/api/beats`**
 - Query params: `?q=search&bpm=140&key=A+minor`
 - Returns: Array of beats
-- Controller: `beatsController.getAllBeatsHandler()`
+- Controller: `beatsController.getBeatsHandler()`
 
 **GET `/api/beats/:id`**
 - Returns: Single beat by ID

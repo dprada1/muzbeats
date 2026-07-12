@@ -14,11 +14,11 @@
  */
 
 import dotenv from 'dotenv';
-import pool from '../config/database.js';
+import pool from '@/config/database.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { Beat } from '../types/Beat.js';
+import type { Beat } from '@/types/Beat.js';
 
 dotenv.config();
 

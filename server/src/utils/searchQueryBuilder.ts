@@ -1,4 +1,4 @@
-import type { SearchParams } from '../types/SearchParams.js';
+import type { SearchParams } from '@/types/SearchParams.js';
 import { normalizeKeyNotation, getEnharmonicEquivalents } from './keyUtils.js';
 
 /**
@@ -7,10 +7,10 @@ import { normalizeKeyNotation, getEnharmonicEquivalents } from './keyUtils.js';
 */
 export function buildSearchQuery(searchParams: SearchParams): {
     whereClause: string;
-    params: any[];
+    params: unknown[];
 } {
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramIndex = 1;
 
     const { bpmValues, bpmRanges, keys, queryTokens } = searchParams;
@@ -38,73 +38,35 @@ export function buildSearchQuery(searchParams: SearchParams): {
         }
     }
 
-    // Key filtering (case-insensitive, supports partial matches + enharmonic equivalents)
+    // Key filtering: beats.key is stored in canonical normalized form (e.g. "c#min"),
+    // so we match it directly against the normalized search keys plus their
+    // enharmonic/relative equivalents. A row matches if its key is ANY of them.
     if (keys.length > 0) {
-        const keyConditions: string[] = [];
-        
-        // Collect all keys to search for (including enharmonic equivalents)
-        const allKeysToSearch = new Set<string>();
-        
+        const keysToMatch = new Set<string>();
+
         for (const key of keys) {
-            // Normalize the search key
             const normalizedKey = normalizeKeyNotation(key);
-            allKeysToSearch.add(normalizedKey);
-            
-            // Add enharmonic equivalents
-            const equivalents = getEnharmonicEquivalents(normalizedKey);
-            equivalents.forEach(eq => allKeysToSearch.add(eq));
-        }
-        
-        // Build SQL patterns for all keys (original + equivalents)
-        for (const searchKey of allKeysToSearch) {
-            const patterns: string[] = [];
-            
-            // Pattern 1: Exact match without space
-            patterns.push(`LOWER(REPLACE(key, ' ', '')) = $${paramIndex}`);
-            params.push(searchKey.toLowerCase());
-            paramIndex++;
-            
-            // Pattern 2: Match with space (e.g., "c min" matches "C min")
-            if (searchKey.includes('maj') || searchKey.includes('min')) {
-                const withSpace = searchKey.replace(/([a-g][#b]?)(maj|min)/i, '$1 $2');
-                // Replace # with ♯ for database matching (DB uses ♯ symbol)
-                const withSpaceSharp = withSpace.replace(/#/g, '♯');
-                patterns.push(`LOWER(key) LIKE $${paramIndex}`);
-                params.push(`%${withSpaceSharp.toLowerCase()}%`);
-                paramIndex++;
+            keysToMatch.add(normalizedKey);
+            for (const equivalent of getEnharmonicEquivalents(normalizedKey)) {
+                keysToMatch.add(equivalent);
             }
-            
-            // Pattern 3: Match without space, handle both # and ♯
-            const searchKeySharp = searchKey.replace(/#/g, '♯');
-            patterns.push(`LOWER(REPLACE(key, ' ', '')) LIKE $${paramIndex}`);
-            params.push(`%${searchKeySharp.toLowerCase()}%`);
-            paramIndex++;
-            
-            // Pattern 4: Also try with # symbol (in case DB has both)
-            patterns.push(`LOWER(REPLACE(REPLACE(key, ' ', ''), '♯', '#')) LIKE $${paramIndex}`);
-            params.push(`%${searchKey.toLowerCase()}%`);
-            paramIndex++;
-            
-            keyConditions.push(`(${patterns.join(' OR ')})`);
         }
-        
-        // All search keys (original + equivalents) should be OR'd together
-        conditions.push(`(${keyConditions.join(' OR ')})`);
+
+        conditions.push(`key = ANY($${paramIndex}::text[])`);
+        params.push([...keysToMatch]);
+        paramIndex++;
     }
 
-    // Title/keyword search (searches in title)
+    // Title/keyword search: every token must appear in the title (AND semantics),
+    // expressed as a single LIKE ALL against an array of patterns.
     if (queryTokens.length > 0) {
-        const titleConditions: string[] = [];
-        for (const token of queryTokens) {
-            titleConditions.push(`LOWER(title) LIKE $${paramIndex}`);
-            params.push(`%${token.toLowerCase()}%`);
-            paramIndex++;
-        }
-        // All tokens must match (AND condition)
-        conditions.push(`(${titleConditions.join(' AND ')})`);
+        const patterns = queryTokens.map((token) => `%${token.toLowerCase()}%`);
+        conditions.push(`LOWER(title) LIKE ALL($${paramIndex}::text[])`);
+        params.push(patterns);
+        paramIndex++;
     }
 
-    const whereClause = conditions.length > 0 
+    const whereClause = conditions.length > 0
         ? `WHERE ${conditions.join(' AND ')}`
         : '';
 

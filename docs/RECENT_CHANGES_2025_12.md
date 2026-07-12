@@ -6,7 +6,7 @@ This is a short “what changed” summary so you can re-orient quickly.
 - Introduced **two-bucket strategy**:
   - Public: `muzbeats-media-public` (MP3 + images)
   - Private: `muzbeats-wav-private` (WAV masters)
-- Standardized private WAV layout to `wav/<file>.wav` and added backwards-compatible support for legacy `beats/wav/<file>.wav`.
+- Standardized private WAV layout to **`wav/<file>.wav`** in `muzbeats-wav-private` (flat prefix; legacy `beats/wav/` layout removed).
 
 ## Downloads
 - Token-protected endpoint: `GET /api/downloads/:token`

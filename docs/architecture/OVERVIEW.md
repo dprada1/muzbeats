@@ -90,7 +90,7 @@ muzbeats/
 
 1. **User Input**: User types "pierre 160 C#min" in search bar
 2. **Frontend**: `StorePage.tsx` sends `GET /api/beats?q=pierre%20160%20C%23min`
-3. **Backend Route**: `beatsRoutes.ts` → `getAllBeatsHandler`
+3. **Backend Route**: `beatsRoutes.ts` → `getBeatsHandler`
 4. **Controller**: `beatsController.ts` parses query parameters
 5. **Parser**: `searchParser.ts` extracts:
    - Keywords: ["pierre"]

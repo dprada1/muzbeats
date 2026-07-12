@@ -5,8 +5,17 @@ import {
     getPayPalOrder,
     getStoredOrderData,
 } from '@/services/paypalService.js';
-import type { CartItem } from '@/services/paypalService.js';
-import { createOrderFromPayPalCapture } from '@/services/orderService.js';
+import type {
+    CartItem,
+    PayPalOrderCreateResult,
+    PayPalOrderSummary,
+    StoredOrderData,
+} from '@/services/paypalService.js';
+import {
+    createOrderFromPayPalCapture,
+    type OrderCaptureResult,
+    type PayPalOrderCapture,
+} from '@/services/orderService.js';
 import { sendDownloadEmail } from '@/services/emailService.js';
 import pool from '@/config/database.js';
 
@@ -54,7 +63,7 @@ export async function createPayPalOrderHandler(
         }));
 
         // Email is no longer required - PayPal provides it automatically
-        const paypalOrder = await createPayPalOrder(cartItems);
+        const paypalOrder: PayPalOrderCreateResult = await createPayPalOrder(cartItems);
 
         res.status(200).json(paypalOrder);
     } catch (error: any) {
@@ -89,11 +98,11 @@ export async function capturePayPalOrderHandler(
         }
 
         // Retrieve stored order data (beat IDs and customer email)
-        const storedData = getStoredOrderData(orderId);
+        const storedData: StoredOrderData | null = getStoredOrderData(orderId);
         console.log('Retrieved stored order data:', storedData);
         
         // Capture the order
-        const capturedOrder = await capturePayPalOrder(orderId);
+        const capturedOrder: unknown = await capturePayPalOrder(orderId);
         
         // Debug: Log what PayPal is actually returning
         console.log('PayPal captured order structure:', JSON.stringify(capturedOrder, null, 2));
@@ -116,12 +125,15 @@ export async function capturePayPalOrderHandler(
         }
 
         // Create order from captured PayPal order, using stored data for beat IDs
-        const orderResult = await createOrderFromPayPalCapture(capturedOrder as any, storedData);
+        const orderResult: OrderCaptureResult = await createOrderFromPayPalCapture(
+            capturedOrder as PayPalOrderCapture,
+            storedData
+        );
         console.log('capturePayPalOrderHandler: Order created for PayPal order', orderId);
 
         // Send download email to customer
         if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
-            const emailSent = await sendDownloadEmail(
+            const emailSent: boolean = await sendDownloadEmail(
                 orderResult.customerEmail,
                 orderResult.orderId,
                 orderResult.totalAmount
@@ -167,7 +179,7 @@ export async function getPayPalOrderHandler(
             return;
         }
 
-        const paypalOrder = await getPayPalOrder(id);
+        const paypalOrder: PayPalOrderSummary = await getPayPalOrder(id);
         res.status(200).json({
             id: paypalOrder.id,
             status: paypalOrder.status,

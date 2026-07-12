@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Share2 } from 'lucide-react';
-import { ShareDialog } from '../ui/Dialog/ShareDialog';
+import { ShareDialog } from '@/components/ui/Dialog/ShareDialog';
 
 interface ShareBeatButtonProps {
     url: string;     // full URL to share (including origin), e.g. https://.../store/beat/:id

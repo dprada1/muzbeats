@@ -32,37 +32,47 @@
 
 ## Step 4: Upload Files
 
-### Option A: Using AWS CLI (Recommended)
+MuzBeats uses **two buckets** (see [R2_WAV_PRIVACY_FIX.md](./R2_WAV_PRIVACY_FIX.md) and [OPS_RUNBOOK.md](./OPS_RUNBOOK.md)):
+
+| Bucket | Access | Contents |
+|--------|--------|----------|
+| Public (`muzbeats-media-public` or legacy `muzbeats-audio`) | Public | `beats/mp3/`, `images/` |
+| Private (`muzbeats-wav-private`) | Disabled | `wav/<file>.wav` only |
+
+**Do not upload WAVs to the public bucket.**
+
+### Public bucket — MP3 previews (+ images)
 
 ```bash
 # Install AWS CLI if not already installed
 # macOS: brew install awscli
-# Or download from: https://aws.amazon.com/cli/
 
-# Configure AWS CLI for R2
 aws configure set aws_access_key_id YOUR_ACCESS_KEY_ID
 aws configure set aws_secret_access_key YOUR_SECRET_ACCESS_KEY
 
-# Upload files (use your S3 API endpoint from dashboard)
-aws s3 sync server/public/assets/beats/ \
-  s3://muzbeats-audio/beats/ \
+# Upload MP3s (and images if needed) — public bucket
+aws s3 sync server/public/assets/beats/mp3/ \
+  s3://muzbeats-media-public/beats/mp3/ \
   --endpoint-url https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
-
-# Replace YOUR_ACCOUNT_ID with your actual Account ID
-# The full endpoint URL is shown in your R2 dashboard under "S3 API"
-
-# This will upload:
-# - mp3/ folder
-# - wav/ folder
-# - All subdirectories
 ```
+
+### Private bucket — WAV masters
+
+```bash
+# Use credentials for the private bucket (separate API token is fine)
+aws s3 sync server/public/assets/beats/wav/ \
+  s3://muzbeats-wav-private/wav/ \
+  --endpoint-url https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+```
+
+Keys in the private bucket are **`wav/<filename>.wav`**, not `beats/wav/...`.
 
 ### Option B: Using Cloudflare Dashboard
 
-1. Go to your bucket
+1. Go to the target bucket
 2. Click **Upload**
-3. Drag and drop `mp3/` and `wav/` folders
-4. Wait for upload to complete (may take a while for 2.3GB)
+3. For **public** bucket: upload `mp3/` (and `images/` as needed)
+4. For **private** bucket: upload files under a top-level **`wav/`** folder
 
 ## Step 5: Get Public URL (This is what you need for Railway!)
 

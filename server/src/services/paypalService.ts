@@ -13,7 +13,7 @@ const ordersController = new OrdersController(paypalSDK as any);
 
 // Temporary storage for order data (in production, use Redis or database)
 // Maps PayPal order ID -> beat IDs (email comes from PayPal payer info)
-const orderDataStore = new Map<string, { beatIds: string[] }>();
+const orderDataStore = new Map<string, StoredOrderData>();
 
 /**
  * Cart item from client (just beat IDs)
@@ -23,13 +23,39 @@ export interface CartItem {
     quantity?: number; // Defaults to 1
 }
 
+export interface StoredOrderData {
+    beatIds: string[];
+}
+
+export interface PayPalOrderCreateResult {
+    orderId: string;
+    approvalUrl: string;
+    amount: number;
+    currency: string;
+}
+
+/** Subset of PayPal order fields used by checkout status endpoint */
+export interface PayPalOrderSummary {
+    id?: string;
+    status?: string;
+    purchaseUnits?: Array<{
+        payments?: {
+            captures?: Array<{
+                amount?: unknown;
+            }>;
+        };
+    }>;
+}
+
 /**
  * Create a PayPal Order for the cart
  * 
  * @param items - Array of cart items (beat IDs)
  * @returns PayPal Order with ID and approval URL
  */
-export async function createPayPalOrder(items: CartItem[]) {
+export async function createPayPalOrder(
+    items: CartItem[]
+): Promise<PayPalOrderCreateResult> {
     try {
         // Fetch all beats from database to get prices
         const beatPromises = items.map(item => getBeatById(item.beatId));
@@ -142,7 +168,7 @@ export async function createPayPalOrder(items: CartItem[]) {
  * @param orderId - PayPal order ID
  * @returns Captured order details
  */
-export async function capturePayPalOrder(orderId: string) {
+export async function capturePayPalOrder(orderId: string): Promise<unknown> {
     try {
         const response = await ordersController.captureOrder({
             id: orderId,
@@ -161,13 +187,13 @@ export async function capturePayPalOrder(orderId: string) {
  * @param orderId - PayPal order ID
  * @returns Order details
  */
-export async function getPayPalOrder(orderId: string) {
+export async function getPayPalOrder(orderId: string): Promise<PayPalOrderSummary> {
     try {
         const response = await ordersController.getOrder({
             id: orderId,
         });
 
-        return response.result;
+        return response.result as PayPalOrderSummary;
     } catch (error) {
         console.error('Error retrieving PayPal order:', error);
         throw error;
@@ -180,7 +206,7 @@ export async function getPayPalOrder(orderId: string) {
  * @param orderId - PayPal order ID
  * @returns Stored order data or null if not found
  */
-export function getStoredOrderData(orderId: string) {
+export function getStoredOrderData(orderId: string): StoredOrderData | null {
     const data = orderDataStore.get(orderId);
     if (data) {
         // Remove from store after retrieval to prevent memory leaks

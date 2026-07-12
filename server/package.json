@@ -21,7 +21,7 @@
     "organize-covers": "tsx src/db/organize-covers-complete.ts",
     "recover-artist-org": "tsx src/db/recover-artist-organization.ts",
     "move-artist-organized": "tsx src/db/move-artist-to-unused-organized.ts",
-    "init-db": "tsx src/db/init-db.ts",
+    "init-db": "tsx src/db/initializeDatabase.ts",
     "test-db": "tsx src/test-db.ts",
     "update-prices": "tsx src/db/update-prices.ts",
     "test": "vitest --ui",
@@ -45,9 +45,11 @@
     "@types/express": "^5.0.5",
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.6",
-    "@vitest/ui": "^3.2.4",
+    "@types/supertest": "^7.2.0",
+    "@vitest/ui": "^3.2.6",
+    "supertest": "^7.2.2",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   }
 }

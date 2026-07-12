@@ -13,7 +13,7 @@
 */
 
 import dotenv from 'dotenv';
-import pool from '../config/database.js';
+import pool from '@/config/database.js';
 
 dotenv.config();
 
