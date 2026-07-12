@@ -8,6 +8,7 @@ import checkoutRoutes from '@/routes/checkoutRoutes.js';
 import webhookRoutes from '@/routes/webhookRoutes.js';
 import downloadRoutes from '@/routes/downloadRoutes.js';
 import { initializeDatabase } from '@/db/initializeDatabase.js';
+import { assertCheckoutLimitsValid } from './config/checkoutLimits.js';
 
 // Load environment variables
 dotenv.config();
@@ -88,6 +89,15 @@ app.use('/api/beats', beatsRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/downloads', downloadRoutes);
 // Note: webhookRoutes is registered above, before express.json()
+
+// Assert checkout price/quantity bounds before accepting traffic
+try {
+    assertCheckoutLimitsValid();
+} catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('❌ Invalid checkout configuration:', message);
+    process.exit(1);
+}
 
 // Initialize database and start server (fail fast if schema cannot be verified)
 initializeDatabase()

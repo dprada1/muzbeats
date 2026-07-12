@@ -26,3 +26,30 @@ export const BEAT_ID_UUID_REGEX: RegExp =
 export function isValidUUIDv4(value: unknown): value is string {
     return typeof value === 'string' && BEAT_ID_UUID_REGEX.test(value);
 }
+
+function assertPositive(name: string, value: number): void {
+    if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(`Invalid checkout config: ${name} must be a finite number > 0 (got ${value})`);
+    }
+}
+
+function assertMinMax(minName: string, min: number, maxName: string, max: number): void {
+    if (max < min) {
+        throw new Error(
+            `Invalid checkout config: ${maxName} (${max}) must be >= ${minName} (${min})`
+        );
+    }
+}
+
+/** Fail fast at startup if checkout bounds are misconfigured */
+export function assertCheckoutLimitsValid(): void {
+    assertPositive('MIN_CART_ITEMS', MIN_CART_ITEMS);
+    assertPositive('MIN_ITEM_QUANTITY', MIN_ITEM_QUANTITY);
+    assertPositive('MIN_BEAT_PRICE_USD', MIN_BEAT_PRICE_USD);
+    assertPositive('MIN_CART_TOTAL_USD', MIN_CART_TOTAL_USD);
+
+    assertMinMax('MIN_CART_ITEMS', MIN_CART_ITEMS, 'MAX_CART_ITEMS', MAX_CART_ITEMS);
+    assertMinMax('MIN_ITEM_QUANTITY', MIN_ITEM_QUANTITY, 'MAX_ITEM_QUANTITY', MAX_ITEM_QUANTITY);
+    assertMinMax('MIN_BEAT_PRICE_USD', MIN_BEAT_PRICE_USD, 'MAX_BEAT_PRICE_USD', MAX_BEAT_PRICE_USD);
+    assertMinMax('MIN_CART_TOTAL_USD', MIN_CART_TOTAL_USD, 'MAX_CART_TOTAL_USD', MAX_CART_TOTAL_USD);
+}
