@@ -6,7 +6,11 @@ import {
     CheckoutPaymentIntent,
     OrderApplicationContextLandingPage,
     OrderApplicationContextUserAction,
+    ApiResponse,
+    Order,
 } from '@paypal/paypal-server-sdk';
+import { MAX_BEAT_PRICE_USD, MAX_CART_TOTAL_USD, MIN_BEAT_PRICE_USD, MIN_CART_TOTAL_USD } from '@/config/checkoutLimits.js';
+import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
 
 // Get orders controller from SDK client
 const ordersController = new OrdersController(paypalSDK as any);
@@ -48,22 +52,29 @@ export interface PayPalOrderSummary {
 /**
  * Create a PayPal Order for the cart
  * 
- * @param items - Array of cart items (beat IDs)
+ * @param cartLines - Validated cart lines (beatId + quantity per line)
+ * - beatId is a UUIDv4 string
+ * - Quantity is an integer in specified valid range
  * @returns PayPal Order with ID and approval URL
  */
 export async function createPayPalOrder(
-    items: CartLine[]
+    cartLines: CartLine[]
 ): Promise<PayPalOrderCreateResult> {
     try {
         // Fetch all beats from database to get prices
-        const beatPromises: Promise<Beat | null>[] = items.map(item => getBeatById(item.beatId));
-        const beats: (Beat | null)[] = await Promise.all(beatPromises);
+        const beats = await Promise.all(cartLines.map((line) => getBeatById(line.beatId)));
+        if (beats.some((b) => b === null)) {
+            throw new CheckoutError(
+                'One or more beats in your cart could not be found',
+                400
+            );
+        }
 
-        // Filter out any null beats (invalid IDs)
-        const validBeats: Beat[] = beats.filter((beat): beat is Beat => beat !== null);
+        const validBeats = beats as Beat[];
 
         if (validBeats.length === 0) {
-            throw new Error('No valid beats found in cart');
+            console.warn('No valid beats found in cart'); // should never execute because cartLines.length >= 1 when paypalController.ts calls it.
+            throw internalCheckoutError();
         }
 
         // Calculate total amount and create line items
@@ -71,18 +82,35 @@ export async function createPayPalOrder(
         const lineItems: Array<{ beat: Beat; quantity: number }> = [];
         const purchaseUnits: any[] = [];
 
-        items.forEach((item) => {
-            const beat: Beat | undefined = validBeats.find(b => b.id === item.beatId);
-            if (beat) {
-                const quantity = item.quantity || 1;
-                const amount = beat.price * quantity;
-                totalAmount += amount;
-                lineItems.push({ beat, quantity });
-            }
-        });
+        for (let i = 0; i < cartLines.length; i++) {
+            const { quantity } = cartLines[i];
+            const beat = validBeats[i];
 
-        if (totalAmount === 0) {
-            throw new Error('Total amount cannot be zero');
+            if (!Number.isFinite(beat.price)) {
+                console.warn('createPayPalOrder: invalid beat price', {
+                    beatId: beat.id,
+                    price: beat.price,
+                });
+                throw internalCheckoutError();
+            }
+
+            if (beat.price < MIN_BEAT_PRICE_USD || beat.price > MAX_BEAT_PRICE_USD) {
+                console.warn('createPayPalOrder: beat price out of bounds', {
+                    beatId: beat.id,
+                    price: beat.price,
+                    min: MIN_BEAT_PRICE_USD,
+                    max: MAX_BEAT_PRICE_USD,
+                });
+                throw internalCheckoutError();
+            }
+
+            totalAmount += beat.price * quantity;
+            lineItems.push({ beat, quantity });
+        }
+
+        if (totalAmount < MIN_CART_TOTAL_USD || totalAmount > MAX_CART_TOTAL_USD) {
+            console.warn('createPayPalOrder: cart total out of bounds', { totalAmount});
+            throw internalCheckoutError();
         }
 
         // Create PayPal order items (using camelCase as required by SDK)
@@ -118,7 +146,7 @@ export async function createPayPalOrder(
         });
 
         // Create the order using SDK
-        const response = await ordersController.createOrder({
+        const response: ApiResponse<Order> = await ordersController.createOrder({
             body: {
                 intent: CheckoutPaymentIntent.Capture,
                 purchaseUnits: purchaseUnits,
@@ -155,8 +183,14 @@ export async function createPayPalOrder(
             currency: 'USD',
         };
     } catch (error) {
+        // Already a CheckoutERROR (400 or 500 we threw above) - pass through
+        if (error instanceof CheckoutError) {
+            throw error;
+        }
+
+        // PayPal SDK, getBeatById DB failure, network, etc.
         console.error('Error creating PayPal order:', error);
-        throw error;
+        throw internalCheckoutError();
     }
 }
 

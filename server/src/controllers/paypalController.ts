@@ -20,11 +20,13 @@ import { sendDownloadEmail } from '@/services/emailService.js';
 import pool from '@/config/database.js';
 import { QueryResult } from 'pg';
 import {
+    MIN_CART_ITEMS,
     MAX_CART_ITEMS,
     MIN_ITEM_QUANTITY,
     MAX_ITEM_QUANTITY,
     isValidUUIDv4,
 } from '@/config/checkoutLimits.js';
+import { CheckoutError } from '@/utils/checkoutErrors.js';
 
 
 /**
@@ -48,7 +50,7 @@ function areValidBeatIds(ids: unknown[]): ids is string[] {
  *
  * Request body:
  * {
- *   items: [{ beatId: "uuid", quantity: 1 }]  // JSON field name is `items`; validated as rawCartLines
+ *   items: [{ beatId: "uuid", quantity: 1 }]  // destructured as rawCartLines in handler
  * }
  * 
  * Note: Customer email is automatically retrieved from PayPal payer info during capture
@@ -64,6 +66,13 @@ export async function createPayPalOrderHandler(
         if (!rawCartLines || !Array.isArray(rawCartLines) || rawCartLines.length === 0) {
             res.status(400).json({
                 error: 'Cart lines array is required and must not be empty',
+            });
+            return;
+        }
+
+        if (rawCartLines.length < MIN_CART_ITEMS) {
+            res.status(400).json({
+                error: `Cart needs a minimum of ${MIN_CART_ITEMS} item(s)`,
             });
             return;
         }
@@ -113,8 +122,12 @@ export async function createPayPalOrderHandler(
         const paypalOrder: PayPalOrderCreateResult = await createPayPalOrder(cartLines);
 
         res.status(200).json(paypalOrder);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in createPayPalOrderHandler:', error);
+        if (error instanceof CheckoutError) {
+            res.status(error.statusCode).json({ error: error.message });
+            return;
+        }
         res.status(500).json({
             error: 'Failed to create PayPal order',
         });
@@ -205,7 +218,7 @@ export async function capturePayPalOrderHandler(
     } catch (error: any) {
         console.error('Error in capturePayPalOrderHandler:', error);
         res.status(500).json({
-            error: error.message || 'Failed to capture PayPal order',
+            error: 'Failed to capture PayPal order',
         });
     }
 }
@@ -235,7 +248,7 @@ export async function getPayPalOrderHandler(
     } catch (error: any) {
         console.error('Error in getPayPalOrderHandler:', error);
         res.status(500).json({
-            error: error.message || 'Failed to retrieve PayPal order',
+            error: 'Failed to retrieve PayPal order',
         });
     }
 }
