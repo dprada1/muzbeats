@@ -8,15 +8,23 @@ import {
     OrderApplicationContextUserAction,
     ApiResponse,
     Order,
+    LinkDescription,
 } from '@paypal/paypal-server-sdk';
-import { MAX_BEAT_PRICE_USD, MAX_CART_TOTAL_USD, MIN_BEAT_PRICE_USD, MIN_CART_TOTAL_USD } from '@/config/checkoutLimits.js';
+import {
+    CHECKOUT_CURRENCY,
+    MAX_BEAT_PRICE_CENTS,
+    MAX_CART_TOTAL_CENTS,
+    MIN_BEAT_PRICE_CENTS,
+    MIN_CART_TOTAL_CENTS,
+} from '@/config/checkoutLimits.js';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
+import { centsToUsd, formatUsdFromCents, usdToCents } from '@/utils/money.js';
 
 // Get orders controller from SDK client
 const ordersController = new OrdersController(paypalSDK as any);
 
 // Temporary storage for order data (in production, use Redis or database)
-// Maps PayPal order ID -> beat IDs (email comes from PayPal payer info)
+// Maps PayPal order ID -> beat IDs (payer email comes from PayPal at capture)
 const orderDataStore = new Map<string, StoredOrderData>();
 
 /** Validated cart line passed from controller to create-order */
@@ -49,12 +57,36 @@ export interface PayPalOrderSummary {
     }>;
 }
 
+/** PayPal Orders API purchase unit payload (camelCase as required by the server SDK). */
+interface PayPalPurchaseUnitPayload {
+    referenceId: string;
+    amount: {
+        currencyCode: string;
+        value: string;
+        breakdown: {
+            itemTotal: {
+                currencyCode: string;
+                value: string;
+            };
+        };
+    };
+    items: Array<{
+        name: string;
+        description: string;
+        quantity: string;
+        unitAmount: {
+            currencyCode: string;
+            value: string;
+        };
+    }>;
+    description: string;
+    customId: string;
+}
+
 /**
  * Create a PayPal Order for the cart
- * 
+ *
  * @param cartLines - Validated cart lines (beatId + quantity per line)
- * - beatId is a UUIDv4 string
- * - Quantity is an integer in specified valid range
  * @returns PayPal Order with ID and approval URL
  */
 export async function createPayPalOrder(
@@ -77,10 +109,8 @@ export async function createPayPalOrder(
             throw internalCheckoutError();
         }
 
-        // Calculate total amount and create line items
-        let totalAmount = 0;
-        const lineItems: Array<{ beat: Beat; quantity: number }> = [];
-        const purchaseUnits: any[] = [];
+        let totalPriceInCents = 0;
+        const lineItems: Array<{ beat: Beat; quantity: number; beatPriceInCents: number }> = [];
 
         for (let i = 0; i < cartLines.length; i++) {
             const { quantity } = cartLines[i];
@@ -94,58 +124,65 @@ export async function createPayPalOrder(
                 throw internalCheckoutError();
             }
 
-            if (beat.price < MIN_BEAT_PRICE_USD || beat.price > MAX_BEAT_PRICE_USD) {
+            const beatPriceInCents = usdToCents(beat.price);
+
+            if (
+                beatPriceInCents < MIN_BEAT_PRICE_CENTS ||
+                beatPriceInCents > MAX_BEAT_PRICE_CENTS
+            ) {
                 console.warn('createPayPalOrder: beat price out of bounds', {
                     beatId: beat.id,
                     price: beat.price,
-                    min: MIN_BEAT_PRICE_USD,
-                    max: MAX_BEAT_PRICE_USD,
+                    beatPriceInCents,
+                    minCents: MIN_BEAT_PRICE_CENTS,
+                    maxCents: MAX_BEAT_PRICE_CENTS,
                 });
                 throw internalCheckoutError();
             }
 
-            totalAmount += beat.price * quantity;
-            lineItems.push({ beat, quantity });
+            totalPriceInCents += beatPriceInCents * quantity;
+            lineItems.push({ beat, quantity, beatPriceInCents });
         }
 
-        if (totalAmount < MIN_CART_TOTAL_USD || totalAmount > MAX_CART_TOTAL_USD) {
-            console.warn('createPayPalOrder: cart total out of bounds', { totalAmount});
+        if (
+            totalPriceInCents < MIN_CART_TOTAL_CENTS ||
+            totalPriceInCents > MAX_CART_TOTAL_CENTS
+        ) {
+            console.warn('createPayPalOrder: cart total out of bounds', { totalPriceInCents });
             throw internalCheckoutError();
         }
 
-        // Create PayPal order items (using camelCase as required by SDK)
-        const paypalItems = lineItems.map(item => ({
+        const totalPriceInUsdFormatted = formatUsdFromCents(totalPriceInCents);
+
+        const paypalItems = lineItems.map((item) => ({
             name: item.beat.title,
             description: `${item.beat.key} • ${item.beat.bpm} BPM`,
             quantity: item.quantity.toString(),
             unitAmount: {
-                currencyCode: 'USD',
-                value: item.beat.price.toFixed(2),
+                currencyCode: CHECKOUT_CURRENCY,
+                value: formatUsdFromCents(item.beatPriceInCents),
             },
         }));
 
-        // Create purchase unit (using camelCase as required by SDK)
-        // Store beat IDs in description since customId is unreliable
-        const beatIdsString = lineItems.map(item => item.beat.id).join(',');
-        
-        purchaseUnits.push({
+        const beatIdsString = lineItems.map((item) => item.beat.id).join(',');
+
+        const purchaseUnits: PayPalPurchaseUnitPayload[] = [{
             referenceId: 'default',
             amount: {
-                currencyCode: 'USD',
-                value: totalAmount.toFixed(2),
+                currencyCode: CHECKOUT_CURRENCY,
+                value: totalPriceInUsdFormatted,
                 breakdown: {
                     itemTotal: {
-                        currencyCode: 'USD',
-                        value: totalAmount.toFixed(2),
+                        currencyCode: CHECKOUT_CURRENCY,
+                        value: totalPriceInUsdFormatted,
                     },
                 },
             },
             items: paypalItems,
             description: `Beat IDs: ${beatIdsString}`,
-            customId: beatIdsString, // Store as comma-separated string
-        });
+            customId: beatIdsString,
+        }];
 
-        // Create the order using SDK
         const response: ApiResponse<Order> = await ordersController.createOrder({
             body: {
                 intent: CheckoutPaymentIntent.Capture,
@@ -160,27 +197,31 @@ export async function createPayPalOrder(
             },
         });
 
-        const paypalOrderId = response.result.id || '';
-        
-        // Store order data for later retrieval (when capturing)
+        const paypalOrderId = response.result.id;
+
+        if (!paypalOrderId) {
+            console.warn('createPayPalOrder: PayPal response missing order id');
+            throw internalCheckoutError();
+        }
+
         orderDataStore.set(paypalOrderId, {
-            beatIds: lineItems.map(item => item.beat.id),
+            beatIds: lineItems.map((item) => item.beat.id),
         });
-        
+
         console.log(`Stored order data for PayPal order ${paypalOrderId}:`, {
-            beatIds: lineItems.map(item => item.beat.id),
+            beatIds: lineItems.map((item) => item.beat.id),
         });
 
         // Extract approval URL
         const approvalUrl = response.result.links?.find(
-            (link: any) => link.rel === 'approve'
-        )?.href || '';
+            (link: LinkDescription) => link.rel === 'approve'
+        )?.href ?? '';
 
         return {
             orderId: paypalOrderId,
             approvalUrl,
-            amount: totalAmount,
-            currency: 'USD',
+            amount: centsToUsd(totalPriceInCents),
+            currency: CHECKOUT_CURRENCY,
         };
     } catch (error) {
         // Already a CheckoutERROR (400 or 500 we threw above) - pass through
@@ -196,7 +237,7 @@ export async function createPayPalOrder(
 
 /**
  * Capture a PayPal order after customer approval
- * 
+ *
  * @param orderId - PayPal order ID
  * @returns Captured order details
  */
@@ -215,7 +256,7 @@ export async function capturePayPalOrder(orderId: string): Promise<unknown> {
 
 /**
  * Get PayPal order details
- * 
+ *
  * @param orderId - PayPal order ID
  * @returns Order details
  */
@@ -233,10 +274,11 @@ export async function getPayPalOrder(orderId: string): Promise<PayPalOrderSummar
 }
 
 /**
- * Get stored order data (beat IDs and customer email)
- * 
+ * Read beat IDs stashed at create-order for capture fulfillment.
+ * Removes the entry after read to limit memory growth.
+ *
  * @param orderId - PayPal order ID
- * @returns Stored order data or null if not found
+ * @returns Stored beat IDs or null if not found (e.g. server restarted)
  */
 export function getStoredOrderData(orderId: string): StoredOrderData | null {
     const data = orderDataStore.get(orderId);
@@ -244,6 +286,5 @@ export function getStoredOrderData(orderId: string): StoredOrderData | null {
         // Remove from store after retrieval to prevent memory leaks
         orderDataStore.delete(orderId);
     }
-    return data || null;
+    return data ?? null;
 }
-
