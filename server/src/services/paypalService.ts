@@ -25,7 +25,7 @@ const ordersController = new OrdersController(paypalSDK as any);
 
 // Temporary storage for order data (in production, use Redis or database)
 // Maps PayPal order ID -> beat IDs (payer email comes from PayPal at capture)
-const orderDataStore = new Map<string, StoredOrderData>();
+const orderDataStore = new Map<string, StoredOrderBeatIds>();
 
 /** Validated cart line passed from controller to create-order */
 export interface CartLine {
@@ -33,7 +33,7 @@ export interface CartLine {
     quantity: number;
 }
 
-export interface StoredOrderData {
+export interface StoredOrderBeatIds {
     beatIds: string[];
 }
 
@@ -126,6 +126,8 @@ export async function createPayPalOrder(
 
             const beatPriceInCents = usdToCents(beat.price);
 
+            // Re-check beat price in cents (controller already validated dollars).
+            // Quantity bounds are enforced in the controller; pass through here for the PayPal line total.
             if (
                 beatPriceInCents < MIN_BEAT_PRICE_CENTS ||
                 beatPriceInCents > MAX_BEAT_PRICE_CENTS
@@ -280,11 +282,11 @@ export async function getPayPalOrder(orderId: string): Promise<PayPalOrderSummar
  * @param orderId - PayPal order ID
  * @returns Stored beat IDs or null if not found (e.g. server restarted)
  */
-export function getStoredOrderData(orderId: string): StoredOrderData | null {
-    const data = orderDataStore.get(orderId);
-    if (data) {
-        // Remove from store after retrieval to prevent memory leaks
-        orderDataStore.delete(orderId);
-    }
-    return data ?? null;
+export function getStoredOrderBeatIds(orderId: string): StoredOrderBeatIds | null {
+    const beatIds = orderDataStore.get(orderId);
+    if (!beatIds) return null;
+
+    // Remove from store after retrieval to prevent double order capturing and prevent memory leaks
+    orderDataStore.delete(orderId);
+    return beatIds;
 }

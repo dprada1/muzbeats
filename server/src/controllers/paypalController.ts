@@ -3,14 +3,15 @@ import {
     createPayPalOrder,
     capturePayPalOrder,
     getPayPalOrder,
-    getStoredOrderData,
+    getStoredOrderBeatIds,
 } from '@/services/paypalService.js';
 import type {
     CartLine,
     PayPalOrderCreateResult,
     PayPalOrderSummary,
-    StoredOrderData,
+    StoredOrderBeatIds,
 } from '@/services/paypalService.js';
+import { getRouteParam } from '@/utils/routeParams.js';
 import {
     createOrderFromPayPalCapture,
     type OrderCaptureResult,
@@ -24,7 +25,7 @@ import {
     MAX_CART_ITEMS,
     MIN_ITEM_QUANTITY,
     MAX_ITEM_QUANTITY,
-    isValidUUIDv4,
+    areValidBeatIds,
 } from '@/config/checkoutLimits.js';
 import { CheckoutError } from '@/utils/checkoutErrors.js';
 
@@ -37,11 +38,6 @@ function parseCartQuantity(raw: unknown): number | null {
     if (typeof raw !== 'number' || !Number.isInteger(raw)) return null;
     if (raw < MIN_ITEM_QUANTITY || raw > MAX_ITEM_QUANTITY) return null;
     return raw;
-}
-
-/** Type guard: after this passes, `ids` is narrowed to `string[]`. */
-function areValidBeatIds(ids: unknown[]): ids is string[] {
-    return ids.every((id) => isValidUUIDv4(id));
 }
 
 /**
@@ -158,8 +154,8 @@ export async function capturePayPalOrderHandler(
         }
 
         // Retrieve stored order data (beat IDs and customer email)
-        const storedData: StoredOrderData | null = getStoredOrderData(orderId);
-        console.log('Retrieved stored order data:', storedData);
+        const storedBeatIds: StoredOrderBeatIds | null = getStoredOrderBeatIds(orderId);
+        console.log('Retrieved stored order data:', storedBeatIds);
         
         // Capture the order
         const capturedOrder: unknown = await capturePayPalOrder(orderId);
@@ -187,7 +183,7 @@ export async function capturePayPalOrderHandler(
         // Create order from captured PayPal order, using stored data for beat IDs
         const orderResult: OrderCaptureResult = await createOrderFromPayPalCapture(
             capturedOrder as PayPalOrderCapture,
-            storedData
+            storedBeatIds
         );
         console.log('capturePayPalOrderHandler: Order created for PayPal order', orderId);
 
@@ -232,7 +228,7 @@ export async function getPayPalOrderHandler(
     res: Response
 ): Promise<void> {
     try {
-        const { id } = req.params;
+        const id = getRouteParam(req.params.id);
 
         if (!id) {
             res.status(400).json({ error: 'PayPal order ID is required' });

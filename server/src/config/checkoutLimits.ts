@@ -40,6 +40,11 @@ export function isValidUUIDv4(value: unknown): value is string {
     return typeof value === 'string' && BEAT_ID_UUID_REGEX.test(value);
 }
 
+/** Type guard: after this passes, `ids` is narrowed to `string[]`. */
+export function areValidBeatIds(ids: unknown[]): ids is string[] {
+    return ids.every((id) => isValidUUIDv4(id));
+}
+
 function assertPositive(name: string, value: number): void {
     if (!Number.isFinite(value) || value <= 0) {
         throw new Error(`Invalid checkout config: ${name} must be a finite number > 0 (got ${value})`);
