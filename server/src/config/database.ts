@@ -6,6 +6,9 @@ dotenv.config();
 
 const { Pool } = pg;
 
+/** Hostnames that typically require SSL (Railway public proxy). */
+const RAILWAY_HOST_REGEX: RegExp = /rlwy\.net|railway\.app|up\.railway\.app/i;
+
 function getDefaultDatabaseName(): string {
     // In local development we want a stable default that won't collide with production-ish names.
     // This also matches how we've been using Postgres locally (e.g., `muzbeats_dev`).
@@ -25,7 +28,7 @@ const pool = new Pool(
               ssl:
                   process.env.DB_SSL === 'false'
                       ? undefined
-                      : /rlwy\.net|railway\.app|up\.railway\.app/i.test(process.env.DATABASE_URL)
+                      : RAILWAY_HOST_REGEX.test(process.env.DATABASE_URL)
                         ? { rejectUnauthorized: false }
                         : undefined,
               max: 20,

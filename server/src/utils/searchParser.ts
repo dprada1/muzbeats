@@ -72,7 +72,7 @@ export function parseSearchQuery(rawQuery: string): SearchParams {
 
     // Parse keys (simplified - looks for common key patterns)
     // Patterns: "Cm", "Cmin", "C minor", "C#m", "C#min", "C# minor", etc.
-    const keyPatterns = [
+    const keyPatterns: RegExp[] = [
         /^[A-G][#♯b♭]?(?:maj|min|major|minor|m|M)$/i,  // "Cm", "Cmin", "CM", "C#m"
         /^[A-G][#♯b♭]?\s+(?:maj|min|major|minor)$/i,    // "C min", "C# maj"
         /^[A-G][#♯b♭]?\s+(?:sharp|flat)\s+(?:maj|min|major|minor)$/i  // "C sharp minor"

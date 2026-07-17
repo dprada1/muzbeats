@@ -121,10 +121,11 @@ async function main() {
     // Step 1: Find used covers (UUID files in covers/)
     console.log(`🔍 Scanning used covers...`);
     const usedCovers = await getImagesInDir(coversDir, false);
+    const UUID_COVER_FILENAME_REGEX: RegExp =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/i;
     const uuidCovers = usedCovers.filter((img) => {
         const filename = path.basename(img);
-        // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.webp
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/i.test(filename);
+        return UUID_COVER_FILENAME_REGEX.test(filename);
     });
 
     console.log(`   Found ${uuidCovers.length} used covers (UUID files)`);

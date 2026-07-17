@@ -18,7 +18,7 @@ export { z };
  * Note: id is validated as UUID since we validate beatId as UUID in URLs
  */
 // UUID regex pattern for validation
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const BeatSchema = z.object({
     id: z.string().min(1).refine((val) => UUID_REGEX.test(val), {
