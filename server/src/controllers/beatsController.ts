@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { getBeats, getBeatById } from '@/services/beatsService.js';
+import { getRouteParam } from '@/utils/routeParams.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import type { Beat } from '@/types/Beat.js';
@@ -76,8 +77,8 @@ export async function getBeatsHandler(req: Request, res: Response): Promise<void
 */
 export async function getBeatByIdHandler(req: Request, res: Response): Promise<void> {
     try {
-        const { id } = req.params;
-        
+        const id = getRouteParam(req.params.id);
+
         if (!id) {
             res.status(400).json({ error: 'Beat ID is required' });
             return;

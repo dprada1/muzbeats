@@ -10,6 +10,7 @@ import {
     getWavPath,
     type DownloadTokenValidation,
 } from '@/services/downloadService.js';
+import { getRouteParam } from '@/utils/routeParams.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
@@ -109,7 +110,7 @@ function streamLocalFile(
  */
 export async function downloadBeatHandler(req: Request, res: Response): Promise<void> {
     try {
-        const { token } = req.params;
+        const token = getRouteParam(req.params.token);
 
         if (!token) {
             res.status(400).json({ error: 'Download token is required' });
