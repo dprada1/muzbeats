@@ -1,10 +1,13 @@
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
+import type { QueryResult } from 'pg';
 
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const HTTPS_OR_HTTP_SCHEME_REGEX: RegExp = /^https?:\/\//i;
 
 function normalizeBaseUrl(raw: string): string {
     const v = (raw || '').trim();
@@ -16,7 +19,7 @@ function normalizeBaseUrl(raw: string): string {
     }
 
     // If user forgot scheme, assume https in prod, http in dev.
-    if (!/^https?:\/\//i.test(v)) {
+    if (!HTTPS_OR_HTTP_SCHEME_REGEX.test(v)) {
         const scheme = process.env.NODE_ENV === 'production' ? 'https' : 'http';
         return `${scheme}://${v}`;
     }
@@ -28,7 +31,7 @@ function normalizeBaseUrl(raw: string): string {
  * Get download links for an order
  */
 async function getDownloadLinks(orderId: string) {
-    const result = await pool.query(
+    const result: QueryResult<any> = await pool.query(
         `
         SELECT
             d.download_token,

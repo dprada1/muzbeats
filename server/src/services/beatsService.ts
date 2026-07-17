@@ -4,6 +4,7 @@ import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
 import { getR2PublicUrl } from '@/utils/r2.js';
+import type { QueryResult } from 'pg';
 
 interface BeatDbRow {
     id: string;
@@ -60,7 +61,7 @@ export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
 */
 export async function getBeatById(id: string): Promise<Beat | null> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats WHERE id = $1',
             [id]
         );
