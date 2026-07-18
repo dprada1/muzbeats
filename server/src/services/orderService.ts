@@ -4,20 +4,17 @@ import { randomBytes } from 'crypto';
 import {
     CHECKOUT_CURRENCY,
     MAX_CART_TOTAL_CENTS,
-    MAX_CART_TOTAL_USD,
     MIN_CART_TOTAL_CENTS,
-    MIN_CART_TOTAL_USD,
     DOWNLOAD_TOKEN_TTL_DAYS,
     MAX_DOWNLOADS_PER_TOKEN,
     MIN_BEAT_PRICE_CENTS,
     MAX_BEAT_PRICE_CENTS,
-    MIN_BEAT_PRICE_USD,
-    MAX_BEAT_PRICE_USD,
     isValidUUIDv4,
     areValidBeatIds,
 } from '@/config/checkoutLimits.js';
 import { centsToUsd, usdToCents } from '@/utils/money.js';
 import { QueryResult } from 'pg';
+import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
 
 // PayPal order capture type (simplified for our needs)
 export interface PayPalOrderCapture {
@@ -75,7 +72,10 @@ const EMAIL_REGEX: RegExp = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
 function isValidEmail(email: unknown): boolean {
     if (typeof email !== 'string') return false;
-    if (email.length < MIN_EMAIL_LENGTH || email.length > MAX_EMAIL_LENGTH) {
+    if (
+        email.length < MIN_EMAIL_LENGTH ||
+        email.length > MAX_EMAIL_LENGTH
+    ) {
         return false;
     }
     return EMAIL_REGEX.test(email);
@@ -101,35 +101,56 @@ export async function createOrderFromPayPalCapture(
         const paypalOrderId = paypalOrder.id;
 
         if (!isValidPayPalOrderId(paypalOrderId)) {
-            throw new Error('Not valid PayPal order id');
+            throw new CheckoutError(
+                'Not valid PayPal order id',
+                400
+            );
         }
 
         // Get customer email from PayPal payer info (always provided by PayPal)
         const customerEmail = paypalOrder.payer?.emailAddress || '';
 
         if (!isValidEmail(customerEmail)) {
-            throw new Error('Invalid customer email');
+            throw new CheckoutError(
+                'Invalid customer email',
+                400
+            );
         }
 
         // Get total amount from first capture (integer cents for bounds; dollars for DB)
         const capture = paypalOrder.purchaseUnits?.[0]?.payments?.captures?.[0];
         if (!capture?.amount?.value) {
-            throw new Error('PayPal capture missing amount');
+            throw new CheckoutError(
+                'PayPal capture missing amount',
+                400
+            );
         }
 
         const usedCurrencyCode = capture.amount.currencyCode;
         if (!usedCurrencyCode) {
-            throw new Error('PayPal capture missing currency code');
+            throw new CheckoutError(
+                'PayPal capture missing currency code',
+                400
+            );
         }
         if (usedCurrencyCode !== CHECKOUT_CURRENCY) {
-            throw new Error(
-                `Currency code (${usedCurrencyCode}) does not match CHECKOUT_CURRENCY (${CHECKOUT_CURRENCY})`
+            console.warn('createOrderFromPayPalCapture: currency mismatch', {
+                usedCurrencyCode,
+                expected: CHECKOUT_CURRENCY,
+                paypalOrderId,
+            });
+            throw new CheckoutError(
+                'Unsupported currency',
+                400
             );
         }
 
         const captureAmountDollars = Number(capture.amount.value);
         if (!Number.isFinite(captureAmountDollars)) {
-            throw new Error('Invalid capture amount');
+            throw new CheckoutError(
+                'Invalid capture amount',
+                400
+            );
         }
 
         const totalPriceInCents = usdToCents(captureAmountDollars);
@@ -137,8 +158,15 @@ export async function createOrderFromPayPalCapture(
             totalPriceInCents < MIN_CART_TOTAL_CENTS ||
             totalPriceInCents > MAX_CART_TOTAL_CENTS
         ) {
-            throw new Error(
-                `Total price (${centsToUsd(totalPriceInCents)}) out of bounds [${MIN_CART_TOTAL_USD}, ${MAX_CART_TOTAL_USD}]`
+            console.warn('createOrderFromPayPalCapture: total out of bounds', {
+                totalPriceInCents,
+                minCents: MIN_CART_TOTAL_CENTS,
+                maxCents: MAX_CART_TOTAL_CENTS,
+                paypalOrderId,
+            });
+            throw new CheckoutError(
+                'Invalid total price',
+                400
             );
         }
 
@@ -147,8 +175,13 @@ export async function createOrderFromPayPalCapture(
         // PayPal wire status (uppercase). Only COMPLETED means money settled enough to fulfill.
         // MuzBeats DB status stays lowercase and independent — we set 'completed' only after we commit to fulfill.
         if (paypalOrder.status !== 'COMPLETED') {
-            throw new Error(
-                `PayPal status is ${paypalOrder.status}, not COMPLETED; refusing fulfillment`
+            console.warn('createOrderFromPayPalCapture: refusing non-COMPLETED status', {
+                status: paypalOrder.status,
+                paypalOrderId,
+            });
+            throw new CheckoutError(
+                'Payment not completed',
+                400
             );
         }
 
@@ -172,11 +205,21 @@ export async function createOrderFromPayPalCapture(
         }
 
         if (beatIds.length === 0) {
-            throw new Error('beatIds cannot be empty.');
+            throw new CheckoutError(
+                'beatIds cannot be empty.',
+                400
+            );
         }
 
         if (!areValidBeatIds(beatIds)) {
-            throw new Error(`beatIds are not valid UUIDv4 strings: ${beatIds}`);
+            console.error('createOrderFromPayPalCapture: beatIds are not valid UUIDv4 strings:',
+                beatIds,
+                paypalOrderId,
+            );
+            throw new CheckoutError(
+                'Invalid beat ids',
+                400
+            );
         }
 
         // Insert into orders table
@@ -192,7 +235,11 @@ export async function createOrderFromPayPalCapture(
         const orderId: string = orderResult.rows[0].id;
 
         if (!isValidUUIDv4(orderId)) {
-            throw new Error(`Order id (${orderId}) is not valid`);
+            console.error('createOrderFromPayPalCapture: RETURNING order id is not UUIDv4', {
+                orderId,
+                paypalOrderId,
+            });
+            throw internalCheckoutError();
         }
 
         // Fetch current beat prices for all beatIds and insert into order_items      
@@ -206,7 +253,13 @@ export async function createOrderFromPayPalCapture(
         );
 
         if (beatsResult.rows.length !== beatIds.length) {
-            throw new Error(`beatsResult.rows.length (${beatsResult.rows.length}) does not match beatIds.length (${beatIds.length})`);
+            console.error('createOrderFromPayPalCapture: beat row count mismatch', {
+                found: beatsResult.rows.length,
+                expected: beatIds.length,
+                beatIds,
+                paypalOrderId,
+            });
+            throw internalCheckoutError();
         }
 
         // Calculate expiration date (30 days from now)
@@ -215,12 +268,27 @@ export async function createOrderFromPayPalCapture(
 
         for (const row of beatsResult.rows) {
             if (!isValidUUIDv4(row.id)) {
-                throw new Error(`Row ID (${row.id}) in 'beats' table in db is invalid`);
+                console.warn('createOrderFromPayPalCapture: beat row id is not UUIDv4', {
+                    rowId: row.id,
+                    paypalOrderId,
+                });
+                throw internalCheckoutError();
             }
 
             const beatPriceInCents = usdToCents(Number(row.price));
-            if (beatPriceInCents < MIN_BEAT_PRICE_CENTS || beatPriceInCents > MAX_BEAT_PRICE_CENTS) {
-                throw new Error(`Beat price for ${row.id} (${row.price}) is outside the valid range of [${MIN_BEAT_PRICE_USD}, ${MAX_BEAT_PRICE_USD}]`);
+            if (
+                beatPriceInCents < MIN_BEAT_PRICE_CENTS ||
+                beatPriceInCents > MAX_BEAT_PRICE_CENTS
+            ) {
+                console.warn('createOrderFromPayPalCapture: beat price out of bounds', {
+                    beatId: row.id,
+                    beatPriceInUSD: row.price,
+                    beatPriceInCents,
+                    minCents: MIN_BEAT_PRICE_CENTS,
+                    maxCents: MAX_BEAT_PRICE_CENTS,
+                    paypalOrderId,
+                });
+                throw internalCheckoutError();
             }
 
             // Insert order item

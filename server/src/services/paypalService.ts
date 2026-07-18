@@ -252,7 +252,7 @@ export async function capturePayPalOrder(orderId: string): Promise<unknown> {
         return response.result;
     } catch (error) {
         console.error('Error capturing PayPal order:', error);
-        throw error;
+        throw internalCheckoutError();
     }
 }
 

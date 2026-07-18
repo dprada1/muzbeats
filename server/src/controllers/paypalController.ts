@@ -211,8 +211,12 @@ export async function capturePayPalOrderHandler(
             totalAmount: orderResult.totalAmount,
             paypalOrderId: orderId,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in capturePayPalOrderHandler:', error);
+        if (error instanceof CheckoutError) {
+            res.status(error.statusCode).json({ error: error.message });
+            return;
+        }
         res.status(500).json({
             error: 'Failed to capture PayPal order',
         });
@@ -241,7 +245,7 @@ export async function getPayPalOrderHandler(
             status: paypalOrder.status,
             amount: paypalOrder.purchaseUnits?.[0]?.payments?.captures?.[0]?.amount,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in getPayPalOrderHandler:', error);
         res.status(500).json({
             error: 'Failed to retrieve PayPal order',
