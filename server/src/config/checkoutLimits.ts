@@ -8,7 +8,7 @@ export const MAX_CART_ITEMS = 20;
 /** Minimum item quantity in one create-order request */
 export const MIN_ITEM_QUANTITY = 1;
 /** Maximum item quantity in one create-order request */
-export const MAX_ITEM_QUANTITY = 5;
+export const MAX_ITEM_QUANTITY = 1;
 
 /** Currency used at checkout. Only USD is supported today. */
 export const CHECKOUT_CURRENCY = 'USD';
@@ -21,7 +21,7 @@ export const MAX_BEAT_PRICE_USD = 99.99;
 /** Minimum price for a purchase in one create-order request (USD dollars) */
 export const MIN_CART_TOTAL_USD = MIN_CART_ITEMS * MIN_BEAT_PRICE_USD * MIN_ITEM_QUANTITY; // 1 * 19.99 * 1 = 19.99
 /** Maximum price for a purchase in one create-order request (USD dollars) */
-export const MAX_CART_TOTAL_USD = MAX_CART_ITEMS * MAX_BEAT_PRICE_USD * MAX_ITEM_QUANTITY; // 20 * 99.99 * 5 = 9999
+export const MAX_CART_TOTAL_USD = MAX_CART_ITEMS * MAX_BEAT_PRICE_USD * MAX_ITEM_QUANTITY; // 20 * 99.99 * 1 = 1999.8
 
 /** Beat price bounds in integer cents (derived from USD constants). */
 export const MIN_BEAT_PRICE_CENTS = usdToCents(MIN_BEAT_PRICE_USD);
@@ -30,6 +30,12 @@ export const MAX_BEAT_PRICE_CENTS = usdToCents(MAX_BEAT_PRICE_USD);
 /** Cart total bounds in integer cents (derived from USD constants). */
 export const MIN_CART_TOTAL_CENTS = usdToCents(MIN_CART_TOTAL_USD);
 export const MAX_CART_TOTAL_CENTS = usdToCents(MAX_CART_TOTAL_USD);
+
+/** Time-to-live for a download token (in days) */
+export const DOWNLOAD_TOKEN_TTL_DAYS = 30;
+
+/** Maximum number of downloads per token */
+export const MAX_DOWNLOADS_PER_TOKEN = 5;
 
 /** UUID v4 - fail fast before SQL */
 export const BEAT_ID_UUID_REGEX: RegExp =
@@ -89,4 +95,7 @@ export function assertCheckoutLimitsValid(): void {
     assertPositiveInteger('MIN_CART_TOTAL_CENTS', MIN_CART_TOTAL_CENTS);
     assertPositiveInteger('MAX_CART_TOTAL_CENTS', MAX_CART_TOTAL_CENTS);
     assertMinMax('MIN_CART_TOTAL_CENTS', MIN_CART_TOTAL_CENTS, 'MAX_CART_TOTAL_CENTS', MAX_CART_TOTAL_CENTS);
+
+    assertPositiveInteger('DOWNLOAD_TOKEN_TTL_DAYS', DOWNLOAD_TOKEN_TTL_DAYS);
+    assertPositiveInteger('MAX_DOWNLOADS_PER_TOKEN', MAX_DOWNLOADS_PER_TOKEN);
 }
