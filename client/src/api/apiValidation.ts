@@ -156,28 +156,29 @@ export async function validatedFetch<T>(
     try {
         // Use fetchWithTimeout to prevent hanging requests (10 second timeout)
         response = await fetchWithTimeout(url, options, 10000);
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Check if it's an abort error (expected in React Strict Mode, don't log as error)
-        const isAbortError = 
-            error.name === 'AbortError' || 
-            error.message?.includes('aborted') || 
-            error.message?.includes('cancelled') ||
-            error.message === 'Request was cancelled';
-        
+        const err = error instanceof Error ? error : null;
+        const isAbortError =
+            err?.name === 'AbortError' ||
+            err?.message.includes('aborted') === true ||
+            err?.message.includes('cancelled') === true ||
+            err?.message === 'Request was cancelled';
+
         if (isAbortError) {
             // Silently re-throw abort errors - they're expected and handled by the caller
             throw error;
         }
-        
+
         // Handle actual network errors (server not running, CORS, timeout, etc.)
         if (import.meta.env.DEV) {
             console.error('Network error fetching:', url, {
-                error: error.message,
-                name: error.name,
-                stack: error.stack,
+                error: err?.message ?? String(error),
+                name: err?.name,
+                stack: err?.stack,
             });
         }
-        
+
         // Network errors (server down, CORS, etc.)
         throw new Error('Unable to connect to the server. Please check your connection and try again.');
     }

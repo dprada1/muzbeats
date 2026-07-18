@@ -70,9 +70,10 @@ async function updatePrices(newPrice: number) {
         }
 
         await pool.end();
-    } catch (error: any) {
-        console.error('❌ Error updating prices:', error.message);
-        if (error.detail) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Error updating prices:', message);
+        if (error && typeof error === 'object' && 'detail' in error && error.detail) {
             console.error('   Detail:', error.detail);
         }
         await pool.end();

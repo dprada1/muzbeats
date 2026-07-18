@@ -94,14 +94,15 @@ async function migrateJsonToDatabase() {
                 if (inserted % 10 === 0) {
                     console.log(`   Progress: ${inserted} beats inserted...`);
                 }
-            } catch (error: any) {
+            } catch (error: unknown) {
                 errors++;
-                console.error(`❌ Error inserting beat "${beat.title}" (ID: ${beat.id}):`, error.message);
-                if (error.detail) {
-                    console.error(`   Detail: ${error.detail}`);
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Error inserting beat "${beat.title}" (ID: ${beat.id}):`, message);
+                if (error && typeof error === 'object' && 'detail' in error && error.detail) {
+                    console.error(`   Detail: ${String(error.detail)}`);
                 }
-                if (error.code) {
-                    console.error(`   Code: ${error.code}`);
+                if (error && typeof error === 'object' && 'code' in error && error.code) {
+                    console.error(`   Code: ${String(error.code)}`);
                 }
             }
         }

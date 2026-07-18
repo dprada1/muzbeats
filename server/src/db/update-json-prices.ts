@@ -49,8 +49,9 @@ async function updateJsonPrices() {
         } else {
             console.error(`\n❌ Verification failed: Some beats still have incorrect prices`);
         }
-    } catch (error: any) {
-        console.error('❌ Error updating data.json:', error.message);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Error updating data.json:', message);
         process.exit(1);
     }
 }

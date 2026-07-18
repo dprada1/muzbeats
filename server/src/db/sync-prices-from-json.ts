@@ -51,8 +51,9 @@ async function syncPricesFromJson() {
                 } else {
                     updated++;
                 }
-            } catch (error: any) {
-                console.error(`❌ Error updating beat "${beat.title}":`, error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Error updating beat "${beat.title}":`, message);
             }
         }
 
@@ -82,9 +83,10 @@ async function syncPricesFromJson() {
 
         console.log(`\n✅ Price sync complete!`);
         await pool.end();
-    } catch (error: any) {
-        console.error('❌ Error syncing prices:', error.message);
-        if (error.detail) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Error syncing prices:', message);
+        if (error && typeof error === 'object' && 'detail' in error && error.detail) {
             console.error('   Detail:', error.detail);
         }
         await pool.end();

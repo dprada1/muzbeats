@@ -114,9 +114,10 @@ async function setupTable() {
 
         console.log('✅ All table setup complete!');
         await pool.end();
-    } catch (error: any) {
-        console.error('❌ Setup failed:', error.message);
-        if (error.detail) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Setup failed:', message);
+        if (error && typeof error === 'object' && 'detail' in error && error.detail) {
             console.error('   Detail:', error.detail);
         }
         await pool.end();
