@@ -143,12 +143,12 @@ function getLogoUrl(): string {
 /**
  * Send download email to customer after successful purchase
  *
- * @param email - Customer email address
+ * @param emailAddress - Customer email address
  * @param orderId - Order ID
  * @param orderTotal - Total amount paid
  */
 export async function sendDownloadEmail(
-    email: string,
+    emailAddress: string,
     orderId: string,
     orderTotal: number
 ): Promise<boolean> {
@@ -157,7 +157,7 @@ export async function sendDownloadEmail(
         console.warn(
             'emailService: RESEND_API_KEY not configured. Skipping email send.'
         );
-        console.log('📧 Would send download email to:', email);
+        console.log('📧 Would send download email to:', emailAddress);
         console.log('   Order ID:', orderId);
         return false;
     }
@@ -170,11 +170,11 @@ export async function sendDownloadEmail(
             .split(',')
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
-        const normalized = email.trim().toLowerCase();
+        const normalized = emailAddress.trim().toLowerCase();
         if (allowlist.length > 0 && !allowlist.includes(normalized)) {
             console.warn(
                 'emailService: Recipient not in EMAIL_ALLOWLIST. Skipping email send.',
-                { email }
+                { emailAddress }
             );
             return false;
         }
@@ -359,7 +359,7 @@ If you have any questions or need assistance, please contact us.
     // Send email
     const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <noreply@muzbeats.com>',
-        to: email,
+        to: emailAddress,
         ...(process.env.RESEND_REPLY_TO_EMAIL ? { replyTo: process.env.RESEND_REPLY_TO_EMAIL } : {}),
         subject: 'Your MuzBeats Purchase - Download Links',
         html,
@@ -376,7 +376,7 @@ If you have any questions or need assistance, please contact us.
         [orderId]
     );
     
-    console.log('emailService: Download email sent successfully to', email);
+    console.log('emailService: Download email sent successfully to', emailAddress);
     console.log('   Email ID:', data?.id);
     return true;
 }
