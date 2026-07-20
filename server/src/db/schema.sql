@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS beats (
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
     audio_path VARCHAR(500) NOT NULL,
     cover_path VARCHAR(500) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create index on commonly queried fields
@@ -25,8 +25,9 @@ CREATE TABLE IF NOT EXISTS orders (
     total_amount DECIMAL(10, 2) NOT NULL,
     status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
     paypal_order_id VARCHAR(255) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    download_email_sent_at TIMESTAMPTZ NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Order items table: which beats were purchased in each order
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
     price_at_purchase DECIMAL(10, 2) NOT NULL,
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Downloads table: secure download tokens for purchased beats
@@ -45,8 +46,8 @@ CREATE TABLE IF NOT EXISTS downloads (
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
     download_token VARCHAR(255) UNIQUE NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
     download_count INTEGER DEFAULT 0,
     max_downloads INTEGER DEFAULT 5,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

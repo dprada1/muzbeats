@@ -30,13 +30,14 @@ async function createTestDownload() {
         console.log(`✅ Found beat: ${beat.title} (${beat.id})`);
 
         // Create a test order
+        const currentTime = Date.now();
         const orderResult = await pool.query(
             `
             INSERT INTO orders (customer_email, total_amount, status, paypal_order_id)
             VALUES ($1, $2, $3, $4)
             RETURNING id
         `,
-            ['test@example.com', 20.00, 'completed', 'test_paypal_order_' + Date.now()]
+            ['test@example.com', 20.00, 'completed', 'test_paypal_order_' + currentTime]
         );
 
         const orderId = orderResult.rows[0].id;

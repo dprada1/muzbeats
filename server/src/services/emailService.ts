@@ -371,8 +371,12 @@ If you have any questions or need assistance, please contact us.
         return false;
     }
 
+    await pool.query(
+        'UPDATE orders SET download_email_sent_at = NOW() WHERE id = $1',
+        [orderId]
+    );
+    
     console.log('emailService: Download email sent successfully to', email);
     console.log('   Email ID:', data?.id);
     return true;
 }
-

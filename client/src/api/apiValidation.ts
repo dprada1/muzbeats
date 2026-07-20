@@ -58,6 +58,8 @@ export const PayPalCreateOrderResponseSchema = z.object({
  */
 export const PayPalCaptureOrderResponseSchema = z.object({
     orderId: z.string().min(1), // Our database order ID (UUID)
+    emailSent: z.boolean(),
+    message: z.string().optional(),
 });
 
 /**

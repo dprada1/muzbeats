@@ -27,7 +27,7 @@ import {
     MAX_ITEM_QUANTITY,
     areValidBeatIds,
 } from '@/config/checkoutLimits.js';
-import { CheckoutError } from '@/utils/checkoutErrors.js';
+import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
 
 
 /**
@@ -157,7 +157,7 @@ export async function capturePayPalOrderHandler(
         const storedBeatIds: StoredOrderBeatIds | null = getStoredOrderBeatIds(orderId);
         console.log('Retrieved stored order data:', storedBeatIds);
         
-        // Capture the order
+        // Capture the order (here is exactly where the money is transferred)
         const capturedOrder: unknown = await capturePayPalOrder(orderId);
         
         // Debug: Log what PayPal is actually returning
@@ -165,16 +165,17 @@ export async function capturePayPalOrderHandler(
 
         // Check if order already exists (idempotency)
         const existingOrderResult: QueryResult<any> = await pool.query(
-            'SELECT id FROM orders WHERE paypal_order_id = $1',
+            'SELECT id, download_email_sent_at FROM orders WHERE paypal_order_id = $1',
             [orderId]
         );
 
         if (existingOrderResult.rows.length > 0) {
             // Order already exists, return success
+            const firstRow = existingOrderResult.rows[0];
             res.status(200).json({
-                success: true,
+                emailSent: firstRow.download_email_sent_at != null,
                 message: 'Order already processed',
-                orderId: existingOrderResult.rows[0].id,
+                orderId: firstRow.id,
                 paypalOrderId: orderId,
             });
             return;
@@ -188,24 +189,33 @@ export async function capturePayPalOrderHandler(
         console.log('capturePayPalOrderHandler: Order created for PayPal order', orderId);
 
         // Send download email to customer
-        if (orderResult.customerEmail && orderResult.beatIds.length > 0) {
-            const emailSent: boolean = await sendDownloadEmail(
-                orderResult.customerEmail,
-                orderResult.orderId,
-                orderResult.totalAmount
-            );
-            if (emailSent) {
-                console.log('capturePayPalOrderHandler: Download email sent successfully');
-            } else {
-                console.warn(
-                    'capturePayPalOrderHandler: Download email was not sent (see logs above)'
-                );
-            }
+        if (!orderResult.customerEmail) {
+            console.error('Customer email doesn\'t exist');
+            throw internalCheckoutError();
+        }
+
+        if (orderResult.beatIds.length === 0) {
+            console.error('Beat ids cannot be empty');
+            throw internalCheckoutError();
+        }
+
+        const emailSent: boolean = await sendDownloadEmail(
+            orderResult.customerEmail,
+            orderResult.orderId,
+            orderResult.totalAmount
+        );
+
+        if (emailSent) {
+            console.log('capturePayPalOrderHandler: Download email sent successfully');
+        } else {
+            console.warn('capturePayPalOrderHandler: Download email was not sent (see logs above)');
         }
 
         res.status(200).json({
-            success: true,
-            message: 'Payment processed successfully',
+            emailSent: emailSent,
+            message: emailSent
+                ? 'Payment processed successfully'
+                : 'Payment processed. Download email could not be sent — contact support with your order ID.',
             orderId: orderResult.orderId,
             customerEmail: orderResult.customerEmail,
             totalAmount: orderResult.totalAmount,
