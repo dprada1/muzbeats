@@ -239,6 +239,8 @@ export async function createPayPalOrder(
 
 /**
  * Capture a PayPal order after customer approval
+ * 
+ * This is exactly where the money is transferred
  *
  * @param orderId - PayPal order ID
  * @returns Captured order details
