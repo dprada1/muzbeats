@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const HTTPS_OR_HTTP_SCHEME_REGEX: RegExp = /^https?:\/\//i;
 
 function normalizeBaseUrl(raw: string): string {
-    const v = (raw || '').trim();
+    const v = raw.trim();
     if (!v) return v;
 
     // Support values like "//api-staging.prodmuz.com"
@@ -48,7 +48,7 @@ async function getDownloadLinks(orderId: string) {
     );
 
     return result.rows.map((row) => ({
-        token: row.download_token,
+        downloadToken: row.download_token,
         title: row.title,
         key: row.key,
         bpm: row.bpm,
@@ -86,7 +86,7 @@ function getBaseUrl(): string {
     
     // Development fallback - but warn that this won't work in emails
     console.warn(
-        'emailService: No BACKEND_URL or FRONTEND_URL set. Using localhost (will not work in emails).'
+        'emailService.getBaseUrl: No BACKEND_URL or FRONTEND_URL set. Using localhost (will not work in emails).'
     );
     return 'http://localhost:3000';
 }
@@ -135,7 +135,7 @@ function getLogoUrl(): string {
     }
 
     console.warn(
-        'emailService: No EMAIL_LOGO_URL/R2_PUBLIC_URL/BACKEND_URL/FRONTEND_URL set. Logo will likely not render.'
+        'emailService.getLogoUrl: No EMAIL_LOGO_URL/R2_PUBLIC_URL/BACKEND_URL/FRONTEND_URL set. Logo will likely not render.'
     );
     return '';
 }
@@ -155,7 +155,7 @@ export async function sendDownloadEmail(
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
         console.warn(
-            'emailService: RESEND_API_KEY not configured. Skipping email send.'
+            'emailService.sendDownloadEmail: RESEND_API_KEY not configured. Skipping email send.'
         );
         console.log('📧 Would send download email to:', emailAddress);
         console.log('   Order ID:', orderId);
@@ -170,10 +170,10 @@ export async function sendDownloadEmail(
             .split(',')
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
-        const normalized = emailAddress.trim().toLowerCase();
-        if (allowlist.length > 0 && !allowlist.includes(normalized)) {
+        const normalizedEmailAddress = emailAddress.trim().toLowerCase();
+        if (allowlist.length > 0 && !allowlist.includes(normalizedEmailAddress)) {
             console.warn(
-                'emailService: Recipient not in EMAIL_ALLOWLIST. Skipping email send.',
+                'emailService.sendDownloadEmail: Recipient not in EMAIL_ALLOWLIST. Skipping email send.',
                 { emailAddress }
             );
             return false;
@@ -185,25 +185,25 @@ export async function sendDownloadEmail(
 
     if (downloadLinks.length === 0) {
         console.warn(
-            `emailService: No download links found for order ${orderId}. Skipping email.`
+            `emailService.sendDownloadEmail: No download links found for order ${orderId}. Skipping email.`
         );
         return false;
     }
 
     // Log generated URLs for debugging
     const baseUrl = getBaseUrl();
-    console.log('emailService: Generated URLs:');
+    console.log('emailService.sendDownloadEmail: Generated URLs:');
     console.log('   Base URL:', baseUrl);
     console.log('   Logo URL:', getLogoUrl());
     downloadLinks.forEach((link, idx) => {
-        console.log(`   Download ${idx + 1}: ${getDownloadUrl(link.token)}`);
+        console.log(`   Download ${idx + 1}: ${getDownloadUrl(link.downloadToken)}`);
     });
 
     // Format download links HTML
     // Escape HTML in titles and encode URLs properly
     const downloadLinksHtml = downloadLinks
         .map((link, index) => {
-            const downloadUrl = getDownloadUrl(link.token);
+            const downloadUrl = getDownloadUrl(link.downloadToken);
             const escapedTitle = link.title
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -334,7 +334,7 @@ export async function sendDownloadEmail(
                     typeof link.bpm === 'number' && Number.isFinite(link.bpm) ? Math.round(link.bpm) : null;
                 return `${index + 1}. ${link.title}\n   Key: ${link.key || 'Unknown'} | BPM: ${
                     bpmValue ?? 'Unknown'
-                }\n   ${getDownloadUrl(link.token)}`;
+                }\n   ${getDownloadUrl(link.downloadToken)}`;
             }
         )
         .join('\n\n');
@@ -376,7 +376,7 @@ If you have any questions or need assistance, please contact us.
         [orderId]
     );
     
-    console.log('emailService: Download email sent successfully to', emailAddress);
+    console.log('emailService.sendDownloadEmail: Download email sent successfully to', emailAddress);
     console.log('   Email ID:', data?.id);
     return true;
 }
