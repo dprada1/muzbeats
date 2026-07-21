@@ -9,6 +9,26 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const HTTPS_OR_HTTP_SCHEME_REGEX: RegExp = /^https?:\/\//i;
 
+/** One purchasable beat row joined with its download token for an order. */
+type OrderDownloadLink = {
+    downloadToken: string;
+    title: string;
+    key: string;
+    bpm: number;
+    beatId: string;
+};
+
+/**
+ * Normalize a base URL string so it is absolute with an `http://` or `https://` scheme.
+ *
+ * Trims whitespace. Empty (or whitespace-only) input returns `""`.
+ * Protocol-relative values like `//api.example.com` become `https://…` (email-safe).
+ * Bare hosts without a scheme get `https` in production and `http` otherwise.
+ * Values that already start with `http://` or `https://` are returned trimmed as-is.
+ *
+ * @param raw - Candidate base URL from env (may omit scheme or use `//host`)
+ * @returns Absolute base URL, or `""` if `raw` is empty after trim
+ */
 function normalizeBaseUrl(raw: string): string {
     const v = raw.trim();
     if (!v) return v;
@@ -28,9 +48,15 @@ function normalizeBaseUrl(raw: string): string {
 }
 
 /**
- * Get download links for an order
+ * Load download tokens and beat metadata for an order.
+ *
+ * Runs a SQL join of `downloads` → `beats` filtered by `orderId`, ordered by beat title,
+ * then maps each row into an {@link OrderDownloadLink}.
+ *
+ * @param orderId - Order UUID whose download rows to fetch
+ * @returns Promise of link objects (empty array if the order has no downloads)
  */
-async function getDownloadLinks(orderId: string) {
+async function getDownloadLinks(orderId: string): Promise<OrderDownloadLink[]> {
     const result: QueryResult<any> = await pool.query(
         `
         SELECT
@@ -69,8 +95,9 @@ async function getDownloadLinks(orderId: string) {
 function getBaseUrl(): string {
     // Highest priority: explicitly configured email link base URL
     // This lets local dev emails use a public tunnel URL while the backend runs on localhost.
-    if (process.env.EMAIL_LINK_BASE_URL) {
-        return normalizeBaseUrl(process.env.EMAIL_LINK_BASE_URL);
+    const emailLinkBaseURL = process.env.EMAIL_LINK_BASE_URL;
+    if (emailLinkBaseURL?.trim()) {
+        return normalizeBaseUrl(emailLinkBaseURL);
     }
 
     // Prefer BACKEND_URL since downloads are served from backend
@@ -112,26 +139,30 @@ function getDownloadUrl(token: string): string {
  */
 function getLogoUrl(): string {
     // Best: explicit public logo URL (HTTPS)
-    if (process.env.EMAIL_LOGO_URL) {
-        return process.env.EMAIL_LOGO_URL;
+    const emailLogoURL = process.env.EMAIL_LOGO_URL
+    if (emailLogoURL) {
+        return emailLogoURL;
     }
 
     // Next best: R2 public URL (HTTPS) – upload logo to `images/skimask.png`
-    if (process.env.R2_PUBLIC_URL) {
-        const r2Url = process.env.R2_PUBLIC_URL.endsWith('/')
-            ? process.env.R2_PUBLIC_URL.slice(0, -1)
-            : process.env.R2_PUBLIC_URL;
+    const R2PublicURL = process.env.R2_PUBLIC_URL;
+    if (R2PublicURL) {
+        const r2Url = R2PublicURL.endsWith('/')
+            ? R2PublicURL.slice(0, -1)
+            : R2PublicURL;
         return `${r2Url}/images/skimask.png`;
     }
 
     // Production backend static route (HTTPS)
-    if (process.env.BACKEND_URL) {
-        return `${process.env.BACKEND_URL}/assets/images/skimask.png`;
+    const backendURL = process.env.BACKEND_URL
+    if (backendURL) {
+        return `${backendURL}/assets/images/skimask.png`;
     }
 
     // Fallback: might be fine in prod if frontend serves assets, but usually not for this repo
-    if (process.env.FRONTEND_URL) {
-        return `${process.env.FRONTEND_URL}/assets/images/skimask.png`;
+    const frontendURL = process.env.FRONTEND_URL;
+    if (frontendURL) {
+        return `${frontendURL}/assets/images/skimask.png`;
     }
 
     console.warn(
@@ -165,8 +196,9 @@ export async function sendDownloadEmail(
     // Optional safety: only allow emails to specific recipients (useful in staging)
     // Example:
     // EMAIL_ALLOWLIST=you@gmail.com,other@test.com
-    if (process.env.EMAIL_ALLOWLIST) {
-        const allowlist = process.env.EMAIL_ALLOWLIST
+    const emailAllowlist = process.env.EMAIL_ALLOWLIST;
+    if (emailAllowlist) {
+        const allowlist = emailAllowlist
             .split(',')
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
@@ -357,10 +389,11 @@ If you have any questions or need assistance, please contact us.
     `;
 
     // Send email
+    const resendReplyToEmail = process.env.RESEND_REPLY_TO_EMAIL;
     const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <noreply@muzbeats.com>',
         to: emailAddress,
-        ...(process.env.RESEND_REPLY_TO_EMAIL ? { replyTo: process.env.RESEND_REPLY_TO_EMAIL } : {}),
+        ...(resendReplyToEmail ? { replyTo: resendReplyToEmail } : {}),
         subject: 'Your MuzBeats Purchase - Download Links',
         html,
         text,
