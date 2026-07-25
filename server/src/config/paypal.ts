@@ -16,7 +16,7 @@ export const paypalSDK = new Client({
         oAuthClientId: process.env.PAYPAL_CLIENT_ID || '',
         oAuthClientSecret: process.env.PAYPAL_CLIENT_SECRET || '',
     },
-    timeout: 0,
+    timeout: 30000,
     environment,
     logging: {
         logLevel: process.env.NODE_ENV === 'development' ? LogLevel.Info : LogLevel.Error,
@@ -25,7 +25,3 @@ export const paypalSDK = new Client({
 
 // Export client ID for frontend use
 export const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
-
-// Export mode for determining which credentials to use
-export const PAYPAL_MODE = environment;
-
