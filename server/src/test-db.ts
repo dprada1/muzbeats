@@ -1,17 +1,18 @@
 import dotenv from 'dotenv';
 import pool from './config/database';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
 async function testConnection() {
     try {
         // Test basic connection
-        const result = await pool.query('SELECT NOW()');
+        const result: QueryResult<any> = await pool.query('SELECT NOW()');
         console.log('Database connection successful!');
         console.log('Current time:', result.rows[0].now);
 
         // Test querying beats table
-        const beats = await pool.query('SELECT * FROM beats LIMIT 5');
+        const beats: QueryResult<any> = await pool.query('SELECT * FROM beats LIMIT 5');
         console.log(`Found ${beats.rows.length} beats in the table`);
         if (beats.rows.length > 0) {
             console.log('Sample beat:', {

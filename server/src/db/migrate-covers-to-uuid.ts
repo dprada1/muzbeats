@@ -23,6 +23,7 @@ import { fileURLToPath } from 'url';
 import { readdir, copyFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -124,7 +125,7 @@ async function main() {
     console.log(`Target: ${args.targetDir}\n`);
 
     // 1. Load all beats from database
-    const beatsResult = await pool.query(`
+    const beatsResult: QueryResult<any> = await pool.query(`
         SELECT id, audio_path, title
         FROM beats
         ORDER BY created_at DESC

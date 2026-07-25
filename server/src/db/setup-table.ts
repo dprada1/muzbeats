@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -86,7 +87,7 @@ async function setupTable() {
 
         // Verify beats table structure
         console.log('🔍 Verifying beats table structure...');
-        const columns = await pool.query(`
+        const columns: QueryResult<any> = await pool.query(`
             SELECT column_name, data_type
             FROM information_schema.columns
             WHERE table_schema = 'public' 
@@ -101,7 +102,7 @@ async function setupTable() {
 
         // Test insert into beats
         console.log('\n🧪 Testing beats insert...');
-        const testResult = await pool.query(`
+        const testResult: QueryResult<any> = await pool.query(`
             INSERT INTO beats (title, key, bpm, price, audio_path, cover_path)
             VALUES ('Test Beat', 'C maj', 120, 4.99, '/test/audio.mp3', '/test/cover.webp')
             RETURNING id, title;

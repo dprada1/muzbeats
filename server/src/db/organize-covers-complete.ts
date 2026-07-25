@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url';
 import { readdir, stat, rename, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -208,7 +209,7 @@ async function main() {
         let updated = 0;
         for (const { uuid } of movedCovers) {
             const newCoverPath = `/assets/images/covers/used/${uuid}.webp`;
-            const result = await pool.query(
+            const result: QueryResult<any> = await pool.query(
                 'UPDATE beats SET cover_path = $1, updated_at = NOW() WHERE cover_path = $2',
                 [newCoverPath, `/assets/images/covers/${uuid}.webp`]
             );

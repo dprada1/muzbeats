@@ -48,7 +48,7 @@ export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
         const query =
             `SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats ${whereClause} ORDER BY created_at DESC`;
 
-        const result = await pool.query(query, params);
+        const result: QueryResult<any> = await pool.query(query, params);
         return result.rows.map(mapDbRowToBeat);
     } catch (error) {
         console.error('Error fetching beats from database:', error);

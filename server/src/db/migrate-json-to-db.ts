@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ async function migrateJsonToDatabase() {
 
         // 2. Check if table exists, create if not
         console.log('🔍 Checking if beats table exists...');
-        const tableCheck = await pool.query(`
+        const tableCheck: QueryResult<any> = await pool.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables 
                 WHERE table_schema = 'public' 
@@ -54,7 +55,7 @@ async function migrateJsonToDatabase() {
         }
 
         // 3. Check if data already exists
-        const countResult = await pool.query('SELECT COUNT(*) FROM beats');
+        const countResult: QueryResult<any> = await pool.query('SELECT COUNT(*) FROM beats');
         const existingCount = parseInt(countResult.rows[0].count);
 
         if (existingCount > 0) {
@@ -71,7 +72,7 @@ async function migrateJsonToDatabase() {
         for (const beat of beats) {
             try {
                 // Check if beat with this ID already exists
-                const existing = await pool.query(
+                const existing: QueryResult<any> = await pool.query(
                     'SELECT id FROM beats WHERE id = $1::uuid',
                     [beat.id]
                 );
@@ -118,7 +119,7 @@ async function migrateJsonToDatabase() {
         console.log(`   Total in database: ${inserted + existingCount} beats\n`);
 
         // 5. Verify migration
-        const finalCount = await pool.query('SELECT COUNT(*) FROM beats');
+        const finalCount: QueryResult<any> = await pool.query('SELECT COUNT(*) FROM beats');
         console.log(`📊 Final count: ${finalCount.rows[0].count} beats in database`);
 
         // Don't close the pool - it's shared and other parts of the app need it

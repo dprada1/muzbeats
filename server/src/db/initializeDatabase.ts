@@ -2,11 +2,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 const REQUIRED_TABLES = ['beats', 'orders', 'order_items', 'downloads'] as const;
 
 async function getMissingTables(): Promise<string[]> {
-    const result = await pool.query<{ table_name: string }>(
+    const result: QueryResult<any> = await pool.query<{ table_name: string }>(
         `
         SELECT table_name
         FROM information_schema.tables

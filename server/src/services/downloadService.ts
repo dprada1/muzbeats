@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { QueryResult } from 'pg';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,7 +93,7 @@ export async function validateDownloadToken(
     token: string
 ): Promise<DownloadTokenValidation> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             `
             SELECT 
                 d.id,
@@ -156,7 +157,7 @@ export async function validateDownloadToken(
  */
 export async function incrementDownloadCount(downloadId: string): Promise<boolean> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             `
             UPDATE downloads
             SET download_count = download_count + 1

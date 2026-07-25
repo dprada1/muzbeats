@@ -28,6 +28,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { readdir } from 'fs/promises';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -204,7 +205,7 @@ async function main() {
 
     for (const r of rows) {
         // Skip if audio_path already exists
-        const exists = await pool.query('SELECT id FROM beats WHERE audio_path = $1 LIMIT 1', [r.audio_path]);
+        const exists: QueryResult<any> = await pool.query('SELECT id FROM beats WHERE audio_path = $1 LIMIT 1', [r.audio_path]);
         if (exists.rows.length > 0) {
             skipped++;
             continue;

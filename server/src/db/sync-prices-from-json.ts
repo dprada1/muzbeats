@@ -19,6 +19,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { Beat } from '@/types/Beat.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -40,7 +41,7 @@ async function syncPricesFromJson() {
 
         for (const beat of beats) {
             try {
-                const result = await pool.query(
+                const result: QueryResult<any> = await pool.query(
                     'UPDATE beats SET price = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id',
                     [beat.price, beat.id]
                 );
@@ -67,7 +68,7 @@ async function syncPricesFromJson() {
 
         // Verify final prices
         console.log(`\n🔍 Verifying prices...`);
-        const verifyStats = await pool.query(`
+        const verifyStats: QueryResult<any> = await pool.query(`
             SELECT 
                 MIN(price) as min_price,
                 MAX(price) as max_price,
