@@ -9,6 +9,7 @@ import webhookRoutes from '@/routes/webhookRoutes.js';
 import downloadRoutes from '@/routes/downloadRoutes.js';
 import { initializeDatabase } from '@/db/initializeDatabase.js';
 import { assertCheckoutLimitsValid } from './config/checkoutLimits.js';
+import { assertRequiredEnv } from './config/env.js';
 
 // Load environment variables
 dotenv.config();
@@ -89,6 +90,16 @@ app.use('/api/beats', beatsRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/downloads', downloadRoutes);
 // Note: webhookRoutes is registered above, before express.json()
+
+// Validate environment variables first (cheap) before touching the database (expensive).
+// Deployed environments fail fast here if required config is missing.
+try {
+    assertRequiredEnv();
+} catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('❌ Invalid environment configuration:', message);
+    process.exit(1);
+}
 
 // Assert checkout price/quantity bounds before accepting traffic
 try {
