@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { QueryResult } from 'pg';
+import { logError } from '@/utils/logger';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,7 +94,7 @@ export async function validateDownloadToken(
     token: string
 ): Promise<DownloadTokenValidation> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             `
             SELECT 
                 d.id,
@@ -139,7 +141,7 @@ export async function validateDownloadToken(
             maxDownloads: download.max_downloads,
         };
     } catch (error) {
-        console.error('downloadService.validateDownloadToken error:', error);
+        logError('downloadService.validateDownloadToken', 'Failed to validate download token', error);
         throw error;
     }
 }
@@ -156,7 +158,7 @@ export async function validateDownloadToken(
  */
 export async function incrementDownloadCount(downloadId: string): Promise<boolean> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             `
             UPDATE downloads
             SET download_count = download_count + 1
@@ -167,7 +169,7 @@ export async function incrementDownloadCount(downloadId: string): Promise<boolea
         );
         return (result.rowCount ?? 0) > 0;
     } catch (error) {
-        console.error('downloadService.incrementDownloadCount error:', error);
+        logError('downloadService.incrementDownloadCount', 'Failed to increment download count', error);
         throw error;
     }
 }

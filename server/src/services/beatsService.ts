@@ -4,6 +4,8 @@ import type { SearchParams } from '@/types/SearchParams.js';
 import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
 import { getR2PublicUrl } from '@/utils/r2.js';
+import type { QueryResult } from 'pg';
+import { logError } from '@/utils/logger';
 
 interface BeatDbRow {
     id: string;
@@ -47,10 +49,10 @@ export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
         const query =
             `SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats ${whereClause} ORDER BY created_at DESC`;
 
-        const result = await pool.query(query, params);
+        const result: QueryResult<any> = await pool.query(query, params);
         return result.rows.map(mapDbRowToBeat);
     } catch (error) {
-        console.error('Error fetching beats from database:', error);
+        logError('beatsService.getBeats', 'Failed to fetch beats from database', error);
         throw new Error('Failed to fetch beats from database');
     }
 }
@@ -60,7 +62,7 @@ export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
 */
 export async function getBeatById(id: string): Promise<Beat | null> {
     try {
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             'SELECT id, title, key, bpm, price, audio_path, cover_path FROM beats WHERE id = $1',
             [id]
         );
@@ -71,7 +73,6 @@ export async function getBeatById(id: string): Promise<Beat | null> {
 
         return mapDbRowToBeat(result.rows[0]);
     } catch (error) {
-        console.error('Error fetching beat by ID from database:', error);
-        throw new Error('Failed to fetch beat from database');
+        throw new Error('Failed to fetch beat from database', { cause: error });
     }
 }

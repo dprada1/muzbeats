@@ -14,6 +14,7 @@
 
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -29,7 +30,7 @@ async function updatePrices(newPrice: number) {
 
     try {
         console.log(`\n📊 Current price statistics:`);
-        const currentStats = await pool.query(`
+        const currentStats: QueryResult<any> = await pool.query(`
             SELECT 
                 MIN(price) as min_price,
                 MAX(price) as max_price,
@@ -45,7 +46,7 @@ async function updatePrices(newPrice: number) {
 
         console.log(`\n🔄 Updating all ${stats.total_beats} beats to $${newPrice.toFixed(2)}...`);
 
-        const result = await pool.query(
+        const result: QueryResult<any> = await pool.query(
             'UPDATE beats SET price = $1, updated_at = CURRENT_TIMESTAMP RETURNING id',
             [newPrice]
         );
@@ -53,7 +54,7 @@ async function updatePrices(newPrice: number) {
         console.log(`✅ Successfully updated ${result.rowCount} beats to $${newPrice.toFixed(2)}`);
 
         // Verify the update
-        const verifyStats = await pool.query(`
+        const verifyStats: QueryResult<any> = await pool.query(`
             SELECT 
                 MIN(price) as min_price,
                 MAX(price) as max_price,
@@ -70,9 +71,10 @@ async function updatePrices(newPrice: number) {
         }
 
         await pool.end();
-    } catch (error: any) {
-        console.error('❌ Error updating prices:', error.message);
-        if (error.detail) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Error updating prices:', message);
+        if (error && typeof error === 'object' && 'detail' in error && error.detail) {
             console.error('   Detail:', error.detail);
         }
         await pool.end();

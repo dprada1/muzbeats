@@ -1,4 +1,5 @@
 import express from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -8,6 +9,9 @@ import checkoutRoutes from '@/routes/checkoutRoutes.js';
 import webhookRoutes from '@/routes/webhookRoutes.js';
 import downloadRoutes from '@/routes/downloadRoutes.js';
 import { initializeDatabase } from '@/db/initializeDatabase.js';
+import { assertCheckoutLimitsValid } from './config/checkoutLimits.js';
+import { assertRequiredEnv } from './config/env.js';
+import { logError, logInfo } from './utils/logger.js';
 
 // Load environment variables
 dotenv.config();
@@ -80,7 +84,7 @@ app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+    res.json({ status: 'ok', message: 'Server is running' });
 });
 
 // API routes
@@ -89,16 +93,61 @@ app.use('/api/checkout', checkoutRoutes);
 app.use('/api/downloads', downloadRoutes);
 // Note: webhookRoutes is registered above, before express.json()
 
+/** body-parser / express.json malformed payloads — client error, not server noise. */
+function isMalformedJsonBody(err: unknown): boolean {
+    if (!(err instanceof SyntaxError)) {
+        return false;
+    }
+    const parseError = err as SyntaxError & { status?: number; type?: string };
+    return parseError.status === 400 || parseError.type === 'entity.parse.failed';
+}
+
+// Quiet 400 for bad JSON (same class as validation failures — no stack dump).
+app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+        next(err);
+        return;
+    }
+    if (isMalformedJsonBody(err)) {
+        res.status(400).json({ error: 'Invalid JSON body' });
+        return;
+    }
+    next(err);
+});
+
+// Validate environment variables first (cheap) before touching the database (expensive).
+// Deployed environments fail fast here if required config is missing.
+try {
+    assertRequiredEnv();
+} catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logError('index.boot', 'Invalid environment configuration', { message });
+    process.exit(1);
+}
+
+// Assert checkout price/quantity bounds before accepting traffic
+try {
+    assertCheckoutLimitsValid();
+} catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logError('index.boot', 'Invalid checkout configuration', { message });
+    process.exit(1);
+}
+
 // Initialize database and start server (fail fast if schema cannot be verified)
 initializeDatabase()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-            console.log(`📁 Serving static files from: ${path.join(__dirname, '../public/assets')}`);
+            logInfo('index.listen', 'Server running', {
+                url: `http://localhost:${PORT}`,
+            });
+            logInfo('index.listen', 'Serving static files', {
+                path: path.join(__dirname, '../public/assets'),
+            });
         });
     })
     .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('❌ Failed to initialize database:', message);
+        logError('index.boot', 'Failed to initialize database', { message });
         process.exit(1);
     });

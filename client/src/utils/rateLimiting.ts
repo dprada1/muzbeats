@@ -29,9 +29,14 @@ export async function deduplicateRequest<T>(
             // Try to await the existing promise
             // If it's aborted, it will throw and we'll create a new one
             return await existingRequest;
-        } catch (error: any) {
+        } catch (error: unknown) {
             // If the request was aborted or failed, remove it and create a new one
-            if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('cancelled')) {
+            const err = error instanceof Error ? error : null;
+            if (
+                err?.name === 'AbortError' ||
+                err?.message.includes('aborted') === true ||
+                err?.message.includes('cancelled') === true
+            ) {
                 pendingRequests.delete(key);
                 // Fall through to create a new request
             } else {

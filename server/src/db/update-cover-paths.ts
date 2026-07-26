@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -58,7 +59,7 @@ async function main() {
     const args = parseArgs(process.argv.slice(2));
 
     const where = args.onlyMissing ? "WHERE cover_path IS NULL OR cover_path = ''" : '';
-    const beats = await pool.query(`SELECT id, cover_path FROM beats ${where} ORDER BY created_at DESC`);
+    const beats: QueryResult<any> = await pool.query(`SELECT id, cover_path FROM beats ${where} ORDER BY created_at DESC`);
 
     const updates = beats.rows.map((b: any) => {
         const id = String(b.id);

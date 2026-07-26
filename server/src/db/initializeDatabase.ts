@@ -2,11 +2,13 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
+import { logError, logInfo } from '@/utils/logger';
 
 const REQUIRED_TABLES = ['beats', 'orders', 'order_items', 'downloads'] as const;
 
 async function getMissingTables(): Promise<string[]> {
-    const result = await pool.query<{ table_name: string }>(
+    const result: QueryResult<any> = await pool.query<{ table_name: string }>(
         `
         SELECT table_name
         FROM information_schema.tables
@@ -21,7 +23,8 @@ async function getMissingTables(): Promise<string[]> {
 }
 
 async function createDatabaseSchema(): Promise<void> {
-    console.log('📊 Creating beats table...');
+    logInfo('initializeDatabase.createDatabaseSchema', 'Creating missing schema tables');
+
     await pool.query(`
         CREATE TABLE IF NOT EXISTS beats (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -35,15 +38,11 @@ async function createDatabaseSchema(): Promise<void> {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    console.log('✅ Beats table created');
 
-    console.log('📇 Creating indexes on beats...');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_bpm ON beats(bpm);');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_key ON beats(key);');
     await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_price ON beats(price);');
-    console.log('✅ Beats indexes created');
 
-    console.log('📊 Creating orders table...');
     await pool.query(`
         CREATE TABLE IF NOT EXISTS orders (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -55,9 +54,7 @@ async function createDatabaseSchema(): Promise<void> {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    console.log('✅ Orders table created');
 
-    console.log('📊 Creating order_items table...');
     await pool.query(`
         CREATE TABLE IF NOT EXISTS order_items (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,9 +65,7 @@ async function createDatabaseSchema(): Promise<void> {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    console.log('✅ order_items table created');
 
-    console.log('📊 Creating downloads table...');
     await pool.query(`
         CREATE TABLE IF NOT EXISTS downloads (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,7 +78,8 @@ async function createDatabaseSchema(): Promise<void> {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    console.log('✅ Downloads table created');
+
+    logInfo('initializeDatabase.createDatabaseSchema', 'Schema tables created');
 }
 
 function assertSchemaComplete(missing: string[]): void {
@@ -102,17 +98,23 @@ export async function initializeDatabase(): Promise<void> {
     const missingTables = await getMissingTables();
 
     if (missingTables.length === 0) {
-        console.log('✅ Database schema ready:', REQUIRED_TABLES.join(', '));
+        logInfo('initializeDatabase.initializeDatabase', 'Database schema ready', {
+            tables: [...REQUIRED_TABLES],
+        });
         return;
     }
 
-    console.log(`🔄 Missing tables: ${missingTables.join(', ')}`);
+    logInfo('initializeDatabase.initializeDatabase', 'Missing tables', {
+        missingTables,
+    });
 
     await createDatabaseSchema();
 
     assertSchemaComplete(await getMissingTables());
 
-    console.log('✅ Database schema ready:', REQUIRED_TABLES.join(', '));
+    logInfo('initializeDatabase.initializeDatabase', 'Database schema ready', {
+        tables: [...REQUIRED_TABLES],
+    });
 }
 
 function isExecutedDirectly(): boolean {
@@ -134,10 +136,11 @@ if (isExecutedDirectly()) {
         })
         .catch(async (error: unknown) => {
             const message = error instanceof Error ? error.message : String(error);
-            console.error('❌ Initialization failed:', message);
-            if (error && typeof error === 'object' && 'detail' in error) {
-                console.error('   Detail:', (error as { detail: unknown }).detail);
-            }
+            const detail =
+                error && typeof error === 'object' && 'detail' in error
+                    ? (error as { detail: unknown }).detail
+                    : undefined;
+            logError('initializeDatabase.cli', 'Initialization failed', { message, detail });
             await pool.end();
             process.exit(1);
         });

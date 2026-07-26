@@ -2,7 +2,7 @@
  * UUID validation regex
  * Matches standard UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
  */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Validates if a string is a valid UUID format
@@ -57,7 +57,7 @@ export function isValidOrderId(orderId: string | undefined | null): boolean {
     // PayPal order IDs typically start with specific prefixes
     // Common formats: "PAYID-...", "PAY-...", or alphanumeric strings
     // Allow alphanumeric, hyphens, and underscores
-    const paypalOrderIdRegex = /^[A-Z0-9_-]+$/i;
+    const paypalOrderIdRegex: RegExp = /^[A-Z0-9_-]+$/i;
     if (paypalOrderIdRegex.test(orderId)) {
         return true;
     }

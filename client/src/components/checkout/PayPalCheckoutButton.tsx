@@ -54,7 +54,7 @@ export default function PayPalCheckoutButton({
                                 }
                             );
                             return data.orderId;
-                        } catch (error: any) {
+                        } catch (error: unknown) {
                             if (import.meta.env.DEV) {
                                 console.error('Error creating PayPal order:', error);
                             }
@@ -83,7 +83,7 @@ export default function PayPalCheckoutButton({
 
                             // Call success handler with our database order ID
                             onSuccess(result.orderId);
-                        } catch (error: any) {
+                        } catch (error: unknown) {
                             if (import.meta.env.DEV) {
                                 console.error('Error capturing PayPal order:', error);
                             }

@@ -10,9 +10,11 @@ import {
     getWavPath,
     type DownloadTokenValidation,
 } from '@/services/downloadService.js';
+import { getRouteParam } from '@/utils/routeParams.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
+import { logError, logInfo, logWarn } from '@/utils/logger';
 
 /**
  * Sets download headers, pipes a readable stream to the HTTP response, and handles stream errors.
@@ -62,7 +64,7 @@ function streamDownloadToClient(
 
     stream.pipe(res);
     stream.on('error', (error) => {
-        console.error(`downloadController: ${errorLabel} stream error:`, error);
+        logError('downloadController.streamDownloadToClient', `${errorLabel} stream error`, error);
         if (!res.headersSent) {
             res.status(500).json({ error: 'Error streaming file' });
         }
@@ -109,7 +111,7 @@ function streamLocalFile(
  */
 export async function downloadBeatHandler(req: Request, res: Response): Promise<void> {
     try {
-        const { token } = req.params;
+        const token = getRouteParam(req.params.token);
 
         if (!token) {
             res.status(400).json({ error: 'Download token is required' });
@@ -150,16 +152,30 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // it applies to every serve path below (private R2, redirect, or local file).
         res.on('finish', () => {
             if (res.statusCode >= 200 && res.statusCode < 300) {
+                logInfo('downloadController.downloadBeatHandler', 'Download completed', {
+                    ip: req.ip,
+                    downloadId: validation.downloadId,
+                    beatId: validation.beatId,
+                    statusCode: res.statusCode,
+                    downloadCountBefore: validation.downloadCount,
+                    maxDownloads: validation.maxDownloads,
+                });
                 incrementDownloadCount(validation.downloadId)
                     .then((consumed) => {
                         if (!consumed) {
-                            console.warn(
-                                `Served beyond download limit (race) for download ${validation.downloadId}`
+                            logWarn(
+                                'downloadController.downloadBeatHandler',
+                                'Served beyond download limit (race)',
+                                { downloadId: validation.downloadId }
                             );
                         }
                     })
                     .catch((error) => {
-                        console.error('downloadController: Failed to increment download count:', error);
+                        logError(
+                            'downloadController.downloadBeatHandler',
+                            'Failed to increment download count',
+                            error
+                        );
                     });
             }
         });
@@ -187,15 +203,20 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 );
                 return;
             } catch (error: unknown) {
-                console.error('downloadController: Failed to fetch WAV from private R2:', error);
+                logError(
+                    'downloadController.downloadBeatHandler',
+                    'Failed to fetch WAV from private R2',
+                    error
+                );
                 // dev: fall through to local WAV / MP3 fallback below
             }
         }
 
         // R2 WAV not available in prod/staging — reject (no MP3 fallback for paid downloads)
         if (prodLikeEnvironment) {
-            console.warn(
-                'downloadController: WAV not found for purchased download (prod-like). Refusing MP3 fallback.',
+            logWarn(
+                'downloadController.downloadBeatHandler',
+                'WAV not found for purchased download (prod-like) — refusing MP3 fallback',
                 {
                     audioPath: validation.audioPath,
                     privateR2Enabled: isPrivateR2Enabled(),
@@ -236,7 +257,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // R2 is NOT available, we are in dev environment, local wav file is NOT available: stream mp3 file to the client
         streamLocalFile(res, filePath, validation.audioPath, path.extname(filePath));
     } catch (error: unknown) {
-        console.error('downloadController.downloadBeatHandler error:', error);
+        logError('downloadController.downloadBeatHandler', 'Unhandled download error', error);
         if (!res.headersSent) {
             const message = error instanceof Error ? error.message : 'Internal server error';
             res.status(500).json({ error: message });

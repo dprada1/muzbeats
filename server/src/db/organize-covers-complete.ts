@@ -22,6 +22,7 @@ import { fileURLToPath } from 'url';
 import { readdir, stat, rename, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import pool from '@/config/database.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -121,10 +122,11 @@ async function main() {
     // Step 1: Find used covers (UUID files in covers/)
     console.log(`🔍 Scanning used covers...`);
     const usedCovers = await getImagesInDir(coversDir, false);
+    const UUID_COVER_FILENAME_REGEX: RegExp =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/i;
     const uuidCovers = usedCovers.filter((img) => {
         const filename = path.basename(img);
-        // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.webp
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/i.test(filename);
+        return UUID_COVER_FILENAME_REGEX.test(filename);
     });
 
     console.log(`   Found ${uuidCovers.length} used covers (UUID files)`);
@@ -207,7 +209,7 @@ async function main() {
         let updated = 0;
         for (const { uuid } of movedCovers) {
             const newCoverPath = `/assets/images/covers/used/${uuid}.webp`;
-            const result = await pool.query(
+            const result: QueryResult<any> = await pool.query(
                 'UPDATE beats SET cover_path = $1, updated_at = NOW() WHERE cover_path = $2',
                 [newCoverPath, `/assets/images/covers/${uuid}.webp`]
             );

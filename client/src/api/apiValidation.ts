@@ -18,7 +18,7 @@ export { z };
  * Note: id is validated as UUID since we validate beatId as UUID in URLs
  */
 // UUID regex pattern for validation
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const BeatSchema = z.object({
     id: z.string().min(1).refine((val) => UUID_REGEX.test(val), {
@@ -58,6 +58,8 @@ export const PayPalCreateOrderResponseSchema = z.object({
  */
 export const PayPalCaptureOrderResponseSchema = z.object({
     orderId: z.string().min(1), // Our database order ID (UUID)
+    emailSent: z.boolean(),
+    message: z.string().optional(),
 });
 
 /**
@@ -156,28 +158,29 @@ export async function validatedFetch<T>(
     try {
         // Use fetchWithTimeout to prevent hanging requests (10 second timeout)
         response = await fetchWithTimeout(url, options, 10000);
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Check if it's an abort error (expected in React Strict Mode, don't log as error)
-        const isAbortError = 
-            error.name === 'AbortError' || 
-            error.message?.includes('aborted') || 
-            error.message?.includes('cancelled') ||
-            error.message === 'Request was cancelled';
-        
+        const err = error instanceof Error ? error : null;
+        const isAbortError =
+            err?.name === 'AbortError' ||
+            err?.message.includes('aborted') === true ||
+            err?.message.includes('cancelled') === true ||
+            err?.message === 'Request was cancelled';
+
         if (isAbortError) {
             // Silently re-throw abort errors - they're expected and handled by the caller
             throw error;
         }
-        
+
         // Handle actual network errors (server not running, CORS, timeout, etc.)
         if (import.meta.env.DEV) {
             console.error('Network error fetching:', url, {
-                error: error.message,
-                name: error.name,
-                stack: error.stack,
+                error: err?.message ?? String(error),
+                name: err?.name,
+                stack: err?.stack,
             });
         }
-        
+
         // Network errors (server down, CORS, etc.)
         throw new Error('Unable to connect to the server. Please check your connection and try again.');
     }

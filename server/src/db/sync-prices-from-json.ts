@@ -19,6 +19,7 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { Beat } from '@/types/Beat.js';
+import { QueryResult } from 'pg';
 
 dotenv.config();
 
@@ -40,7 +41,7 @@ async function syncPricesFromJson() {
 
         for (const beat of beats) {
             try {
-                const result = await pool.query(
+                const result: QueryResult<any> = await pool.query(
                     'UPDATE beats SET price = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id',
                     [beat.price, beat.id]
                 );
@@ -51,8 +52,9 @@ async function syncPricesFromJson() {
                 } else {
                     updated++;
                 }
-            } catch (error: any) {
-                console.error(`❌ Error updating beat "${beat.title}":`, error.message);
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Error updating beat "${beat.title}":`, message);
             }
         }
 
@@ -66,7 +68,7 @@ async function syncPricesFromJson() {
 
         // Verify final prices
         console.log(`\n🔍 Verifying prices...`);
-        const verifyStats = await pool.query(`
+        const verifyStats: QueryResult<any> = await pool.query(`
             SELECT 
                 MIN(price) as min_price,
                 MAX(price) as max_price,
@@ -82,9 +84,10 @@ async function syncPricesFromJson() {
 
         console.log(`\n✅ Price sync complete!`);
         await pool.end();
-    } catch (error: any) {
-        console.error('❌ Error syncing prices:', error.message);
-        if (error.detail) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('❌ Error syncing prices:', message);
+        if (error && typeof error === 'object' && 'detail' in error && error.detail) {
             console.error('   Detail:', error.detail);
         }
         await pool.end();
