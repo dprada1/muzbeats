@@ -198,6 +198,30 @@ function escapeHTML(value: unknown): string {
 }
 
 /**
+ * Format a purchase line for the receipt.
+ * qty 1 → `$19.99`
+ * qty > 1 → `$19.99 × 2 = $39.98` (unit, multiplier, line total)
+ */
+function formatPurchasePrice(priceAtPurchase: number, quantity: number): string {
+    if (typeof priceAtPurchase !== 'number' || !Number.isFinite(priceAtPurchase)) {
+        return '—';
+    }
+
+    const unit = `$${priceAtPurchase.toFixed(2)}`;
+    const qty =
+        typeof quantity === 'number' && Number.isFinite(quantity) && quantity >= 1
+            ? Math.trunc(quantity)
+            : 1;
+
+    if (qty <= 1) {
+        return unit;
+    }
+
+    const lineTotal = `$${(priceAtPurchase * qty).toFixed(2)}`;
+    return `${unit} × ${qty} = ${lineTotal}`;
+}
+
+/**
  * Send download email to customer after successful purchase
  *
  * @param emailAddress - Customer email address
@@ -286,6 +310,7 @@ export async function sendDownloadEmail(
             const escapedKey = escapeHTML(link.key);
             const bpmValue =
                 typeof link.bpm === 'number' && Number.isFinite(link.bpm) ? Math.round(link.bpm) : null;
+            const priceLabel = formatPurchasePrice(link.priceAtPurchase, link.quantity);
 
             return `
                 <div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
@@ -296,6 +321,8 @@ export async function sendDownloadEmail(
                         Key: <strong>${escapedKey || 'Unknown'}</strong>
                         &nbsp;•&nbsp;
                         BPM: <strong>${bpmValue ?? 'Unknown'}</strong>
+                        &nbsp;•&nbsp;
+                        Price: <strong>${escapeHTML(priceLabel)}</strong>
                     </div>
                     <a 
                         href="${escapeHTML(downloadURL)}" 
@@ -400,9 +427,10 @@ export async function sendDownloadEmail(
             (link, index) => {
                 const bpmValue =
                     typeof link.bpm === 'number' && Number.isFinite(link.bpm) ? Math.round(link.bpm) : null;
+                const priceLabel = formatPurchasePrice(link.priceAtPurchase, link.quantity);
                 return `${index + 1}. ${link.title}\n   Key: ${link.key || 'Unknown'} | BPM: ${
                     bpmValue ?? 'Unknown'
-                }\n   ${getDownloadURL(baseUrl, link.downloadToken)}`;
+                } | Price: ${priceLabel}\n   ${getDownloadURL(baseUrl, link.downloadToken)}`;
             }
         )
         .join('\n\n');
