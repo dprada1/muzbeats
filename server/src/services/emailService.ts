@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
 import type { QueryResult } from 'pg';
+import { logError, logInfo, logWarn } from '@/utils/logger';
 
 dotenv.config();
 
@@ -177,8 +178,9 @@ function getLogoURL(): string {
         return `${r2Url}/images/skimask.png`;
     }
 
-    console.warn(
-        '⚠️ emailService.getLogoUrl: No EMAIL_LOGO_URL/R2_PUBLIC_URL/BACKEND_URL set. Logo will likely not render.'
+    logWarn(
+        'emailService.getLogoURL',
+        'No EMAIL_LOGO_URL/R2_PUBLIC_URL/BACKEND_URL set — logo will likely not render'
     );
     return '';
 }
@@ -207,11 +209,11 @@ export async function sendDownloadEmail(
 ): Promise<boolean> {
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
-        console.warn(
-            '⚠️ emailService.sendDownloadEmail: RESEND_API_KEY not configured. Skipping email send.'
+        logWarn(
+            'emailService.sendDownloadEmail',
+            'RESEND_API_KEY not configured — skipping email send',
+            { emailAddress, orderId }
         );
-        console.log('📧 Would send download email to:', emailAddress);
-        console.log('   Order ID:', orderId);
         return false;
     }
 
@@ -226,9 +228,10 @@ export async function sendDownloadEmail(
             .filter(Boolean);
         const normalizedEmailAddress = emailAddress.trim().toLowerCase();
         if (allowlist.length > 0 && !allowlist.includes(normalizedEmailAddress)) {
-            console.warn(
-                '⚠️ emailService.sendDownloadEmail: Recipient not in EMAIL_ALLOWLIST. Skipping email send.',
-                { emailAddress }
+            logWarn(
+                'emailService.sendDownloadEmail',
+                'Recipient not in EMAIL_ALLOWLIST — skipping email send',
+                { emailAddress, orderId }
             );
             return false;
         }
@@ -238,8 +241,10 @@ export async function sendDownloadEmail(
     const orderDownloadItems = await getOrderDownloadItems(orderId);
 
     if (orderDownloadItems.length === 0) {
-        console.warn(
-            `⚠️ emailService.sendDownloadEmail: No order download items found for order ${orderId}. Skipping email.`
+        logWarn(
+            'emailService.sendDownloadEmail',
+            'No order download items found — skipping email',
+            { orderId }
         );
         return false;
     }
@@ -251,20 +256,24 @@ export async function sendDownloadEmail(
     try {
         baseUrl = getBaseURL();
     } catch (error) {
-        console.error(
-            `❌ emailService.sendDownloadEmail: Cannot resolve download base URL for order ${orderId}. Skipping email.`,
-            error
+        logError(
+            'emailService.sendDownloadEmail',
+            'Cannot resolve download base URL — skipping email',
+            { orderId, error }
         );
         return false;
     }
 
-    // Log generated URLs for debugging
-    console.log('emailService.sendDownloadEmail: Generated URLs:');
-    console.log('   Base URL:', baseUrl);
-    console.log('   Logo URL:', getLogoURL());
-    orderDownloadItems.forEach((link, idx) => {
-        console.log(`   Download ${idx + 1}: ${getDownloadURL(baseUrl, link.downloadToken)}`);
-    });
+    logInfo(
+        'emailService.sendDownloadEmail',
+        'Resolved email link URLs',
+        {
+            orderId,
+            baseUrl,
+            logoUrl: getLogoURL() || null,
+            itemCount: orderDownloadItems.length,
+        }
+    );
 
     // Format download links HTML
     // Escape HTML in titles and encode URLs properly
@@ -425,7 +434,7 @@ export async function sendDownloadEmail(
     });
 
     if (error) {
-        console.error('❌ emailService: Failed to send email:', error);
+        logError('emailService.sendDownloadEmail', 'Failed to send email', { orderId, error });
         return false;
     }
 
@@ -434,7 +443,14 @@ export async function sendDownloadEmail(
         [orderId]
     );
     
-    console.log('✅ emailService.sendDownloadEmail: Download email sent successfully to', emailAddress);
-    console.log('   Email ID:', data?.id);
+    logInfo(
+        'emailService.sendDownloadEmail',
+        'Download email sent successfully',
+        {
+            orderId,
+            emailAddress,
+            emailId: data?.id,
+        }
+    );
     return true;
 }

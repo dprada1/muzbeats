@@ -10,6 +10,7 @@ import downloadRoutes from '@/routes/downloadRoutes.js';
 import { initializeDatabase } from '@/db/initializeDatabase.js';
 import { assertCheckoutLimitsValid } from './config/checkoutLimits.js';
 import { assertRequiredEnv } from './config/env.js';
+import { logError, logInfo } from './utils/logger.js';
 
 // Load environment variables
 dotenv.config();
@@ -97,7 +98,7 @@ try {
     assertRequiredEnv();
 } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Invalid environment configuration:', message);
+    logError('index.boot', 'Invalid environment configuration', { message });
     process.exit(1);
 }
 
@@ -106,7 +107,7 @@ try {
     assertCheckoutLimitsValid();
 } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error('❌ Invalid checkout configuration:', message);
+    logError('index.boot', 'Invalid checkout configuration', { message });
     process.exit(1);
 }
 
@@ -114,12 +115,16 @@ try {
 initializeDatabase()
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-            console.log(`📁 Serving static files from: ${path.join(__dirname, '../public/assets')}`);
+            logInfo('index.listen', 'Server running', {
+                url: `http://localhost:${PORT}`,
+            });
+            logInfo('index.listen', 'Serving static files', {
+                path: path.join(__dirname, '../public/assets'),
+            });
         });
     })
     .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('❌ Failed to initialize database:', message);
+        logError('index.boot', 'Failed to initialize database', { message });
         process.exit(1);
     });

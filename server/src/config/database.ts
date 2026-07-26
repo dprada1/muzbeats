@@ -1,5 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import { logError, logInfo } from '@/utils/logger';
 
 // Load .env file
 dotenv.config();
@@ -49,23 +50,23 @@ const pool = new Pool(
 
 // Connection event handlers
 pool.on('connect', () => {
-    console.log('Connected to PostgreSQL');
+    logInfo('database.onConnect', 'Connected to PostgreSQL');
 });
 
 pool.on('error', (err) => {
-    console.error('PostgreSQL connection error:', err);
+    logError('database.onError', 'PostgreSQL pool error', err);
 });
 
 // Log which DB we intend to use (without leaking secrets)
 if (!process.env.DATABASE_URL) {
-    console.log('PostgreSQL (local) config:', {
+    logInfo('database.init', 'Using local PostgreSQL config', {
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432'),
         database: process.env.DB_NAME || getDefaultDatabaseName(),
         user: process.env.DB_USER || 'postgres',
     });
 } else {
-    console.log('PostgreSQL config: Using DATABASE_URL');
+    logInfo('database.init', 'Using DATABASE_URL for PostgreSQL config');
 }
 
 export default pool;

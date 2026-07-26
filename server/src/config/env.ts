@@ -1,3 +1,4 @@
+import { logWarn, logInfo } from '@/utils/logger';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -75,30 +76,39 @@ export function assertRequiredEnv(): void {
         const missingEnvVarsInProd = REQUIRED_ENV_VARS_WHEN_DEPLOYED.filter((name) => !isSet(name));
         if (missingEnvVarsInProd.length > 0) {
             throw new Error(
-                `❌ config/env: Missing required environment variables for NODE_ENV=${currentEnv}: ${missingEnvVarsInProd.join(', ')}`
+                `config/env: Missing required environment variables for NODE_ENV=${currentEnv}: ${missingEnvVarsInProd.join(', ')}`
             );
         }
 
         if (currentEnv === 'production' && process.env.BACKEND_URL?.trim().startsWith('http://')) {
             throw new Error(
-                '❌ config/env: BACKEND_URL uses http:// in production. Prefer https:// for email download links.'
+                'config/env: BACKEND_URL uses http:// in production. Prefer https:// for email download links.'
             );
         }
     } else {
         const missingEnvVarsInDev = RECOMMENDED_ENV_VARS_IN_DEV.filter((name) => !isSet(name));
         if (missingEnvVarsInDev.length > 0) {
-            console.warn(
-                `⚠️ config/env: Missing recommended env vars for NODE_ENV=${currentEnv} (some features may be degraded): ${missingEnvVarsInDev.join(', ')}`
+            logWarn(
+                'env.assertRequiredEnv',
+                'Missing recommended env vars (some features may be degraded)',
+                { nodeEnv: currentEnv, missing: missingEnvVarsInDev }
             );
         }
 
         // Download email links need a public base URL to be clickable end-to-end.
         if (!isSet('EMAIL_LINK_BASE_URL') && !isSet('BACKEND_URL')) {
-            console.warn(
-                '⚠️ config/env: Neither EMAIL_LINK_BASE_URL nor BACKEND_URL is set — download email links will fail (set a tunnel URL for local email testing).'
+            logWarn(
+                'env.assertRequiredEnv',
+                'Neither EMAIL_LINK_BASE_URL nor BACKEND_URL is set — download email links will fail (set a tunnel URL for local email testing)'
             );
         }
     }
 
-    console.log(`✅ config/env: Environment variables validated for NODE_ENV=${currentEnv}`);
+    logInfo(
+        'env.assertRequiredEnv',
+        'Environment variables validated',
+        {
+            nodeEnv: currentEnv,
+        }
+    );
 }

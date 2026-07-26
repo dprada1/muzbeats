@@ -19,6 +19,7 @@ import {
 } from '@/config/checkoutLimits.js';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
 import { centsToUsd, formatUsdFromCents, usdToCents } from '@/utils/money.js';
+import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 // Get orders controller from SDK client
 const ordersController = new OrdersController(paypalSDK as any);
@@ -105,7 +106,7 @@ export async function createPayPalOrder(
         const validBeats = beats as Beat[];
 
         if (validBeats.length === 0) {
-            console.warn('No valid beats found in cart'); // should never execute because cartLines.length >= 1 when paypalController.ts calls it.
+            logWarn('paypalService.createPayPalOrder', 'No valid beats found in cart'); // should never execute because cartLines.length >= 1 when paypalController calls it.
             throw internalCheckoutError();
         }
 
@@ -117,10 +118,14 @@ export async function createPayPalOrder(
             const beat = validBeats[i];
 
             if (!Number.isFinite(beat.price)) {
-                console.warn('createPayPalOrder: invalid beat price', {
-                    beatId: beat.id,
-                    price: beat.price,
-                });
+                logWarn(
+                    'paypalService.createPayPalOrder',
+                    'Invalid beat price',
+                    {
+                        beatId: beat.id,
+                        price: beat.price,
+                    }
+                );
                 throw internalCheckoutError();
             }
 
@@ -132,13 +137,17 @@ export async function createPayPalOrder(
                 beatPriceInCents < MIN_BEAT_PRICE_CENTS ||
                 beatPriceInCents > MAX_BEAT_PRICE_CENTS
             ) {
-                console.warn('createPayPalOrder: beat price out of bounds', {
-                    beatId: beat.id,
-                    price: beat.price,
-                    beatPriceInCents,
-                    minCents: MIN_BEAT_PRICE_CENTS,
-                    maxCents: MAX_BEAT_PRICE_CENTS,
-                });
+                logWarn(
+                    'paypalService.createPayPalOrder',
+                    'Beat price out of bounds',
+                    {
+                        beatId: beat.id,
+                        price: beat.price,
+                        beatPriceInCents,
+                        minCents: MIN_BEAT_PRICE_CENTS,
+                        maxCents: MAX_BEAT_PRICE_CENTS,
+                    }
+                );
                 throw internalCheckoutError();
             }
 
@@ -150,7 +159,7 @@ export async function createPayPalOrder(
             totalPriceInCents < MIN_CART_TOTAL_CENTS ||
             totalPriceInCents > MAX_CART_TOTAL_CENTS
         ) {
-            console.warn('createPayPalOrder: cart total out of bounds', { totalPriceInCents });
+            logWarn('paypalService.createPayPalOrder', 'Cart total out of bounds', { totalPriceInCents });
             throw internalCheckoutError();
         }
 
@@ -202,7 +211,7 @@ export async function createPayPalOrder(
         const paypalOrderId = response.result.id;
 
         if (!paypalOrderId) {
-            console.warn('createPayPalOrder: PayPal response missing order id');
+            logWarn('paypalService.createPayPalOrder', 'PayPal response missing order id');
             throw internalCheckoutError();
         }
 
@@ -210,9 +219,14 @@ export async function createPayPalOrder(
             beatIds: lineItems.map((item) => item.beat.id),
         });
 
-        console.log(`Stored order data for PayPal order ${paypalOrderId}:`, {
-            beatIds: lineItems.map((item) => item.beat.id),
-        });
+        logInfo(
+            'paypalService.createPayPalOrder',
+            'Stored order data for PayPal order',
+            {
+                paypalOrderId,
+                beatIds: lineItems.map((item) => item.beat.id),
+            }
+        );
 
         // Extract approval URL
         const approvalUrl = response.result.links?.find(
@@ -232,7 +246,7 @@ export async function createPayPalOrder(
         }
 
         // PayPal SDK, getBeatById DB failure, network, etc.
-        console.error('Error creating PayPal order:', error);
+        logError('paypalService.createPayPalOrder', 'Failed to create PayPal order', error);
         throw internalCheckoutError();
     }
 }
@@ -253,7 +267,7 @@ export async function capturePayPalOrder(orderId: string): Promise<unknown> {
 
         return response.result;
     } catch (error) {
-        console.error('Error capturing PayPal order:', error);
+        logError('paypalService.capturePayPalOrder', 'Failed to capture PayPal order', error);
         throw internalCheckoutError();
     }
 }
@@ -272,7 +286,7 @@ export async function getPayPalOrder(orderId: string): Promise<PayPalOrderSummar
 
         return response.result as PayPalOrderSummary;
     } catch (error) {
-        console.error('Error retrieving PayPal order:', error);
+        logError('paypalService.getPayPalOrder', 'Failed to retrieve PayPal order', error);
         throw error;
     }
 }

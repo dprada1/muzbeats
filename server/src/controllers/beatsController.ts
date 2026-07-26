@@ -4,6 +4,7 @@ import { getRouteParam } from '@/utils/routeParams.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import type { Beat } from '@/types/Beat.js';
+import { logError } from '@/utils/logger';
 
 /**
  * GET /api/beats
@@ -66,7 +67,7 @@ export async function getBeatsHandler(req: Request, res: Response): Promise<void
         const beats: Beat[] = await getBeats(searchParams);
         res.json(beats);
     } catch (error) {
-        console.error('Error fetching all beats:', error);
+        logError('beatsController.getBeatsHandler', 'Failed to fetch beats', error);
         res.status(500).json({ error: 'Failed to fetch beats' });
     }
 }
@@ -93,7 +94,7 @@ export async function getBeatByIdHandler(req: Request, res: Response): Promise<v
 
         res.json(beat);
     } catch (error) {
-        console.error('Error fetching beat by ID:', error);
+        logError('beatsController.getBeatByIdHandler', 'Failed to fetch beat by ID', error);
         res.status(500).json({ error: 'Failed to fetch beat' });
     }
 }

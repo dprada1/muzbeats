@@ -5,6 +5,7 @@ import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
 import { getR2PublicUrl } from '@/utils/r2.js';
 import type { QueryResult } from 'pg';
+import { logError } from '@/utils/logger';
 
 interface BeatDbRow {
     id: string;
@@ -51,7 +52,7 @@ export async function getBeats(searchParams: SearchParams): Promise<Beat[]> {
         const result: QueryResult<any> = await pool.query(query, params);
         return result.rows.map(mapDbRowToBeat);
     } catch (error) {
-        console.error('Error fetching beats from database:', error);
+        logError('beatsService.getBeats', 'Failed to fetch beats from database', error);
         throw new Error('Failed to fetch beats from database');
     }
 }
@@ -72,7 +73,7 @@ export async function getBeatById(id: string): Promise<Beat | null> {
 
         return mapDbRowToBeat(result.rows[0]);
     } catch (error) {
-        console.error('Error fetching beat by ID from database:', error);
+        logError('beatsService.getBeatById', 'Failed to fetch beat by ID from database', error);
         throw new Error('Failed to fetch beat from database');
     }
 }

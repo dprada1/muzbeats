@@ -1,10 +1,11 @@
+import { logWarn } from '@/utils/logger';
 import { Client, Environment, LogLevel } from '@paypal/paypal-server-sdk';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
-    console.warn('PayPal credentials not set. PayPal payments will not work.');
+    logWarn('paypal.init', 'PayPal credentials not set — PayPal payments will not work');
 }
 
 // Use sandbox for test mode, live for production

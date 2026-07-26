@@ -28,6 +28,7 @@ import {
     areValidBeatIds,
 } from '@/config/checkoutLimits.js';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
+import { logError, logInfo, logWarn } from '@/utils/logger';
 
 
 /**
@@ -119,7 +120,7 @@ export async function createPayPalOrderHandler(
 
         res.status(200).json(paypalOrder);
     } catch (error: unknown) {
-        console.error('Error in createPayPalOrderHandler:', error);
+        logError('paypalController.createPayPalOrderHandler', 'Failed to create PayPal order', error);
         if (error instanceof CheckoutError) {
             res.status(error.statusCode).json({ error: error.message });
             return;
@@ -155,13 +156,32 @@ export async function capturePayPalOrderHandler(
 
         // Retrieve stored order data (beat IDs and customer email)
         const storedBeatIds: StoredOrderBeatIds | null = getStoredOrderBeatIds(orderId);
-        console.log('Retrieved stored order data:', storedBeatIds);
+        logInfo(
+            'paypalController.capturePayPalOrderHandler',
+            'Retrieved stored order data',
+            {
+                paypalOrderId: orderId,
+                storedBeatIds,
+            }
+        );
         
         // Capture the order (here is exactly where the money is transferred)
         const capturedOrder: unknown = await capturePayPalOrder(orderId);
         
-        // Debug: Log what PayPal is actually returning
-        console.log('PayPal captured order structure:', JSON.stringify(capturedOrder, null, 2));
+        const capturedStatus =
+            typeof capturedOrder === 'object' &&
+            capturedOrder !== null &&
+            'status' in capturedOrder
+                ? (capturedOrder as { status?: unknown }).status
+                : undefined;
+        logInfo(
+            'paypalController.capturePayPalOrderHandler',
+            'PayPal order captured',
+            {
+                paypalOrderId: orderId,
+                status: capturedStatus,
+            }
+        );
 
         // Check if order already exists (idempotency)
         const existingOrderResult: QueryResult<any> = await pool.query(
@@ -186,16 +206,37 @@ export async function capturePayPalOrderHandler(
             capturedOrder as PayPalOrderCapture,
             storedBeatIds
         );
-        console.log('capturePayPalOrderHandler: Order created for PayPal order', orderId);
+        logInfo(
+            'paypalController.capturePayPalOrderHandler',
+            'Order created',
+            {
+                paypalOrderId: orderId,
+                orderId: orderResult.orderId,
+            }
+        );
 
         // Send download email to customer
         if (!orderResult.customerEmail) {
-            console.error('Customer email doesn\'t exist');
+            logError(
+                'paypalController.capturePayPalOrderHandler',
+                'Customer email missing',
+                {
+                    orderId: orderResult.orderId,
+                    paypalOrderId: orderId,
+                }
+            );
             throw internalCheckoutError();
         }
 
         if (orderResult.beatIds.length === 0) {
-            console.error('Beat ids cannot be empty');
+            logError(
+                'paypalController.capturePayPalOrderHandler',
+                'Beat IDs cannot be empty',
+                {
+                    orderId: orderResult.orderId,
+                    paypalOrderId: orderId,
+                }
+            );
             throw internalCheckoutError();
         }
 
@@ -206,9 +247,21 @@ export async function capturePayPalOrderHandler(
         );
 
         if (emailSent) {
-            console.log('capturePayPalOrderHandler: Download email sent successfully');
+            logInfo(
+                'paypalController.capturePayPalOrderHandler',
+                'Download email sent successfully',
+                {
+                    orderId: orderResult.orderId,
+                }
+            );
         } else {
-            console.warn('capturePayPalOrderHandler: Download email was not sent (see logs above)');
+            logWarn(
+                'paypalController.capturePayPalOrderHandler',
+                'Download email was not sent',
+                {
+                    orderId: orderResult.orderId,
+                }
+            );
         }
 
         res.status(200).json({
@@ -222,7 +275,7 @@ export async function capturePayPalOrderHandler(
             paypalOrderId: orderId,
         });
     } catch (error: unknown) {
-        console.error('Error in capturePayPalOrderHandler:', error);
+        logError('paypalController.capturePayPalOrderHandler', 'Failed to capture PayPal order', error);
         if (error instanceof CheckoutError) {
             res.status(error.statusCode).json({ error: error.message });
             return;
@@ -256,7 +309,7 @@ export async function getPayPalOrderHandler(
             amount: paypalOrder.purchaseUnits?.[0]?.payments?.captures?.[0]?.amount,
         });
     } catch (error: unknown) {
-        console.error('Error in getPayPalOrderHandler:', error);
+        logError('paypalController.getPayPalOrderHandler', 'Failed to retrieve PayPal order', error);
         res.status(500).json({
             error: 'Failed to retrieve PayPal order',
         });

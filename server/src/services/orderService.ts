@@ -15,6 +15,7 @@ import {
 import { centsToUsd, usdToCents } from '@/utils/money.js';
 import { QueryResult } from 'pg';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
+import { logError, logInfo, logWarn } from '@/utils/logger';
 
 // PayPal order capture type (simplified for our needs)
 export interface PayPalOrderCapture {
@@ -134,11 +135,15 @@ export async function createOrderFromPayPalCapture(
             );
         }
         if (usedCurrencyCode !== CHECKOUT_CURRENCY) {
-            console.warn('createOrderFromPayPalCapture: currency mismatch', {
-                usedCurrencyCode,
-                expected: CHECKOUT_CURRENCY,
-                paypalOrderId,
-            });
+            logWarn(
+                'orderService.createOrderFromPayPalCapture',
+                'Currency mismatch',
+                {
+                    usedCurrencyCode,
+                    expected: CHECKOUT_CURRENCY,
+                    paypalOrderId,
+                }
+            );
             throw new CheckoutError(
                 'Unsupported currency',
                 400
@@ -158,12 +163,16 @@ export async function createOrderFromPayPalCapture(
             totalPriceInCents < MIN_CART_TOTAL_CENTS ||
             totalPriceInCents > MAX_CART_TOTAL_CENTS
         ) {
-            console.warn('createOrderFromPayPalCapture: total out of bounds', {
-                totalPriceInCents,
-                minCents: MIN_CART_TOTAL_CENTS,
-                maxCents: MAX_CART_TOTAL_CENTS,
-                paypalOrderId,
-            });
+            logWarn(
+                'orderService.createOrderFromPayPalCapture',
+                'Total out of bounds',
+                {
+                    totalPriceInCents,
+                    minCents: MIN_CART_TOTAL_CENTS,
+                    maxCents: MAX_CART_TOTAL_CENTS,
+                    paypalOrderId,
+                }
+            );
             throw new CheckoutError(
                 'Invalid total price',
                 400
@@ -175,10 +184,14 @@ export async function createOrderFromPayPalCapture(
         // PayPal wire status (uppercase). Only COMPLETED means money settled enough to fulfill.
         // MuzBeats DB status stays lowercase and independent — we set 'completed' only after we commit to fulfill.
         if (paypalOrder.status !== 'COMPLETED') {
-            console.warn('createOrderFromPayPalCapture: refusing non-COMPLETED status', {
-                status: paypalOrder.status,
-                paypalOrderId,
-            });
+            logWarn(
+                'orderService.createOrderFromPayPalCapture',
+                'Refusing non-COMPLETED status',
+                {
+                    status: paypalOrder.status,
+                    paypalOrderId,
+                }
+            );
             throw new CheckoutError(
                 'Payment not completed',
                 400
@@ -192,15 +205,33 @@ export async function createOrderFromPayPalCapture(
         
         if (storedData?.beatIds && storedData.beatIds.length > 0) {
             beatIds = storedData.beatIds;
-            console.log('Using beat IDs from stored data:', beatIds);
+            logInfo(
+                'orderService.createOrderFromPayPalCapture',
+                'Using beat IDs from stored data',
+                {
+                    beatIds,
+                    paypalOrderId,
+                }
+            );
         } else {
             // Fallback: try to parse from customId
             const customId = paypalOrder.purchaseUnits?.[0]?.customId;
             if (customId) {
                 beatIds = customId.split(',').map(id => id.trim()).filter(id => id.length > 0);
-                console.log('Parsed beat IDs from customId:', beatIds);
+                logInfo(
+                    'orderService.createOrderFromPayPalCapture',
+                    'Parsed beat IDs from customId',
+                    {
+                        beatIds,
+                        paypalOrderId,
+                    }
+                );
             } else {
-                console.warn('No beat IDs found in stored data or PayPal customId');
+                logWarn(
+                    'orderService.createOrderFromPayPalCapture',
+                    'No beat IDs found in stored data or PayPal customId',
+                    { paypalOrderId }
+                );
             }
         }
 
@@ -212,9 +243,13 @@ export async function createOrderFromPayPalCapture(
         }
 
         if (!areValidBeatIds(beatIds)) {
-            console.error('createOrderFromPayPalCapture: beatIds are not valid UUIDv4 strings:',
-                beatIds,
-                paypalOrderId,
+            logError(
+                'orderService.createOrderFromPayPalCapture',
+                'Beat IDs are not valid UUIDv4 strings',
+                {
+                    beatIds,
+                    paypalOrderId,
+                }
             );
             throw new CheckoutError(
                 'Invalid beat ids',
@@ -235,7 +270,7 @@ export async function createOrderFromPayPalCapture(
         const orderId: string = orderResult.rows[0].id;
 
         if (!isValidUUIDv4(orderId)) {
-            console.error('createOrderFromPayPalCapture: RETURNING order id is not UUIDv4', {
+            logError('orderService.createOrderFromPayPalCapture', 'RETURNING order id is not UUIDv4', {
                 orderId,
                 paypalOrderId,
             });
@@ -253,12 +288,16 @@ export async function createOrderFromPayPalCapture(
         );
 
         if (beatsResult.rows.length !== beatIds.length) {
-            console.error('createOrderFromPayPalCapture: beat row count mismatch', {
-                found: beatsResult.rows.length,
-                expected: beatIds.length,
-                beatIds,
-                paypalOrderId,
-            });
+            logError(
+                'orderService.createOrderFromPayPalCapture',
+                'Beat row count mismatch',
+                {
+                    found: beatsResult.rows.length,
+                    expected: beatIds.length,
+                    beatIds,
+                    paypalOrderId,
+                }
+            );
             throw internalCheckoutError();
         }
 
@@ -268,10 +307,14 @@ export async function createOrderFromPayPalCapture(
 
         for (const row of beatsResult.rows) {
             if (!isValidUUIDv4(row.id)) {
-                console.warn('createOrderFromPayPalCapture: beat row id is not UUIDv4', {
-                    rowId: row.id,
-                    paypalOrderId,
-                });
+                logWarn(
+                    'orderService.createOrderFromPayPalCapture',
+                    'Beat row id is not UUIDv4',
+                    {
+                        rowId: row.id,
+                        paypalOrderId,
+                    }
+                );
                 throw internalCheckoutError();
             }
 
@@ -280,14 +323,18 @@ export async function createOrderFromPayPalCapture(
                 beatPriceInCents < MIN_BEAT_PRICE_CENTS ||
                 beatPriceInCents > MAX_BEAT_PRICE_CENTS
             ) {
-                console.warn('createOrderFromPayPalCapture: beat price out of bounds', {
-                    beatId: row.id,
-                    beatPriceInUSD: row.price,
-                    beatPriceInCents,
-                    minCents: MIN_BEAT_PRICE_CENTS,
-                    maxCents: MAX_BEAT_PRICE_CENTS,
-                    paypalOrderId,
-                });
+                logWarn(
+                    'orderService.createOrderFromPayPalCapture',
+                    'Beat price out of bounds',
+                    {
+                        beatId: row.id,
+                        beatPriceInUSD: row.price,
+                        beatPriceInCents,
+                        minCents: MIN_BEAT_PRICE_CENTS,
+                        maxCents: MAX_BEAT_PRICE_CENTS,
+                        paypalOrderId,
+                    }
+                );
                 throw internalCheckoutError();
             }
 
@@ -324,7 +371,7 @@ export async function createOrderFromPayPalCapture(
         };
     } catch (error) {
         await dbClient.query('ROLLBACK');
-        console.error('orderService.createOrderFromPayPalCapture error:', error);
+        logError('orderService.createOrderFromPayPalCapture', 'Failed to create order from PayPal capture', error);
         throw error;
     } finally {
         dbClient.release();
