@@ -14,7 +14,7 @@ import { getRouteParam } from '@/utils/routeParams.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
-import { logError, logInfo, logWarn } from '@/utils/logger';
+import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 /**
  * Sets download headers, pipes a readable stream to the HTTP response, and handles stream errors.

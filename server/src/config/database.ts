@@ -1,6 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
-import { logError, logInfo } from '@/utils/logger';
+import { logError, logInfo } from '@/utils/logger.js';
 
 // Load .env file
 dotenv.config();

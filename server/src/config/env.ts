@@ -1,4 +1,4 @@
-import { logWarn, logInfo } from '@/utils/logger';
+import { logWarn, logInfo } from '@/utils/logger.js';
 import dotenv from 'dotenv';
 
 dotenv.config();

@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
 import type { QueryResult } from 'pg';
-import { logError, logInfo, logWarn } from '@/utils/logger';
+import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 dotenv.config();
 

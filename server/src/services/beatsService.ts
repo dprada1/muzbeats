@@ -5,7 +5,7 @@ import { buildSearchQuery } from '@/utils/searchQueryBuilder.js';
 import { denormalizeKeyNotation } from '@/utils/keyUtils.js';
 import { getR2PublicUrl } from '@/utils/r2.js';
 import type { QueryResult } from 'pg';
-import { logError } from '@/utils/logger';
+import { logError } from '@/utils/logger.js';
 
 interface BeatDbRow {
     id: string;

@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
 import { QueryResult } from 'pg';
-import { logError, logInfo } from '@/utils/logger';
+import { logError, logInfo } from '@/utils/logger.js';
 
 const REQUIRED_TABLES = ['beats', 'orders', 'order_items', 'downloads'] as const;
 
