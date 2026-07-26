@@ -5,7 +5,7 @@ import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import type { Beat } from '@/types/Beat.js';
 import { isValidUUIDv4 } from '@/config/checkoutLimits.js';
-import { logError, logInfo } from '@/utils/logger';
+import { logError, logInfo } from '@/utils/logger.js';
 
 /**
  * GET /api/beats

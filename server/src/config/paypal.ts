@@ -1,4 +1,4 @@
-import { logWarn } from '@/utils/logger';
+import { logWarn } from '@/utils/logger.js';
 import { Client, Environment, LogLevel } from '@paypal/paypal-server-sdk';
 import dotenv from 'dotenv';
 

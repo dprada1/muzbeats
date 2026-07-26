@@ -28,7 +28,7 @@ import {
     areValidBeatIds,
 } from '@/config/checkoutLimits.js';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
-import { logError, logInfo, logWarn } from '@/utils/logger';
+import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 
 /**

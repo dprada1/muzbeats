@@ -5,7 +5,7 @@ import { existsSync } from 'fs';
 import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
 import { QueryResult } from 'pg';
-import { logError } from '@/utils/logger';
+import { logError } from '@/utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
