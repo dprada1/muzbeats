@@ -115,10 +115,12 @@ async function getOrderDownloadItems(orderId: string): Promise<OrderDownloadItem
 function getBaseURL(): string {
     // Local development uses EMAIL_LINK_BASE_URL (a public tunnel) with highest priority;
     // production/staging use BACKEND_URL. First non-empty wins.
-    const rawBaseUrl = process.env.BACKEND_URL?.trim();
+    const rawBaseUrl =
+        process.env.EMAIL_LINK_BASE_URL?.trim() ||
+        process.env.BACKEND_URL?.trim();
     if (!rawBaseUrl) {
         throw new Error(
-            'emailService.getBaseUrl: Neither EMAIL_LINK_BASE_URL nor BACKEND_URL is configured; cannot build download links.'
+            'emailService.getBaseURL: Neither EMAIL_LINK_BASE_URL nor BACKEND_URL is configured; cannot build download links.'
         );
     }
 
@@ -128,7 +130,7 @@ function getBaseURL(): string {
     // WAV and its capability token) would travel unencrypted and be exposed to MITM.
     if (process.env.NODE_ENV === 'production' && baseUrl.startsWith('http://')) {
         throw new Error(
-            `emailService.getBaseUrl: Refusing insecure http:// base URL in production (${baseUrl}). Use https://.`
+            `emailService.getBaseURL: Refusing insecure http:// base URL in production (${baseUrl}). Use https://.`
         );
     }
 

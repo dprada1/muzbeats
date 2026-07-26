@@ -73,6 +73,11 @@ export async function getBeatsHandler(req: Request, res: Response): Promise<void
                 ip: req.ip,
                 count: beats.length,
                 q: typeof q === 'string' ? q : undefined,
+                bpm: typeof bpm === 'string' ? bpm : undefined,
+                bpmMin: typeof bpmMin === 'string' ? bpmMin : undefined,
+                bpmMax: typeof bpmMax === 'string' ? bpmMax : undefined,
+                key: typeof key === 'string' ? key : undefined,
+                search: typeof search === 'string' ? search : undefined,
             }
         );
         res.json(beats);

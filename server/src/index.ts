@@ -1,4 +1,5 @@
 import express from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -91,6 +92,28 @@ app.use('/api/beats', beatsRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/downloads', downloadRoutes);
 // Note: webhookRoutes is registered above, before express.json()
+
+/** body-parser / express.json malformed payloads — client error, not server noise. */
+function isMalformedJsonBody(err: unknown): boolean {
+    if (!(err instanceof SyntaxError)) {
+        return false;
+    }
+    const parseError = err as SyntaxError & { status?: number; type?: string };
+    return parseError.status === 400 || parseError.type === 'entity.parse.failed';
+}
+
+// Quiet 400 for bad JSON (same class as validation failures — no stack dump).
+app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+        next(err);
+        return;
+    }
+    if (isMalformedJsonBody(err)) {
+        res.status(400).json({ error: 'Invalid JSON body' });
+        return;
+    }
+    next(err);
+});
 
 // Validate environment variables first (cheap) before touching the database (expensive).
 // Deployed environments fail fast here if required config is missing.

@@ -14,7 +14,7 @@ import { getRouteParam } from '@/utils/routeParams.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
 import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
-import { logError, logWarn } from '@/utils/logger';
+import { logError, logInfo, logWarn } from '@/utils/logger';
 
 /**
  * Sets download headers, pipes a readable stream to the HTTP response, and handles stream errors.
@@ -152,6 +152,14 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         // it applies to every serve path below (private R2, redirect, or local file).
         res.on('finish', () => {
             if (res.statusCode >= 200 && res.statusCode < 300) {
+                logInfo('downloadController.downloadBeatHandler', 'Download completed', {
+                    ip: req.ip,
+                    downloadId: validation.downloadId,
+                    beatId: validation.beatId,
+                    statusCode: res.statusCode,
+                    downloadCountBefore: validation.downloadCount,
+                    maxDownloads: validation.maxDownloads,
+                });
                 incrementDownloadCount(validation.downloadId)
                     .then((consumed) => {
                         if (!consumed) {

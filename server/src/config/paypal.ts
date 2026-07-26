@@ -11,6 +11,18 @@ if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
 // Use sandbox for test mode, live for production
 const environment = process.env.PAYPAL_MODE === 'live' ? Environment.Production : Environment.Sandbox;
 
+/**
+ * PayPal's `logLevel` is the level used to *print* every HTTP request/response,
+ * not a minimum-severity filter. Setting Error just changes `info:` → `error:`
+ * while still logging successful 200/201 calls. Silence the SDK console noise;
+ * our own logger covers create/capture outcomes.
+ */
+const silentPayPalLogger = {
+    log(): void {
+        // no-op
+    },
+};
+
 // Initialize PayPal client
 export const paypalSDK = new Client({
     clientCredentialsAuthCredentials: {
@@ -20,7 +32,8 @@ export const paypalSDK = new Client({
     timeout: 30000,
     environment,
     logging: {
-        logLevel: process.env.NODE_ENV === 'development' ? LogLevel.Info : LogLevel.Error,
+        logger: silentPayPalLogger,
+        logLevel: LogLevel.Error,
     },
 });
 
