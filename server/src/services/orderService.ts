@@ -15,7 +15,7 @@ import {
 import { centsToUsd, usdToCents } from '@/utils/money.js';
 import { QueryResult } from 'pg';
 import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
-import { logError, logInfo, logWarn } from '@/utils/logger';
+import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 // PayPal order capture type (simplified for our needs)
 export interface PayPalOrderCapture {
