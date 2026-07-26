@@ -4,7 +4,8 @@ import { getRouteParam } from '@/utils/routeParams.js';
 import { parseSearchQuery } from '@/utils/searchParser.js';
 import type { SearchParams } from '@/types/SearchParams.js';
 import type { Beat } from '@/types/Beat.js';
-import { logError } from '@/utils/logger';
+import { isValidUUIDv4 } from '@/config/checkoutLimits.js';
+import { logError, logInfo } from '@/utils/logger';
 
 /**
  * GET /api/beats
@@ -65,6 +66,15 @@ export async function getBeatsHandler(req: Request, res: Response): Promise<void
         }
 
         const beats: Beat[] = await getBeats(searchParams);
+        logInfo(
+            'beatsController.getBeatsHandler',
+            'Beats requested',
+            {
+                ip: req.ip,
+                count: beats.length,
+                q: typeof q === 'string' ? q : undefined,
+            }
+        );
         res.json(beats);
     } catch (error) {
         logError('beatsController.getBeatsHandler', 'Failed to fetch beats', error);
@@ -85,6 +95,11 @@ export async function getBeatByIdHandler(req: Request, res: Response): Promise<v
             return;
         }
 
+        if (!isValidUUIDv4(id)) {
+            res.status(400).json({ error: 'Beat ID must be a valid UUID' });
+            return;
+        }
+
         const beat: Beat | null = await getBeatById(id);
         
         if (!beat) {
@@ -92,6 +107,14 @@ export async function getBeatByIdHandler(req: Request, res: Response): Promise<v
             return;
         }
 
+        logInfo(
+            'beatsController.getBeatByIdHandler',
+            'Beat requested',
+            {
+                ip: req.ip,
+                beatId: id,
+            }
+        );
         res.json(beat);
     } catch (error) {
         logError('beatsController.getBeatByIdHandler', 'Failed to fetch beat by ID', error);

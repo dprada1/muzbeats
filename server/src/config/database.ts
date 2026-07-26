@@ -48,11 +48,8 @@ const pool = new Pool(
           }
 );
 
-// Connection event handlers
-pool.on('connect', () => {
-    logInfo('database.onConnect', 'Connected to PostgreSQL');
-});
-
+// Idle clients reconnecting used to spam "Connected to PostgreSQL" on every request
+// that needed a fresh pool slot — keep errors only; boot already logs DB config via init.
 pool.on('error', (err) => {
     logError('database.onError', 'PostgreSQL pool error', err);
 });

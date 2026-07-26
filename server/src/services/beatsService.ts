@@ -73,7 +73,6 @@ export async function getBeatById(id: string): Promise<Beat | null> {
 
         return mapDbRowToBeat(result.rows[0]);
     } catch (error) {
-        logError('beatsService.getBeatById', 'Failed to fetch beat by ID from database', error);
-        throw new Error('Failed to fetch beat from database');
+        throw new Error('Failed to fetch beat from database', { cause: error });
     }
 }

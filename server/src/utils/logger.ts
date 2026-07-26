@@ -5,7 +5,8 @@ function formatMessage(
     scope: string,
     message: string
 ): string {
-    return `[${level}] ${scope}: ${message}`;
+    const timestamp = new Date().toISOString();
+    return `[${timestamp}] [${level}] ${scope}: ${message}`;
 }
 
 /** Routine success / progress (boot OK, email sent, etc.). */
