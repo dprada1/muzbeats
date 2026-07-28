@@ -41,6 +41,23 @@ function parseCartQuantity(raw: unknown): number | null {
     return raw;
 }
 
+/** Extract beatId values from create-order body for abuse / audit logging */
+function beatIdsFromCreateOrderBody(body: unknown): unknown[] {
+    if (!body || typeof body !== 'object' || !('items' in body)) {
+        return [];
+    }
+    const items = (body as { items?: unknown }).items;
+    if (!Array.isArray(items)) {
+        return [];
+    }
+    return items.map((line) => {
+        if (!line || typeof line !== 'object' || !('beatId' in line)) {
+            return undefined;
+        }
+        return (line as { beatId?: unknown }).beatId;
+    });
+}
+
 /**
  * POST /api/checkout/paypal/create-order
  * Create a PayPal Order for the cart
@@ -85,6 +102,11 @@ export async function createPayPalOrderHandler(
         // Validate each item has a beatId, and is of valid type (uuidv4 string)
         const beatIds = rawCartLines.map((rawCartLine: { beatId?: unknown }) => rawCartLine.beatId);
         if (!areValidBeatIds(beatIds)) {
+            logWarn(
+                'paypalController.createPayPalOrderHandler',
+                'Rejected create-order request: invalid beatId format',
+                { ip: req.ip, beatIds }
+            );
             res.status(400).json({
                 error: 'Each cart line must have a valid beatId (uuidv4 string)',
             });
@@ -120,11 +142,38 @@ export async function createPayPalOrderHandler(
 
         res.status(200).json(paypalOrder);
     } catch (error: unknown) {
-        logError('paypalController.createPayPalOrderHandler', 'Failed to create PayPal order', error);
+        const auditBeatIds: unknown[] = beatIdsFromCreateOrderBody(req.body);
+
         if (error instanceof CheckoutError) {
+            const logContext = { ip: req.ip, beatIds: auditBeatIds };
+
+            if (error.statusCode >= 500) {
+                logError(
+                    'paypalController.createPayPalOrderHandler',
+                    'Failed to create PayPal order',
+                    { ...logContext, error }
+                );
+            } else {
+                logWarn(
+                    'paypalController.createPayPalOrderHandler',
+                    error.message,
+                    logContext
+                );
+            }
+
             res.status(error.statusCode).json({ error: error.message });
             return;
         }
+
+        logError(
+            'paypalController.createPayPalOrderHandler',
+            'Failed to create PayPal order',
+            {
+                ip: req.ip,
+                beatIds: auditBeatIds,
+                error,
+            }
+        );
         res.status(500).json({
             error: 'Failed to create PayPal order',
         });
