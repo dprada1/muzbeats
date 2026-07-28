@@ -12,7 +12,7 @@ vi.mock('@/services/beatsService.js', () => ({
 import beatsRoutes from '@/routes/beatsRoutes.js';
 import { getBeats, getBeatById } from '@/services/beatsService.js';
 
-const BEAT_ID = '11111111-1111-1111-1111-111111111111';
+const BEAT_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
 const sampleBeat: Beat = {
     id: BEAT_ID,
