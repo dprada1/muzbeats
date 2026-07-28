@@ -2,6 +2,7 @@ import { FaPlay, FaPause, FaTrash } from 'react-icons/fa6';
 import { usePlayer } from '@/context/PlayerContext';
 import { useCart } from '@/context/CartContext';
 import type { Beat } from '@/types/Beat';
+import BeatCoverImage from '@/components/BeatCoverImage';
 
 interface Props {
     beat: Beat;
@@ -17,7 +18,11 @@ export default function BeatCardCart({ beat }: Props) {
                         flex items-start gap-3 sm:gap-4">
             {/* Cover + overlay play */}
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
-                <img src={beat.cover} alt={beat.title} className="w-full h-full rounded-xl object-cover" />
+                <BeatCoverImage
+                    src={beat.cover}
+                    alt={beat.title}
+                    className="w-full h-full rounded-xl object-cover"
+                />
                 <button
                     aria-label={active ? 'Pause preview' : 'Play preview'}
                     onClick={active ? pause : () => play(beat)}

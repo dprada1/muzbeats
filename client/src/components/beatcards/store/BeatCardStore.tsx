@@ -4,6 +4,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import Waveform from '@/components/Waveform';
 import AddToCartButton from '@/components/buttons/AddToCartButton';
 import { ShareBeatButton } from '@/components/buttons/ShareBeatButton';
+import BeatCoverImage from '@/components/BeatCoverImage';
 import { useWaveformCache } from '@/context/WaveformContext';
 
 type Props = {
@@ -27,16 +28,13 @@ export default function BeatCard({ beat, onWaveformReady }: Props) {
 
     return (
         <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto overflow-hidden">
-            {/* LEFT: Cover Art */}
-            <img
+            <BeatCoverImage
                 src={beat.cover}
                 alt={beat.title}
                 className="aspect-square w-20 h-20 md:w-36 md:h-36 rounded-lg object-cover"
             />
 
-            {/* RIGHT: Content */}
             <div className="flex flex-col justify-between flex-1 min-w-0">
-                {/* Title & Key/BPM */}
                 <div className="min-w-0">
                     <h3 className="text-base sm:text-lg font-semibold text-white leading-snug truncate">
                         {beat.title}
@@ -46,7 +44,6 @@ export default function BeatCard({ beat, onWaveformReady }: Props) {
                     </p>
                 </div>
 
-                {/* Play + Waveform */}
                 <div className="min-w-0 flex items-center gap-3 sm:gap-4 mt-2">
                     <button
                         onClick={handleTogglePlay}
@@ -59,7 +56,6 @@ export default function BeatCard({ beat, onWaveformReady }: Props) {
                     </div>
                 </div>
 
-                {/* Cart + Share */}
                 <div className="flex items-center gap-3 mt-2">
                     <AddToCartButton beat={beat} />
                     <ShareBeatButton

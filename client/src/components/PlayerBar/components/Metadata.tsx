@@ -1,12 +1,13 @@
 import { usePlayerBarContext } from '@/components/PlayerBar/PlayerBarContext';
+import BeatCoverImage from '@/components/BeatCoverImage';
 
 export default function Metadata() {
     const { currentBeat } = usePlayerBarContext();
 
     return (
         <div className="flex items-center gap-4 pointer-events-none">
-            {currentBeat?.cover && (
-                <img
+            {currentBeat && (
+                <BeatCoverImage
                     src={currentBeat.cover}
                     alt={currentBeat.title}
                     className="h-12 w-12 rounded object-cover shrink-0"
