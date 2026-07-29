@@ -1,7 +1,7 @@
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-export default function BeatCardSkeleton() {
+export default function BeatCardStoreSkeleton() {
     return (
         <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
             <div className="bg-card-bg text-white rounded-xl shadow-md p-3 sm:p-4 flex gap-3 sm:gap-4 w-full max-w-4xl mx-auto overflow-hidden h-39 sm:h-[186.75px]">

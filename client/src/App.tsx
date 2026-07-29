@@ -2,7 +2,7 @@ import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Navbar from './components/NavBar/NavBar';
 import PlayerBar from './components/PlayerBar';
-import BeatCardSkeleton from './components/beatcards/store/BeatCardSkeleton';
+import BeatCardStoreSkeleton from './components/beatcards/store/BeatCardStoreSkeleton';
 import { SkeletonTheme } from 'react-loading-skeleton';
 
 // Lazy load pages for code splitting
@@ -21,7 +21,7 @@ function PageLoader() {
                 <div className="h-12 bg-zinc-800 rounded-lg mb-4" />
                 <div className="flex flex-col gap-3 sm:gap-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <BeatCardSkeleton key={i} />
+                        <BeatCardStoreSkeleton key={i} />
                     ))}
                 </div>
             </SkeletonTheme>
