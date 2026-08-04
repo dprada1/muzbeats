@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import type { Beat } from '@/types/Beat';
-import BeatCard from '@/components/beatcards/store/BeatCardStore';
+import BeatCardStore from '@/components/beatcards/store/BeatCardStore';
 import PageHeader from '@/components/PageHeader/PageHeader';
 import { apiUrl, transformBeatAssets } from '@/api/api';
 import { isValidBeatId } from '@/validation/validation';
@@ -107,7 +107,7 @@ export default function BeatDetail() {
             <PageHeader title="Shared Beat" subtitle="Showing 1 result" />
 
             <div className="flex flex-col gap-3 sm:gap-4">
-                <BeatCard beat={beat} />
+                <BeatCardStore beat={beat} />
             </div>
         </div>
     );

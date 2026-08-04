@@ -5,11 +5,11 @@ import type WaveSurfer from 'wavesurfer.js';
 type SyncParams = {
     wsRef: RefObject<WaveSurfer | null>;
     audio: HTMLAudioElement | null;
-    isActive: boolean;
+    isCurrentBeatInPlayer: boolean;
     beatId: string;
     beatAudioUrl: string;
     positions: Record<string, number>;
-    setPosition: (id: string, t: number) => void;
+    saveResumePosition: (id: string, t: number) => void;
     duration: number;
     setTime: (t: number) => void;
     setDur: (d: number) => void;
@@ -93,25 +93,25 @@ function metaSync(
  * This prevents position "carry-over" when clicking waveforms back and forth.
  */
 export function useWaveSurferSync({
-    wsRef, audio, isActive, beatId, beatAudioUrl, positions, setPosition, duration, setTime, setDur
+    wsRef, audio, isCurrentBeatInPlayer, beatId, beatAudioUrl, positions, saveResumePosition, duration, setTime, setDur
 }: SyncParams): void {
     // Use a ref to track active state to prevent race conditions in tickSync
     // This ensures tickSync only updates positions when the beat is still active
-    const isActiveRef = useRef(isActive);
+    const isCurrentBeatInPlayerRef = useRef(isCurrentBeatInPlayer);
     
     // Track the last known good position for this beat to prevent overwriting
     // when the beat becomes inactive due to another beat becoming active
     const lastKnownPositionRef = useRef<number | null>(null);
     
-    // Update isActiveRef synchronously to prevent race conditions
+    // Update isCurrentBeatInPlayerRef synchronously to prevent race conditions
     // This ensures tickSync can check the correct active state immediately
-    const wasActive = isActiveRef.current;
-    isActiveRef.current = isActive;
+    const wasActive = isCurrentBeatInPlayerRef.current;
+    isCurrentBeatInPlayerRef.current = isCurrentBeatInPlayer;
     
     useEffect(() => {
         // When beat becomes inactive, save its current position BEFORE any other updates
         // This prevents the position from being overwritten by another beat's time
-        if (wasActive && !isActive) {
+        if (wasActive && !isCurrentBeatInPlayer) {
             // Beat is transitioning from active to inactive
             // Save the current position from the positions map (which should be the last
             // position saved by tickSync when this beat was active)
@@ -122,7 +122,7 @@ export function useWaveSurferSync({
                 lastKnownPositionRef.current = currentPos;
             }
         }
-    }, [isActive, beatId, positions, wasActive]);
+    }, [isCurrentBeatInPlayer, beatId, positions, wasActive]);
 
     useEffect(() => {
         const ws = wsRef.current;
@@ -130,7 +130,7 @@ export function useWaveSurferSync({
 
         // Inactive card: jump to last cached position and bail
         // Use the last known position if available, otherwise fall back to positions map
-        if (!isActive) {
+        if (!isCurrentBeatInPlayer) {
             // Use the last known position if we have one, otherwise use the positions map
             // This prevents reading a position that was overwritten by another beat
             const last = lastKnownPositionRef.current !== null 
@@ -153,7 +153,7 @@ export function useWaveSurferSync({
         lastKnownPositionRef.current = null;
 
         // Prime UI, then wire listeners using extracted helpers
-        const tick = () => tickSync(wsRef, ws, audio, beatId, beatAudioUrl, setPosition, setTime, isActiveRef);
+        const tick = () => tickSync(wsRef, ws, audio, beatId, beatAudioUrl, saveResumePosition, setTime, isCurrentBeatInPlayerRef);
         const meta = () => metaSync(audio, setDur);
 
         tick();
@@ -167,5 +167,5 @@ export function useWaveSurferSync({
         };
         // positions is ref-backed (stable identity); safe to omit from deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isActive, audio, beatId, setPosition, duration, wsRef, setTime, setDur]);
+    }, [isCurrentBeatInPlayer, audio, beatId, saveResumePosition, duration, wsRef, setTime, setDur]);
 }

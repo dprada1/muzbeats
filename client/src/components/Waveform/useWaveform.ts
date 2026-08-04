@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useWaveformCache } from '@/context/WaveformContext';
 import type { Beat } from '@/types/Beat';
@@ -6,12 +6,16 @@ import type { Beat } from '@/types/Beat';
 import { useWaveSurferInit } from './internal/useWaveSurferInit';
 import { useWaveSurferSync } from './internal/useWaveSurferSync';
 import { useWaveSurferInteraction } from './internal/useWaveSurferInteraction';
-import { useViewportContainerSize } from './internal/useViewportContainerSize';
+import { useViewportContainerSize, type ContainerSize } from './internal/useViewportContainerSize';
 
 export interface UseWaveformResult {
     wrapperRef: React.RefObject<HTMLDivElement | null>;
     startTime: number;
     duration: number;
+    /** True after waveform load succeeds or fails (never hangs the beat card skeleton). */
+    hasLoadSettled: boolean;
+    /** True when MP3 decoded successfully; false after a settled load failure. */
+    isAudioAvailable: boolean;
 }
 
 /**
@@ -28,66 +32,81 @@ export interface UseWaveformResult {
  * @param {boolean} isVisible
  * Whether the waveform should be visible/loaded (controlled by parent component).
  *
- * @returns {{ wrapperRef: React.RefObject<HTMLDivElement|null>, time: number, dur: number }}
- * - wrapperRef: attach to the waveform container div.
- * - time: current time (seconds) for the left badge.
- * - dur: total duration (seconds) for the right badge.
+ * @returns {{ wrapperRef, startTime, duration, hasLoadSettled, isAudioAvailable }}
  */
 export default function useWaveform(beat: Beat, isVisible: boolean = true): UseWaveformResult {
     const { audio, currentBeat, play } = usePlayer();
-    const { buffers, setBuffer, positions, setPosition } = useWaveformCache();
+    const { buffers, cacheAudioBuffer, positions, saveResumePosition } = useWaveformCache();
 
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const [startTime, setTime] = useState(0);
     const [duration, setDur] = useState(0);
+    const [hasLoadSettled, setHasLoadSettled] = useState(false);
+    const [isAudioAvailable, setIsAudioAvailable] = useState(false);
 
-    const isActive = currentBeat?.id === beat.id;
+    useEffect(() => {
+        setHasLoadSettled(false);
+        setIsAudioAvailable(false);
+    }, [beat.id]);
+
+    const isCurrentBeatInPlayer: boolean = currentBeat?.id === beat.id;
     
     // Use isVisible prop (parent controls visibility via IntersectionObserver)
     // Always consider active beats visible
-    const shouldLoad = isVisible || isActive;
+    const shouldLoadWaveSurfer: boolean = isVisible || isCurrentBeatInPlayer;
 
     // Derive a coarse layout key from the wrapper's width; used to remount WS on breakpoint changes.
-    const containerSize = useViewportContainerSize();
+    const containerSize: ContainerSize = useViewportContainerSize();
 
-    // ② init/reuse WS; rebuild when layoutKey changes
+    // init/reuse WS; rebuild when layoutKey changes
     const wsRef = useWaveSurferInit({
-        isVisible: shouldLoad,
+        isVisible: shouldLoadWaveSurfer,
         wrapperRef,
         beat,
-        isActive,
+        isCurrentBeatInPlayer,
         audio: audio ?? null,
         buffers,
         positions,
-        setBuffer,
-        onReady: (duration, now) => { setDur(duration); setTime(now); },
+        cacheAudioBuffer,
+        onSettled: (result) => {
+            setDur(result.duration);
+            setTime(result.time);
+            setIsAudioAvailable(result.isAudioAvailable);
+            setHasLoadSettled(true);
+        },
         containerSize,
     });
 
-    // ③ sync with <audio> (active) or show cached position (inactive)
+    // sync with <audio> (active) or show cached position (inactive)
     useWaveSurferSync({
         wsRef,
         audio: audio ?? null,
-        isActive,
+        isCurrentBeatInPlayer,
         beatId: beat.id,
         beatAudioUrl: beat.audio,
         positions,
-        setPosition,
+        saveResumePosition,
         duration,
         setTime,
         setDur,
     });
 
-    // ④ click/drag to seek (works active or not)
+    // click/drag to seek (works active or not)
     useWaveSurferInteraction({
         wsRef,
         audio: audio ?? null,
-        isActive,
+        isCurrentBeatInPlayer,
         beat,
         play,
-        setPosition,
+        saveResumePosition,
         getDur: () => duration,
     });
 
-    return { wrapperRef, startTime, duration };
+    return {
+        wrapperRef,
+        startTime,
+        duration,
+        hasLoadSettled,
+        isAudioAvailable
+    };
 }
