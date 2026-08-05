@@ -109,8 +109,11 @@ export default function CartPage() {
     const isEmpty = count === 0;
     const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
 
-    const handlePaymentSuccess = (orderId: string) => {
-        navigate(`/store/checkout/success?order_id=${orderId}`, { replace: true });
+    const handlePaymentSuccess = (orderId: string, emailSent: boolean) => {
+        navigate(`/store/checkout/success?order_id=${orderId}`, {
+            replace: true,
+            state: { emailSent },
+        });
         setTimeout(() => clearCart(), 50);
     };
 

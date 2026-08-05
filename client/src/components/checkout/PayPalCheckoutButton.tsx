@@ -6,7 +6,7 @@ import { sanitizeErrorMessage } from '@/security/errorSanitization';
 
 interface PayPalCheckoutButtonProps {
     cartItems: Beat[];
-    onSuccess: (orderId: string) => void;
+    onSuccess: (orderId: string, emailSent: boolean) => void;
     onError: (error: string) => void;
 }
 
@@ -81,8 +81,7 @@ export default function PayPalCheckoutButton({
                                 }
                             );
 
-                            // Call success handler with our database order ID
-                            onSuccess(result.orderId);
+                            onSuccess(result.orderId, result.emailSent);
                         } catch (error: unknown) {
                             if (import.meta.env.DEV) {
                                 console.error('Error capturing PayPal order:', error);
