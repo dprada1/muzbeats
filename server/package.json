@@ -24,6 +24,7 @@
     "init-db": "tsx src/db/initializeDatabase.ts",
     "test-db": "tsx src/test-db.ts",
     "update-prices": "tsx src/db/update-prices.ts",
+    "audit-catalog": "tsx src/db/audit-catalog.ts",
     "test": "vitest --ui --coverage",
     "test:run": "vitest run --coverage",
     "create-test-download": "tsx src/__tests__/webhook/create-test-download.ts"
