@@ -4,27 +4,27 @@ type AudioBufferMap = Record<string, AudioBuffer>;
 type PositionMap    = Record<string, number>;
 
 interface WaveformCache {
-    buffers:     AudioBufferMap;
-    setBuffer:   (id: string, buf: AudioBuffer) => void;
-    positions:   PositionMap;
-    setPosition: (id: string, pos: number) => void;
-    clearCache:  () => void;
+    buffers: AudioBufferMap;
+    cacheAudioBuffer: (id: string, buf: AudioBuffer) => void;
+    positions: PositionMap;
+    saveResumePosition: (id: string, pos: number) => void;
+    clearCache: () => void;
 }
 
 const WaveformCacheContext = createContext<WaveformCache>({
-    buffers:     {},
-    setBuffer:   () => {},
-    positions:   {},
-    setPosition: () => {},
-    clearCache:  () => {},
+    buffers: {},
+    cacheAudioBuffer: () => {},
+    positions: {},
+    saveResumePosition: () => {},
+    clearCache: () => {},
 });
 
 /**
- * Maximum number of AudioBuffers to cache (LRU eviction)
- * Each buffer is ~10-50MB depending on audio length/quality.
- * 15 buffers = ~150-750MB max memory usage for waveform cache.
+ * Maximum number of AudioBuffers to cache (LRU eviction).
+ * Each decoded buffer is typically ~10–50MB+ depending on length/channels.
+ * 10 buffers ≈ a few hundred MB worst case for the shared cache alone.
  */
-const MAX_CACHED_BUFFERS = 15;
+const MAX_CACHED_BUFFERS = 10;
 
 export const WaveformCacheProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const buffersRef = useRef<AudioBufferMap>({});
@@ -32,9 +32,9 @@ export const WaveformCacheProvider: React.FC<{ children: React.ReactNode }> = ({
     // Track access order for LRU eviction (oldest first)
     const accessOrderRef = useRef<string[]>([]);
 
-    const setBuffer = (id: string, buf: AudioBuffer) => {
-        const buffers = buffersRef.current;
-        const accessOrder = accessOrderRef.current;
+    const cacheAudioBuffer = (id: string, buf: AudioBuffer) => {
+        const buffers: AudioBufferMap = buffersRef.current;
+        const accessOrder: string[] = accessOrderRef.current;
         
         // If buffer already exists, move it to end (most recently used)
         if (buffers[id]) {
@@ -49,14 +49,15 @@ export const WaveformCacheProvider: React.FC<{ children: React.ReactNode }> = ({
         
         // If cache is full, remove least recently used (first in array)
         if (accessOrder.length >= MAX_CACHED_BUFFERS) {
-            const lruId = accessOrder.shift();
-            if (lruId) {
-                delete buffers[lruId];
-                delete positionsRef.current[lruId];
+            const LRUId = accessOrder.shift();
+            if (LRUId) {
+                delete buffers[LRUId];
+                delete positionsRef.current[LRUId];
                 if (import.meta.env.DEV) {
-                    console.log(`[WaveformCache] Evicted: ${lruId.slice(0, 8)}... | Size: ${accessOrder.length + 1}/${MAX_CACHED_BUFFERS}`);
+                    console.log(`[WaveformCache] Evicted: ${LRUId.slice(0, 8)}... | Size: ${accessOrder.length + 1}/${MAX_CACHED_BUFFERS}`);
                 }
             }
+            // accessOrder was originally empty, skip
         }
         
         // Add new buffer to end (most recently used)
@@ -67,7 +68,7 @@ export const WaveformCacheProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const setPosition = (id: string, pos: number) => {
+    const saveResumePosition = (id: string, pos: number) => {
         positionsRef.current[id] = pos;
     };
 
@@ -81,9 +82,9 @@ export const WaveformCacheProvider: React.FC<{ children: React.ReactNode }> = ({
         <WaveformCacheContext.Provider
             value={{
                 buffers:   buffersRef.current,
-                setBuffer,
+                cacheAudioBuffer,
                 positions: positionsRef.current,
-                setPosition,
+                saveResumePosition,
                 clearCache,
             }}
         >

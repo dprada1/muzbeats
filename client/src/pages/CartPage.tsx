@@ -109,8 +109,11 @@ export default function CartPage() {
     const isEmpty = count === 0;
     const total = cartItems.reduce((acc, b) => acc + (b.price ?? 0), 0).toFixed(2);
 
-    const handlePaymentSuccess = (orderId: string) => {
-        navigate(`/store/checkout/success?order_id=${orderId}`, { replace: true });
+    const handlePaymentSuccess = (orderId: string, emailSent: boolean) => {
+        navigate(`/store/checkout/success?order_id=${orderId}`, {
+            replace: true,
+            state: { emailSent },
+        });
         setTimeout(() => clearCart(), 50);
     };
 
@@ -138,7 +141,7 @@ export default function CartPage() {
             )}
 
             {!isEmpty && (
-                <div className="grid lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 pb-[80px] sm:pb-0">
+                <div className="grid lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 pb-20 sm:pb-0">
                     {/* list */}
                     <div className="min-w-0 flex flex-col gap-4 sm:gap-6">
                         {cartItems.map((beat) => (
@@ -210,7 +213,7 @@ export default function CartPage() {
 
             {/* sticky checkout bar for mobile */}
             {!isEmpty && (
-                <div className="lg:hidden fixed left-0 right-0 bottom-[80px] sm:bottom-[88px] z-40 px-4 pb-4 pointer-events-none">
+                <div className="lg:hidden fixed left-0 right-0 bottom-20 sm:bottom-22 z-40 px-4 pb-4 pointer-events-none">
                     <div className="pointer-events-auto backdrop-blur-xl bg-overlay-bg/95 border border-white/10 rounded-2xl p-4 shadow-2xl">
                         {/* Total */}
                         <div className="flex items-center justify-between mb-3 pb-3 border-b border-zinc-800">

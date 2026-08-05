@@ -38,12 +38,12 @@ export const DOWNLOAD_TOKEN_TTL_DAYS = 30;
 export const MAX_DOWNLOADS_PER_TOKEN = 5;
 
 /** UUID v4 - fail fast before SQL */
-export const BEAT_ID_UUID_REGEX: RegExp =
+export const BEAT_ID_UUIDv4_REGEX: RegExp =
     /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Returns true when value is a UUID v4 string (regex format only, not DB lookup). */
 export function isValidUUIDv4(value: unknown): value is string {
-    return typeof value === 'string' && BEAT_ID_UUID_REGEX.test(value);
+    return typeof value === 'string' && BEAT_ID_UUIDv4_REGEX.test(value);
 }
 
 /** Type guard: after this passes, `ids` is narrowed to `string[]`. */

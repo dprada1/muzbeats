@@ -50,6 +50,16 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/**/__tests__/**',
+        'src/main.tsx',
+      ],
+    },
   },
 
   server: {
@@ -63,8 +73,14 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
-      // Proxy /assets requests to the backend server
-      '/assets': {
+      // Only proxy media from the API server. Do NOT proxy `/assets` wholesale —
+      // Vite build output lives at `/assets/js` and `/assets/css`, and
+      // `vite preview` inherits this proxy (blank page + ECONNREFUSED otherwise).
+      '/assets/beats': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/assets/images': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },

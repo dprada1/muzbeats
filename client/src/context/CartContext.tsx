@@ -3,10 +3,12 @@ import {
     useContext,
     useState,
     useEffect,
+    useCallback,
+    useMemo,
     type ReactNode,
 } from 'react';
 import type { Beat } from '@/types/Beat';
-import { validateCartData } from '@/validation/validation';
+import { validateCartData, isValidBeat } from '@/validation/validation';
 
 interface CartContextType {
     cartItems: Beat[];
@@ -23,28 +25,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     /* Hydrate synchronously with validation */
     const [cartItems, setCartItems] = useState<Beat[]>(() => {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) {
+            const rawLocalStorageItem: string | null = localStorage.getItem(STORAGE_KEY);
+            if (!rawLocalStorageItem) {
                 return [];
             }
             
-            const parsed = JSON.parse(raw);
+            const parsedCart: any = JSON.parse(rawLocalStorageItem);
             // Validate and sanitize cart data
-            const validated = validateCartData(parsed);
+            const validatedCart: Beat[] = validateCartData(parsedCart);
             
             // If validation removed items, clean up localStorage immediately
             // (before useEffect runs to avoid double-write)
-            const originalLength = Array.isArray(parsed) ? parsed.length : 0;
-            if (validated.length !== originalLength) {
-                if (validated.length === 0) {
+            const originalLength = Array.isArray(parsedCart) ? parsedCart.length : 0;
+            if (validatedCart.length !== originalLength) {
+                if (validatedCart.length === 0) {
                     localStorage.removeItem(STORAGE_KEY);
                 } else {
                     // Update with cleaned data
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedCart));
                 }
             }
             
-            return validated;
+            return validatedCart;
         } catch (error) {
             // JSON parse error or other issues - clear corrupted data
             if (import.meta.env.DEV) {
@@ -60,23 +62,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
     }, [cartItems]);
 
-    /* Helpers */
-    const addToCart = (b: Beat) =>
+    
+    const addToCart = useCallback((b: Beat) => {
+        if (!isValidBeat(b)) {
+            if (import.meta.env.DEV) console.warn('Rejected invalid beat for cart:', b);
+            return;
+        }
         setCartItems((arr) => (arr.find((i) => i.id === b.id) ? arr : [...arr, b]));
-    const removeFromCart = (id: string) =>
+    }, []);
+
+    const removeFromCart = useCallback((id: string) => {
         setCartItems((arr) => arr.filter((i) => i.id !== id));
-    const inCart = (id: string) => cartItems.some((i) => i.id === id);
-    const clearCart = () => setCartItems([]);
+    }, []);
+
+    const inCart = useCallback(
+        (id: string) => cartItems.some((i) => i.id === id),
+        [cartItems]
+    );
+
+    const clearCart = useCallback(() => {
+        setCartItems((arr) => (arr.length === 0 ? arr : []));
+    }, []);
+
+    const value = useMemo(
+        () => ({ cartItems, addToCart, removeFromCart, inCart, clearCart }),
+        [cartItems, addToCart, removeFromCart, inCart, clearCart]
+    );
 
     return (
-        <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, inCart, clearCart }}>
+        <CartContext.Provider value={value}>
             {children}
         </CartContext.Provider>
     );
 }
 
 export function useCart() {
-    const ctx = useContext(CartContext);
+    const ctx: CartContextType | undefined = useContext(CartContext);
     if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
     return ctx;
 }

@@ -5,16 +5,22 @@ import { createWaveSurfer } from '@/components/Waveform/loader';
 import type { Beat } from '@/types/Beat';
 import type { WSInternals } from './wsInternals';
 
+export type WaveformLoadResult = {
+    isAudioAvailable: boolean;
+    duration: number;
+    time: number;
+};
+
 type InitParams = {
     isVisible: boolean;
     wrapperRef: RefObject<HTMLDivElement | null>;
     beat: Beat;
-    isActive: boolean;
+    isCurrentBeatInPlayer: boolean;
     audio: HTMLAudioElement | null;
     buffers: Record<string, AudioBuffer>;
     positions: Record<string, number>;
-    setBuffer: (id: string, buf: AudioBuffer) => void;
-    onReady: (dur: number, now: number) => void;
+    cacheAudioBuffer: (id: string, buf: AudioBuffer) => void;
+    onSettled: (result: WaveformLoadResult) => void;
     containerSize?: 'compact' | 'regular';
 };
 
@@ -26,8 +32,8 @@ type InitParams = {
  * @returns {RefObject<WaveSurfer|null>} ref to the WaveSurfer instance
  */
 export function useWaveSurferInit({
-    isVisible, wrapperRef, beat, isActive, audio,
-    buffers, positions, setBuffer, onReady, containerSize,
+    isVisible, wrapperRef, beat, isCurrentBeatInPlayer, audio,
+    buffers, positions, cacheAudioBuffer, onSettled, containerSize,
 }: InitParams): RefObject<WaveSurfer | null> {
     const wsRef = useRef<WaveSurfer | null>(null);
 
@@ -39,7 +45,7 @@ export function useWaveSurferInit({
         const wrapperEl = wrapperRef.current;
         if (!wrapperEl) return;
 
-        const ws = createWaveSurfer(wrapperEl);
+        const ws: WaveSurfer = createWaveSurfer(wrapperEl);
         wsRef.current = ws;
         ws.setMuted?.(true); // PlayerBar drives audio; WS is visual only
 
@@ -58,7 +64,7 @@ export function useWaveSurferInit({
                 audioUrl: beat.audio,
                 error,
             });
-            onReady(0, 0);
+            onSettled({ isAudioAvailable: false, duration: 0, time: 0 });
         };
 
         // ---- Cached path: hydrate instantly, no network/decode ----
@@ -75,9 +81,9 @@ export function useWaveSurferInit({
 
             // If this is the active beat, follow the global <audio> time.
             // Otherwise, resume from our saved position.
-            const startTime  = isActive && audio ? Math.min(audio.currentTime, duration) : savedTime;
+            const startTime  = isCurrentBeatInPlayer && audio ? Math.min(audio.currentTime, duration) : savedTime;
 
-            onReady(duration, startTime); // Update time badges in UI
+            onSettled({ isAudioAvailable: true, duration, time: startTime });
             ws.seekTo(duration > 0 ? startTime / duration : 0);
 
             // cleanup (Strict Mode safe)
@@ -93,13 +99,13 @@ export function useWaveSurferInit({
             // Fallback to old API for older versions
             const buf = decodedData || (ws as any)?.backend?.buffer as AudioBuffer | undefined;
             
-            if (buf) setBuffer(beat.id, buf);
+            if (buf) cacheAudioBuffer(beat.id, buf);
 
             const duration = ws.getDuration();
             const savedTime = positions[beat.id] ?? 0;
-            const startTime  = isActive && audio ? Math.min(audio.currentTime, duration) : savedTime;
+            const startTime  = isCurrentBeatInPlayer && audio ? Math.min(audio.currentTime, duration) : savedTime;
 
-            onReady(duration, startTime);
+            onSettled({ isAudioAvailable: true, duration, time: startTime });
             ws.seekTo(duration > 0 ? startTime / duration : 0);
         };
 

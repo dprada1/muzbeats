@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-    isValidUUID,
+    isValidUUIDv4,
     isValidBeatId,
     isValidOrderId,
     validateSearchQuery,
@@ -11,37 +11,57 @@ import {
 } from '@/validation/validation';
 import type { Beat } from '@/types/Beat';
 
-describe('isValidUUID', () => {
-    it('validates correct UUID format', () => {
-        expect(isValidUUID('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
-        expect(isValidUUID('00000000-0000-0000-0000-000000000000')).toBe(true);
-        expect(isValidUUID('FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF')).toBe(true);
+/** Well-formed UUID v4 (version nibble = 4, variant nibble in 8|9|a|b) */
+const VALID_UUID_V4 = '550e8400-e29b-41d4-a716-446655440000';
+const VALID_UUID_V4_B = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+
+describe('isValidUUIDv4', () => {
+    it('validates correct UUID v4 format', () => {
+        expect(isValidUUIDv4(VALID_UUID_V4)).toBe(true);
+        expect(isValidUUIDv4(VALID_UUID_V4_B)).toBe(true);
+        expect(isValidUUIDv4('123e4567-e89b-42d3-a456-426614174000')).toBe(true);
+        expect(isValidUUIDv4('00000000-0000-4000-8000-000000000000')).toBe(true);
+        expect(isValidUUIDv4('FFFFFFFF-FFFF-4FFF-BFFF-FFFFFFFFFFFF')).toBe(true);
+    });
+
+    it('rejects non-v4 UUIDs (wrong version or variant)', () => {
+        // version nibble is 1, not 4
+        expect(isValidUUIDv4('123e4567-e89b-12d3-a456-426614174000')).toBe(false);
+        // nil UUID — version 0
+        expect(isValidUUIDv4('00000000-0000-0000-0000-000000000000')).toBe(false);
+        // all F — version F, invalid variant
+        expect(isValidUUIDv4('FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF')).toBe(false);
+        // version 9
+        expect(isValidUUIDv4('99999999-9999-9999-9999-999999999999')).toBe(false);
+        // version 4 but invalid variant nibble (c is not 8|9|a|b)
+        expect(isValidUUIDv4('550e8400-e29b-41d4-c716-446655440000')).toBe(false);
     });
 
     it('rejects invalid UUID formats', () => {
-        expect(isValidUUID('')).toBe(false);
-        expect(isValidUUID('123')).toBe(false);
-        expect(isValidUUID('123e4567-e89b-12d3-a456')).toBe(false); // too short
-        expect(isValidUUID('123e4567-e89b-12d3-a456-426614174000-extra')).toBe(false); // too long
-        expect(isValidUUID('123e4567-e89b-12d3-a456-42661417400g')).toBe(false); // invalid char
-        expect(isValidUUID('123e4567e89b12d3a456426614174000')).toBe(false); // no hyphens
+        expect(isValidUUIDv4('')).toBe(false);
+        expect(isValidUUIDv4('123')).toBe(false);
+        expect(isValidUUIDv4('123e4567-e89b-42d3-a456')).toBe(false); // too short
+        expect(isValidUUIDv4('123e4567-e89b-42d3-a456-426614174000-extra')).toBe(false); // too long
+        expect(isValidUUIDv4('123e4567-e89b-42d3-a456-42661417400g')).toBe(false); // invalid char
+        expect(isValidUUIDv4('123e4567e89b42d3a456426614174000')).toBe(false); // no hyphens
     });
 
     it('handles null and undefined', () => {
-        expect(isValidUUID(null)).toBe(false);
-        expect(isValidUUID(undefined)).toBe(false);
+        expect(isValidUUIDv4(null)).toBe(false);
+        expect(isValidUUIDv4(undefined)).toBe(false);
     });
 
     it('handles non-string types', () => {
-        expect(isValidUUID(123 as any)).toBe(false);
-        expect(isValidUUID({} as any)).toBe(false);
-        expect(isValidUUID([] as any)).toBe(false);
+        expect(isValidUUIDv4(123 as any)).toBe(false);
+        expect(isValidUUIDv4({} as any)).toBe(false);
+        expect(isValidUUIDv4([] as any)).toBe(false);
     });
 });
 
 describe('isValidBeatId', () => {
-    it('validates beat IDs as UUIDs', () => {
-        expect(isValidBeatId('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
+    it('validates beat IDs as UUID v4', () => {
+        expect(isValidBeatId(VALID_UUID_V4)).toBe(true);
+        expect(isValidBeatId('123e4567-e89b-12d3-a456-426614174000')).toBe(false); // not v4
         expect(isValidBeatId('invalid')).toBe(false);
         expect(isValidBeatId(null)).toBe(false);
         expect(isValidBeatId(undefined)).toBe(false);
@@ -49,8 +69,8 @@ describe('isValidBeatId', () => {
 });
 
 describe('isValidOrderId', () => {
-    it('validates UUID order IDs', () => {
-        expect(isValidOrderId('123e4567-e89b-12d3-a456-426614174000')).toBe(true);
+    it('validates UUID v4 order IDs', () => {
+        expect(isValidOrderId(VALID_UUID_V4)).toBe(true);
     });
 
     it('validates PayPal order IDs', () => {
@@ -183,7 +203,7 @@ describe('truncateForDisplay', () => {
 
 describe('isValidBeat', () => {
     const validBeat: Beat = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
+        id: VALID_UUID_V4,
         title: 'Test Beat',
         key: 'Cmaj',
         bpm: 120,
@@ -229,6 +249,15 @@ describe('isValidBeat', () => {
         expect(isValidBeat({ ...validBeat, cover: '' })).toBe(false);
     });
 
+    it('rejects non-v4 beat ids', () => {
+        expect(
+            isValidBeat({ ...validBeat, id: '123e4567-e89b-12d3-a456-426614174000' })
+        ).toBe(false);
+        expect(
+            isValidBeat({ ...validBeat, id: '99999999-9999-9999-9999-999999999999' })
+        ).toBe(false);
+    });
+
     it('rejects invalid bpm values', () => {
         expect(isValidBeat({ ...validBeat, bpm: 0 })).toBe(false);
         expect(isValidBeat({ ...validBeat, bpm: -1 })).toBe(false);
@@ -252,7 +281,7 @@ describe('isValidBeat', () => {
 
 describe('validateCartData', () => {
     const validBeat: Beat = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
+        id: VALID_UUID_V4,
         title: 'Test Beat',
         key: 'Cmaj',
         bpm: 120,
@@ -262,7 +291,7 @@ describe('validateCartData', () => {
     };
 
     const validBeat2: Beat = {
-        id: '223e4567-e89b-12d3-a456-426614174000',
+        id: VALID_UUID_V4_B,
         title: 'Test Beat 2',
         key: 'Dmaj',
         bpm: 140,

@@ -24,8 +24,9 @@
     "init-db": "tsx src/db/initializeDatabase.ts",
     "test-db": "tsx src/test-db.ts",
     "update-prices": "tsx src/db/update-prices.ts",
-    "test": "vitest --ui",
-    "test:run": "vitest --run"
+    "test": "vitest --ui --coverage",
+    "test:run": "vitest run --coverage",
+    "create-test-download": "tsx src/__tests__/webhook/create-test-download.ts"
   },
   "keywords": [],
   "author": "",
@@ -46,10 +47,11 @@
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.6",
     "@types/supertest": "^7.2.0",
-    "@vitest/ui": "^3.2.6",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/ui": "^4.1.10",
     "supertest": "^7.2.2",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.10"
   }
 }

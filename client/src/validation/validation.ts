@@ -1,15 +1,16 @@
 /**
- * UUID validation regex
+ * UUIDv4 validation regex
  * Matches standard UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
  */
-const UUID_REGEX: RegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const BEAT_ID_UUIDv4_REGEX: RegExp =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * Validates if a string is a valid UUID format
  * @param id - The string to validate
  * @returns true if valid UUID format, false otherwise
  */
-export function isValidUUID(id: string | undefined | null): boolean {
+export function isValidUUIDv4(id: string | undefined | null): boolean {
     if (!id || typeof id !== 'string') {
         return false;
     }
@@ -20,7 +21,7 @@ export function isValidUUID(id: string | undefined | null): boolean {
     }
     
     // Check format
-    return UUID_REGEX.test(id);
+    return BEAT_ID_UUIDv4_REGEX.test(id);
 }
 
 /**
@@ -29,7 +30,7 @@ export function isValidUUID(id: string | undefined | null): boolean {
  * @returns true if valid, false otherwise
  */
 export function isValidBeatId(beatId: string | undefined | null): boolean {
-    return isValidUUID(beatId);
+    return isValidUUIDv4(beatId);
 }
 
 /**
@@ -50,7 +51,7 @@ export function isValidOrderId(orderId: string | undefined | null): boolean {
     }
     
     // Check if it's a UUID (our database order ID)
-    if (isValidUUID(orderId)) {
+    if (isValidUUIDv4(orderId)) {
         return true;
     }
     
@@ -140,7 +141,7 @@ export function isValidBeat(item: unknown): item is import('@/types/Beat').Beat 
     // Check required fields with correct types
     return (
         typeof beat.id === 'string' &&
-        beat.id.length > 0 &&
+        isValidBeatId(beat.id) &&
         typeof beat.title === 'string' &&
         beat.title.length > 0 &&
         typeof beat.key === 'string' &&

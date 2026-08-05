@@ -46,8 +46,8 @@ export default function LicensePage() {
                     <h2 className="text-xl font-semibold mb-2">Contact</h2>
                     <p className="text-zinc-300">
                         Questions? Email{' '}
-                        <a href="mailto:danielprada2006@gmail.com" className="underline hover:text-white">
-                            danielprada2006@gmail.com
+                        <a href="mailto:support@prodmuz.com" className="underline hover:text-white">
+                            support@prodmuz.com
                         </a>
                         .
                     </p>

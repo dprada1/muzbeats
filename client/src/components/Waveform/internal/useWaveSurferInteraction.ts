@@ -6,10 +6,10 @@ import type { Beat } from '@/types/Beat';
 type InteractionParams = {
     wsRef: RefObject<WaveSurfer | null>;
     audio: HTMLAudioElement | null;
-    isActive: boolean;
+    isCurrentBeatInPlayer: boolean;
     beat: Beat;
     play: (beat: Beat) => void;
-    setPosition: (id: string, t: number) => void;
+    saveResumePosition: (id: string, t: number) => void;
     getDur: () => number; // accessor to compute seconds from progress if needed
 };
 
@@ -22,7 +22,7 @@ type InteractionParams = {
  * - Updates the resume-position cache when the user scrubs.
  */
 export function useWaveSurferInteraction({
-    wsRef, audio, isActive, beat, play, setPosition, getDur
+    wsRef, audio, isCurrentBeatInPlayer, beat, play, saveResumePosition, getDur
 }: InteractionParams): void {
     useEffect(() => {
         const ws = wsRef.current;
@@ -30,9 +30,9 @@ export function useWaveSurferInteraction({
 
         // Unified “start or seek” action
         const startOrSeek = (sec: number) => {
-            setPosition(beat.id, sec); // keep resume point fresh
+            saveResumePosition(beat.id, sec); // keep resume point fresh
 
-            if (!isActive) {
+            if (!isCurrentBeatInPlayer) {
                 // Start this beat, then jump to the chosen second
                 play(beat);
                 try { audio.currentTime = sec; } catch { /* ignore */ }
@@ -65,5 +65,5 @@ export function useWaveSurferInteraction({
             (ws as any).un?.('interaction', onInteraction);
             (ws as any).un?.('seek', onSeek);
         };
-    }, [wsRef, audio, isActive, beat, play, setPosition, getDur]);
+    }, [wsRef, audio, isCurrentBeatInPlayer, beat, play, saveResumePosition, getDur]);
 }

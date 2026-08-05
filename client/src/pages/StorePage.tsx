@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useIsMobile } from "@/hooks/useMediaQuery";
-import LazyBeatCard from "@/components/beatcards/store/LazyBeatCard";
+import LazyBeatCardStore from "@/components/beatcards/store/LazyBeatCardStore";
 import type { Beat } from "@/types/Beat";
 import { useSearch } from "@/context/SearchContext";
 import PageHeader from "@/components/PageHeader/PageHeader";
 import NProgress from "nprogress";
 import 'nprogress/nprogress.css';
-import BeatCardSkeleton from "@/components/beatcards/store/BeatCardSkeleton";
+import BeatCardStoreSkeleton from "@/components/beatcards/store/BeatCardStoreSkeleton";
 import { SkeletonTheme } from "react-loading-skeleton";
 import { apiUrl, transformBeatsAssets } from "@/api/api";
 import { validatedFetch, BeatSchema, z, type Beat as ValidatedBeat } from "@/api/apiValidation";
@@ -171,9 +171,9 @@ export default function StorePage() {
             <div className="flex flex-col gap-3 sm:gap-4">
                 <SkeletonTheme baseColor="#1e1e1e" highlightColor="#2c2c2c">
                     {isLoading && beats.length === 0 && !error
-                        ? Array.from({ length: 8 }).map((_, i) => <BeatCardSkeleton key={i} />)
+                        ? Array.from({ length: 8 }).map((_, i) => <BeatCardStoreSkeleton key={i} />)
                         : !error && beats.map((beat: Beat) => (
-                            <LazyBeatCard 
+                            <LazyBeatCardStore 
                                 key={beat.id} 
                                 beat={beat}
                             />
