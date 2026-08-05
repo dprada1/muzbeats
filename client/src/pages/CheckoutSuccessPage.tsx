@@ -1,43 +1,119 @@
-import { Link, useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { isValidOrderId } from '@/validation/validation';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { apiUrl } from '@/api/api';
+import { validatedFetch, PayPalCaptureOrderResponseSchema } from '@/api/apiValidation';
+import { useCart } from '@/context/CartContext';
+import { isValidOrderId, isValidUUIDv4 } from '@/validation/validation';
+import { sanitizeErrorMessage } from '@/security/errorSanitization';
+
+type PaymentStatus = 'verifying' | 'success' | 'failed';
+
+function getPaypalOrderIdFromParams(searchParams: URLSearchParams): string | null {
+    const token = searchParams.get('token');
+    if (token && isValidOrderId(token)) {
+        return token;
+    }
+
+    const orderIdParam = searchParams.get('order_id');
+    if (orderIdParam && isValidOrderId(orderIdParam) && !isValidUUIDv4(orderIdParam)) {
+        return orderIdParam;
+    }
+
+    return null;
+}
 
 export default function CheckoutSuccessPage() {
     const [searchParams] = useSearchParams();
-    const [paymentStatus, setPaymentStatus] = useState<'loading' | 'success' | 'failed'>('loading');
+    const navigate = useNavigate();
+    const { clearCart } = useCart();
+    const clearCartRef = useRef(clearCart);
+    clearCartRef.current = clearCart;
+
+    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('verifying');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const verificationRef = useRef(false);
+    const cartClearedRef = useRef(false);
 
     useEffect(() => {
         window.scrollTo({ top: 0 });
-        
-        // Check for PayPal order_id parameter
-        const orderId = searchParams.get('order_id');
-        
-        if (!orderId) {
-            // If no payment info in URL, something went wrong
-            if (import.meta.env.DEV) {
-                console.error('No payment ID found in URL');
-            }
-            setPaymentStatus('failed');
-            setErrorMessage('Payment information not found. Please contact support if you were charged.');
+    }, []);
+
+    useEffect(() => {
+        if (verificationRef.current) {
             return;
         }
 
-        // Validate orderId format before proceeding
-        if (!isValidOrderId(orderId)) {
-            if (import.meta.env.DEV) {
-                console.error('Invalid order ID format:', orderId);
+        const dbOrderIdParam: string | null = searchParams.get('order_id');
+
+        // In-page PayPal Buttons: capture already ran; CartPage navigated with our DB UUID
+        if (dbOrderIdParam && isValidUUIDv4(dbOrderIdParam)) {
+            verificationRef.current = true;
+            if (!cartClearedRef.current) {
+                cartClearedRef.current = true;
+                clearCartRef.current();
             }
-            setPaymentStatus('failed');
-            setErrorMessage('Invalid payment information. Please contact support if you were charged.');
+            setPaymentStatus('success');
             return;
         }
 
-        // PayPal payment - order is already created, just show success
-        setPaymentStatus('success');
-    }, [searchParams]);
+        const paypalOrderId: string | null = getPaypalOrderIdFromParams(searchParams);
+        if (!paypalOrderId) {
+            verificationRef.current = true;
+            setPaymentStatus('failed');
+            setErrorMessage(
+                'Payment information not found. Please contact support if you were charged.'
+            );
+            return;
+        }
 
-    if (paymentStatus === 'loading') {
+        verificationRef.current = true;
+        let cancelled = false;
+
+        async function captureRedirectPayment() {
+            try {
+                const result = await validatedFetch(
+                    apiUrl('/api/checkout/paypal/capture-order'),
+                    PayPalCaptureOrderResponseSchema,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: paypalOrderId }),
+                    }
+                );
+
+                if (cancelled) return;
+
+                if (!cartClearedRef.current) {
+                    cartClearedRef.current = true;
+                    clearCartRef.current();
+                }
+
+                setPaymentStatus('success');
+
+                if (searchParams.get('order_id') !== result.orderId) {
+                    navigate(
+                        `/store/checkout/success?order_id=${encodeURIComponent(result.orderId)}`,
+                        { replace: true }
+                    );
+                }
+            } catch (error: unknown) {
+                if (cancelled) return;
+                if (import.meta.env.DEV) {
+                    console.error('Error capturing PayPal order on success page:', error);
+                }
+                setPaymentStatus('failed');
+                setErrorMessage(sanitizeErrorMessage(error, 'PayPal capture order'));
+            }
+        }
+
+        captureRedirectPayment();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [searchParams, navigate]);
+
+    if (paymentStatus === 'verifying') {
         return (
             <div className="pt-12 max-w-3xl mx-auto text-center px-4">
                 <div className="bg-zinc-500/20 border border-zinc-500 rounded-2xl p-6 sm:p-8 mb-6">
@@ -66,7 +142,7 @@ export default function CheckoutSuccessPage() {
                 <div className="space-y-4">
                     <Link
                         to="/store/cart"
-                        className="inline-block bg-button-blue hover:bg-button-blue-hover text-white font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
+                        className="inline-block bg-button-yellow hover:bg-button-yellow-hover text-black font-semibold py-3 px-8 rounded-full transition active:scale-[1.02]"
                     >
                         Try Again
                     </Link>
