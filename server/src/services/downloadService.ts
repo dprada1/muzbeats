@@ -32,7 +32,7 @@ function stripLeadingSlash(p: string): string {
  *
  * @returns `true` when private R2 can be initialized; `false` otherwise (expected in local dev without R2)
  */
-function isR2PrivateConfigured(): boolean {
+export function isR2PrivateConfigured(): boolean {
     return !!(
         process.env.R2_PRIVATE_BUCKET_NAME &&
         process.env.R2_ENDPOINT &&
@@ -201,8 +201,26 @@ export function getWavPath(audioPath: string): string {
  * @param audioPath - Database audio path (MP3 or WAV); only the basename is used
  * @returns R2 object key (e.g. `wav/gunna__versace_Cmin_130.wav`)
  */
-function getPrivateWavR2Key(audioPath: string): string {
+export function getPrivateWavR2Key(audioPath: string): string {
     return `wav/${path.basename(getWavPath(audioPath))}`;
+}
+
+/** Result of probing a private R2 WAV object without downloading it. */
+export type R2WavProbe = 'exists' | 'missing' | 'unconfigured' | 'error';
+
+/**
+ * True when an AWS SDK / S3 error looks like “object not found”.
+ * R2/S3 surface this as HTTP 404 and/or names like `NotFound` / `NoSuchKey`.
+ */
+function isS3NotFoundError(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null) return false;
+
+    const name = 'name' in error ? String(error.name) : '';
+    if (name === 'NotFound' || name === 'NoSuchKey') return true;
+
+    const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata
+        ?.httpStatusCode;
+    return status === 404;
 }
 
 /**
@@ -212,19 +230,30 @@ function getPrivateWavR2Key(audioPath: string): string {
  * @returns `true` if private R2 is configured and HEAD succeeds for the derived key; `false` if R2 is unconfigured, the object is missing, or HEAD fails
  */
 export async function hasR2WavFile(audioPath: string): Promise<boolean> {
-    const client = getPrivateS3Client();
-    if (!client) return false;
+    return (await probePrivateR2Wav(audioPath)) === 'exists';
+}
 
+/**
+ * Probe private R2 for a WAV master (HeadObject).
+ * Distinguishes missing objects from misconfiguration and other API errors.
+ *
+ * @param audioPath - Database audio path for the purchased beat
+ */
+export async function probePrivateR2Wav(audioPath: string): Promise<R2WavProbe> {
+    const client = getPrivateS3Client();
+    if (!client) return 'unconfigured';
+
+    const key = getPrivateWavR2Key(audioPath);
     try {
         await client.send(
             new HeadObjectCommand({
                 Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
-                Key: getPrivateWavR2Key(audioPath),
+                Key: key,
             })
         );
-        return true;
-    } catch {
-        return false;
+        return 'exists';
+    } catch (error: unknown) {
+        return isS3NotFoundError(error) ? 'missing' : 'error';
     }
 }
 
