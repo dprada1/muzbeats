@@ -30,23 +30,24 @@ import {
     getPrivateWavR2Key,
     isR2PrivateConfigured,
     probePrivateR2Wav,
+    R2WavProbe,
 } from '@/services/downloadService.js';
 import { isR2PublicConfigured } from '@/utils/r2.js';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename: string = fileURLToPath(import.meta.url);
+const __dirname: string = path.dirname(__filename);
 
 /** Absolute path to `server/public` (URL paths under `/assets/...`). */
-const PUBLIC_ROOT = path.join(__dirname, '../../public');
+const PUBLIC_ROOT: string = path.join(__dirname, '../../public');
 
 /**
  * Absolute path to `server/private`.
  * Local WAV masters live at `private/beats/wav/<file>.wav`
  * (DB logical path is `/assets/beats/wav/...` via {@link getWavPath}).
  */
-const PRIVATE_ROOT = path.join(__dirname, '../../private');
+const PRIVATE_ROOT: string = path.join(__dirname, '../../private');
 
 /** Soft fallback cover used when `cover_path` is null/empty in the DB. */
 const DEFAULT_COVER = '/assets/images/skimask.png';
@@ -113,13 +114,13 @@ function stripLeadingSlash(p: string): string {
  */
 function parseBpmFromAudioFilename(filename: string): number | null {
     if (!filename.toLowerCase().endsWith('.mp3')) return null;
-    const stem = filename.slice(0, -4);
+    const stem: string = filename.slice(0, -4);
     if (!stem.includes('__')) return null;
 
-    const lastUnderscore = stem.lastIndexOf('_');
+    const lastUnderscore: number = stem.lastIndexOf('_');
     if (lastUnderscore <= 0 || lastUnderscore === stem.length - 1) return null;
 
-    const bpm = Number(stem.slice(lastUnderscore + 1));
+    const bpm: number = Number(stem.slice(lastUnderscore + 1));
     if (!Number.isFinite(bpm)) return null;
     return bpm;
 }
@@ -134,8 +135,8 @@ function isBpmInBounds(bpm: number): boolean {
  * `/assets/beats/wav/foo.wav` → `private/beats/wav/foo.wav`
  */
 function localPrivateWavRelativePath(audioPath: string): string {
-    const logicalWav = getWavPath(audioPath); // /assets/beats/wav/foo.wav
-    const withoutAssetsPrefix = logicalWav.replace(/^\/?assets/, '');
+    const logicalWav: string = getWavPath(audioPath); // /assets/beats/wav/foo.wav
+    const withoutAssetsPrefix: string = logicalWav.replace(/^\/?assets/, '');
     return stripLeadingSlash(withoutAssetsPrefix); // beats/wav/foo.wav
 }
 
@@ -146,7 +147,7 @@ function localPrivateWavRelativePath(audioPath: string): string {
  * @param urlStylePath - Path with or without leading `/`
  */
 async function localFileExists(root: string, urlStylePath: string): Promise<boolean> {
-    const fullPath = path.join(root, stripLeadingSlash(urlStylePath));
+    const fullPath: string = path.join(root, stripLeadingSlash(urlStylePath));
     try {
         await access(fullPath);
         return true;
@@ -160,7 +161,7 @@ async function localFileExists(root: string, urlStylePath: string): Promise<bool
  * `/assets/beats/mp3/foo.mp3` → `beats/mp3/foo.mp3`
  */
 function toPublicR2ObjectPath(assetPath: string): string {
-    const clean = stripLeadingSlash(assetPath);
+    const clean: string = stripLeadingSlash(assetPath);
     return clean.startsWith('assets/') ? clean.slice('assets/'.length) : clean;
 }
 
@@ -169,7 +170,7 @@ function toPublicR2ObjectPath(assetPath: string): string {
  * (no public bucket name required in env).
  */
 async function probePublicR2Object(assetPath: string): Promise<ObjectProbe> {
-    const base = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
+    const base: string | undefined = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
     if (!base) return 'unconfigured';
 
     const url = `${base}/${toPublicR2ObjectPath(assetPath)}`;
@@ -191,9 +192,9 @@ function coverIdMismatch(beatId: string, coverPath: string): boolean {
     if (!coverPath.includes('/assets/images/covers/')) {
         return false;
     }
-    const base = path.basename(coverPath);
-    const dot = base.lastIndexOf('.');
-    const idPart = dot > 0 ? base.slice(0, dot) : base;
+    const base: string = path.basename(coverPath);
+    const dot: number = base.lastIndexOf('.');
+    const idPart: string = dot > 0 ? base.slice(0, dot) : base;
     return idPart !== beatId;
 }
 
@@ -212,7 +213,7 @@ async function mapPool<T>(
     concurrency: number,
     fn: (item: T) => Promise<void>
 ): Promise<void> {
-    let next = 0;
+    let next: number = 0;
     const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
         while (next < items.length) {
             const i = next++;
@@ -229,8 +230,8 @@ async function mapPool<T>(
 function r2ConfigError(mode: StorageMode): string | null {
     if (mode === 'local') return null;
 
-    const needPrivate = !isR2PrivateConfigured();
-    const needPublic = !isR2PublicConfigured();
+    const needPrivate: boolean = !isR2PrivateConfigured();
+    const needPublic: boolean = !isR2PublicConfigured();
     if (!needPrivate && !needPublic) return null;
 
     const missing: string[] = [];
@@ -249,13 +250,13 @@ function r2ConfigError(mode: StorageMode): string | null {
  * Load all beats and report filesystem / R2 / naming inconsistencies.
  */
 async function main() {
-    const argv = process.argv;
-    const jsonOutput = argv.includes('--json');
-    const mode = parseStorageMode(argv);
-    const checkLocal = mode === 'local' || mode === 'both';
-    const checkR2 = mode === 'r2' || mode === 'both';
+    const argv: string[] = process.argv;
+    const jsonOutput: boolean = argv.includes('--json');
+    const mode: StorageMode = parseStorageMode(argv);
+    const checkLocal: boolean = mode === 'local' || mode === 'both';
+    const checkR2: boolean = mode === 'r2' || mode === 'both';
 
-    const configErr = r2ConfigError(mode);
+    const configErr: string | null = r2ConfigError(mode);
     if (configErr) {
         console.error(configErr);
         await pool.end().catch(() => {});
@@ -278,7 +279,7 @@ async function main() {
         });
     }
     if (checkR2) {
-        const skimaskProbe = await probePublicR2Object(DEFAULT_COVER);
+        const skimaskProbe: ObjectProbe = await probePublicR2Object(DEFAULT_COVER);
         if (skimaskProbe === 'missing') {
             issues.push({
                 beatId: 'n/a',
@@ -293,15 +294,23 @@ async function main() {
                 code: 'DEFAULT_COVER_R2_ERROR',
                 detail: `Public R2 HEAD failed for skimask: ${toPublicR2ObjectPath(DEFAULT_COVER)}`,
             });
+        } else if (skimaskProbe === 'unconfigured') {
+            // Defensive: r2ConfigError should have exited already.
+            issues.push({
+                beatId: 'n/a',
+                title: 'Default cover',
+                code: 'DEFAULT_COVER_R2_UNCONFIGURED',
+                detail: 'R2_PUBLIC_URL is not configured',
+            });
         }
     }
 
-    // R2 HEADs dominate runtime; keep local sequential-feel with a small pool.
-    const concurrency = checkR2 ? 8 : 4;
+    // Local fs checks are fast — no need to parallelize. R2 HEADs benefit from a small pool.
+    const concurrency = checkR2 ? 8 : 1;
 
-    await mapPool(rows, concurrency, async (row) => {
-        const coverPath = row.cover_path || DEFAULT_COVER;
-        const isCustomCover = coverPath !== DEFAULT_COVER;
+    await mapPool(rows, concurrency, async (row: BeatRow) => {
+        const coverPath: string = row.cover_path || DEFAULT_COVER;
+        const isCustomCover: boolean = coverPath !== DEFAULT_COVER;
 
         // --- Logical checks (always) ---
         if (isCustomCover && coverIdMismatch(row.id, coverPath)) {
@@ -313,8 +322,8 @@ async function main() {
             );
         }
 
-        const filename = path.basename(row.audio_path);
-        const filenameBpm = parseBpmFromAudioFilename(filename);
+        const filename: string = path.basename(row.audio_path);
+        const filenameBpm: number | null = parseBpmFromAudioFilename(filename);
         if (filenameBpm === null) {
             pushIssue(
                 issues,
@@ -338,8 +347,8 @@ async function main() {
             );
         }
 
-        const logicalWavPath = getWavPath(row.audio_path);
-        const privateWavRel = localPrivateWavRelativePath(row.audio_path);
+        const logicalWavPath: string = getWavPath(row.audio_path);
+        const privateWavRel: string = localPrivateWavRelativePath(row.audio_path);
 
         // --- Local disk ---
         if (checkLocal) {
@@ -372,8 +381,9 @@ async function main() {
         }
 
         // --- R2 ---
+        // Note: mode that needs R2 already passed r2ConfigError; "unconfigured" below is a safety net only.
         if (checkR2) {
-            const mp3Probe = await probePublicR2Object(row.audio_path);
+            const mp3Probe: ObjectProbe = await probePublicR2Object(row.audio_path);
             if (mp3Probe === 'missing') {
                 pushIssue(
                     issues,
@@ -388,10 +398,17 @@ async function main() {
                     'MP3_R2_ERROR',
                     `Public R2 HEAD failed for MP3: ${toPublicR2ObjectPath(row.audio_path)}`
                 );
+            } else if (mp3Probe === 'unconfigured') {
+                pushIssue(
+                    issues,
+                    row,
+                    'MP3_R2_UNCONFIGURED',
+                    `R2_PUBLIC_URL unconfigured while probing ${toPublicR2ObjectPath(row.audio_path)}`
+                );
             }
 
             if (isCustomCover) {
-                const coverProbe = await probePublicR2Object(coverPath);
+                const coverProbe: ObjectProbe = await probePublicR2Object(coverPath);
                 if (coverProbe === 'missing') {
                     pushIssue(
                         issues,
@@ -406,11 +423,18 @@ async function main() {
                         'COVER_R2_ERROR',
                         `Public R2 HEAD failed for cover: ${toPublicR2ObjectPath(coverPath)}`
                     );
+                } else if (coverProbe === 'unconfigured') {
+                    pushIssue(
+                        issues,
+                        row,
+                        'COVER_R2_UNCONFIGURED',
+                        `R2_PUBLIC_URL unconfigured while probing ${toPublicR2ObjectPath(coverPath)}`
+                    );
                 }
             }
 
-            const wavKey = getPrivateWavR2Key(row.audio_path);
-            const wavProbe = await probePrivateR2Wav(row.audio_path);
+            const wavKey: string = getPrivateWavR2Key(row.audio_path);
+            const wavProbe: R2WavProbe = await probePrivateR2Wav(row.audio_path);
             if (wavProbe === 'missing') {
                 pushIssue(
                     issues,
@@ -426,13 +450,17 @@ async function main() {
                     `Private R2 HEAD failed for WAV: ${wavKey}`
                 );
             } else if (wavProbe === 'unconfigured') {
-                // Should have been caught by r2ConfigError; keep as safety net.
-                pushIssue(issues, row, 'WAV_R2_UNCONFIGURED', 'Private R2 is not configured');
+                pushIssue(
+                    issues,
+                    row,
+                    'WAV_R2_UNCONFIGURED',
+                    'Private R2 is not configured'
+                );
             }
         }
     });
 
-    // Stable report order (mapPool is concurrent).
+    // Concurrent workers push in nondeterministic order; sort for stable CLI/JSON output.
     issues.sort((a, b) => a.title.localeCompare(b.title) || a.code.localeCompare(b.code));
 
     if (jsonOutput) {
