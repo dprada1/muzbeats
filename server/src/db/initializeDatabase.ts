@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+import { readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
@@ -6,9 +8,110 @@ import { QueryResult } from 'pg';
 import { logError, logInfo } from '@/utils/logger.js';
 
 const REQUIRED_TABLES = ['beats', 'orders', 'order_items', 'downloads'] as const;
+const REQUIRED_INDEXES = ['idx_beats_bpm', 'idx_beats_key', 'idx_beats_price'] as const;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SCHEMA_SQL_PATH = path.join(__dirname, 'schema.sql');
+
+type SchemaDDLStatement =
+    | { kind: 'table'; name: string; ddl: string }
+    | { kind: 'index'; name: string; ddl: string };
+
+/**
+ * Strip blank lines and `--` comments from a DDL chunk.
+ * Prevents parsers from matching prose like "Create index on …" inside comments.
+ */
+function ddlWithoutComments(ddl: string): string {
+    return ddl
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0 && !line.startsWith('--'))
+        .join('\n');
+}
+
+/**
+ * Split `schema.sql` into executable statements.
+ * Safe for this file only: no functions, dollar-quotes, or semicolons inside strings.
+ */
+function splitSchemaDDL(dbSchemaSql: string): string[] {
+    return dbSchemaSql
+        .split(';')
+        .map((chunk) => ddlWithoutComments(chunk))
+        .filter((chunk) => chunk.length > 0);
+}
+
+/**
+ * Classify one `schema.sql` statement as CREATE TABLE or CREATE INDEX.
+ * Capture group 1 is the identifier (table or index name).
+ *
+ * @throws If the statement is not CREATE TABLE IF NOT EXISTS / CREATE INDEX IF NOT EXISTS
+ */
+function parseSchemaDDL(ddl: string): SchemaDDLStatement {
+    const tableMatch: RegExpMatchArray | null = ddl.match(
+        /^CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+([a-zA-Z_][\w]*)/i
+    );
+    if (tableMatch) {
+        return { kind: 'table', name: tableMatch[1], ddl };
+    }
+
+    const indexMatch: RegExpMatchArray | null = ddl.match(
+        /^CREATE\s+(?:UNIQUE\s+)?INDEX\s+IF\s+NOT\s+EXISTS\s+([a-zA-Z_][\w]*)/i
+    );
+    if (indexMatch) {
+        return { kind: 'index', name: indexMatch[1], ddl };
+    }
+
+    throw new Error(
+        `initializeDatabase: unrecognized schema.sql statement (expected CREATE TABLE or CREATE INDEX): ${ddl.slice(0, 80)}`
+    );
+}
+
+/**
+ * True when a table named `tableName` exists in schema `public`.
+ * Uses SQL-standard `information_schema.tables` plus `EXISTS` (boolean, one row).
+ */
+async function publicTableExists(tableName: string): Promise<boolean> {
+    const result: QueryResult<{ exists: boolean }> = await pool.query<{ exists: boolean }>(
+        `
+        SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+              AND table_name = $1
+        ) AS exists
+        `,
+        [tableName]
+    );
+    return result.rows[0].exists;
+}
+
+/**
+ * True when an index named `indexName` exists in schema `public`.
+ * PostgreSQL has no `information_schema.indexes`; use system view `pg_indexes`.
+ * @see https://www.postgresql.org/docs/current/view-pg-indexes.html
+ */
+async function publicIndexExists(indexName: string): Promise<boolean> {
+    const result: QueryResult<{ exists: boolean }> = await pool.query<{ exists: boolean }>(
+        `
+        SELECT EXISTS (
+            SELECT 1
+            FROM pg_indexes
+            WHERE schemaname = 'public'
+              AND indexname = $1
+        ) AS exists
+        `,
+        [indexName]
+    );
+    return result.rows[0].exists;
+}
+
+/**
+ * Names in `REQUIRED_TABLES` that are not present in `public`.
+ * One round-trip: `table_name = ANY($1::text[])` matches any element of the bound array.
+ * @see https://www.postgresql.org/docs/current/functions-comparisons.html#FUNCTIONS-COMPARISONS-ANY-SOME
+ */
 async function getMissingTables(): Promise<string[]> {
-    const result: QueryResult<any> = await pool.query<{ table_name: string }>(
+    const result: QueryResult<{ table_name: string }> = await pool.query<{ table_name: string }>(
         `
         SELECT table_name
         FROM information_schema.tables
@@ -18,105 +121,104 @@ async function getMissingTables(): Promise<string[]> {
         [REQUIRED_TABLES]
     );
 
-    const existing = new Set(result.rows.map((row) => row.table_name));
-    return REQUIRED_TABLES.filter((name) => !existing.has(name));
-}
-
-async function createDatabaseSchema(): Promise<void> {
-    logInfo('initializeDatabase.createDatabaseSchema', 'Creating missing schema tables');
-
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS beats (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            title VARCHAR(255) NOT NULL,
-            key VARCHAR(50) NOT NULL,
-            bpm INTEGER NOT NULL CHECK (bpm > 0 AND bpm < 300),
-            price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-            audio_path VARCHAR(500) NOT NULL,
-            cover_path VARCHAR(500) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_bpm ON beats(bpm);');
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_key ON beats(key);');
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_beats_price ON beats(price);');
-
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS orders (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            customer_email VARCHAR(255) NOT NULL,
-            total_amount DECIMAL(10, 2) NOT NULL,
-            status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
-            paypal_order_id VARCHAR(255) UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS order_items (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-            beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
-            price_at_purchase DECIMAL(10, 2) NOT NULL,
-            quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS downloads (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-            beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
-            download_token VARCHAR(255) UNIQUE NOT NULL,
-            expires_at TIMESTAMP NOT NULL,
-            download_count INTEGER DEFAULT 0,
-            max_downloads INTEGER DEFAULT 5,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `);
-
-    logInfo('initializeDatabase.createDatabaseSchema', 'Schema tables created');
-}
-
-function assertSchemaComplete(missing: string[]): void {
-    if (missing.length > 0) {
-        throw new Error(
-            `Schema initialization incomplete. Still missing: ${missing.join(', ')}`
-        );
-    }
+    const existingTables = new Set(result.rows.map((row) => row.table_name));
+    return REQUIRED_TABLES.filter((tableName) => !existingTables.has(tableName));
 }
 
 /**
- * Ensure required tables exist; create any that are missing.
+ * Names in `REQUIRED_INDEXES` that are not present in `public`.
+ * Same `ANY($1::text[])` pattern as {@link getMissingTables}; column is `indexname`.
+ */
+async function getMissingIndexes(): Promise<string[]> {
+    const result: QueryResult<{ indexname: string }> = await pool.query<{ indexname: string }>(
+        `
+        SELECT indexname
+        FROM pg_indexes
+        WHERE schemaname = 'public'
+          AND indexname = ANY($1::text[])
+        `,
+        [REQUIRED_INDEXES]
+    );
+
+    const existingIndexes = new Set(result.rows.map((row) => row.indexname));
+    return REQUIRED_INDEXES.filter((indexName) => !existingIndexes.has(indexName));
+}
+
+/**
+ * Ensure required tables (and schema.sql indexes) exist.
  * Throws if the schema cannot be verified (server startup should exit on failure).
+ *
+ * Does not DROP data. Does not run numbered migrations (001, 002, 003, …).
+ * Safe on existing databases for *new* tables and indexes only — ALTER/CHECK
+ * changes for live tables live in `src/db/migrations/`.
+ *
+ * Does not guarantee that `beats` (or any other table) has rows.
  */
 export async function initializeDatabase(): Promise<void> {
-    const missingTables = await getMissingTables();
-
-    if (missingTables.length === 0) {
-        logInfo('initializeDatabase.initializeDatabase', 'Database schema ready', {
-            tables: [...REQUIRED_TABLES],
-        });
-        return;
+    if (!existsSync(SCHEMA_SQL_PATH)) {
+        throw new Error(
+            `schema.sql not found at ${SCHEMA_SQL_PATH}. ` +
+                `Dev uses src/db/schema.sql; production build must copy it to dist/db/schema.sql.`
+        );
     }
 
-    logInfo('initializeDatabase.initializeDatabase', 'Missing tables', {
-        missingTables,
-    });
+    const dbSchemaSQL: string = await readFile(SCHEMA_SQL_PATH, 'utf8');
+    const schemaDDLStatements: SchemaDDLStatement[] = splitSchemaDDL(dbSchemaSQL).map(parseSchemaDDL);
 
-    await createDatabaseSchema();
+    const createdTables: string[] = [];
+    const skippedTables: string[] = [];
+    const createdIndexes: string[] = [];
+    const skippedIndexes: string[] = [];
 
-    assertSchemaComplete(await getMissingTables());
+    for (const statement of schemaDDLStatements) {
+        if (statement.kind === 'table') {
+            if (await publicTableExists(statement.name)) {
+                skippedTables.push(statement.name);
+                continue;
+            }
+            await pool.query(statement.ddl);
+            createdTables.push(statement.name);
+            continue;
+        }
+
+        if (await publicIndexExists(statement.name)) {
+            skippedIndexes.push(statement.name);
+            continue;
+        }
+        await pool.query(statement.ddl);
+        createdIndexes.push(statement.name);
+    }
+
+    const missingTables: string[] = await getMissingTables();
+    if (missingTables.length > 0) {
+        throw new Error(
+            `Schema initialization incomplete. Still missing tables: ${missingTables.join(', ')}`
+        );
+    }
+
+    const missingIndexes: string[] = await getMissingIndexes();
+    if (missingIndexes.length > 0) {
+        throw new Error(
+            `Schema initialization incomplete. Still missing indexes: ${missingIndexes.join(', ')}`
+        );
+    }
 
     logInfo('initializeDatabase.initializeDatabase', 'Database schema ready', {
-        tables: [...REQUIRED_TABLES],
+        path: SCHEMA_SQL_PATH,
+        tables: {
+            created: createdTables,
+            skipped: skippedTables,
+            ready: [...REQUIRED_TABLES],
+        },
+        indexes: {
+            created: createdIndexes,
+            skipped: skippedIndexes,
+            ready: [...REQUIRED_INDEXES],
+        },
     });
 }
 
+/** True when this module is the process entry (`npm run init-db` / `tsx src/db/initializeDatabase.ts`). */
 function isExecutedDirectly(): boolean {
     const entry = process.argv[1];
     if (!entry) {

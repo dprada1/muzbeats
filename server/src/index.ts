@@ -1,26 +1,54 @@
 import express from 'express';
-import type { NextFunction, Request, Response } from 'express';
+import type {
+    NextFunction,
+    Request,
+    Response
+} from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {
+    fileURLToPath
+} from 'url';
 import beatsRoutes from '@/routes/beatsRoutes.js';
 import checkoutRoutes from '@/routes/checkoutRoutes.js';
 import webhookRoutes from '@/routes/webhookRoutes.js';
 import downloadRoutes from '@/routes/downloadRoutes.js';
-import { initializeDatabase } from '@/db/initializeDatabase.js';
-import { assertCheckoutLimitsValid } from './config/checkoutLimits.js';
-import { assertRequiredEnv } from './config/env.js';
-import { logError, logInfo } from './utils/logger.js';
+import {
+    initializeDatabase
+} from '@/db/initializeDatabase.js';
+import {
+    assertCatalogReady
+} from '@/db/assertCatalogReady.js';
+import {
+    isServerReady,
+    markServerReady
+} from '@/boot/serverReadiness.js';
+import {
+    assertCheckoutLimitsValidAtBoot
+} from './config/checkoutLimits.js';
+import {
+    assertRequiredEnvAtBoot,
+    getEnv,
+    parseListenPort
+} from './config/env.js';
+import {
+    assertPayPalModeAtBoot
+} from './config/paypal.js';
+import {
+    assertDatabaseConfigAtBoot
+} from './config/database.js';
+import {
+    logError,
+    logInfo
+} from './utils/logger.js';
 
-// Load environment variables
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 /**
@@ -32,22 +60,22 @@ const PORT = process.env.PORT || 3000;
  * If not set, we default to a safe list that covers local dev + deployed frontends.
  */
 function getAllowedOrigins(): string[] {
-    const raw = process.env.CORS_ALLOWED_ORIGINS;
-    if (raw && raw.trim().length > 0) {
-        return raw
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
+    const raw = getEnv('CORS_ALLOWED_ORIGINS')
+    if (!raw) {
+        return [
+            'http://localhost:5173',
+            'http://localhost:4173',
+            'https://muzbeats.pages.dev',
+            'https://prodmuz.com',
+            'https://www.prodmuz.com',
+            'https://staging.prodmuz.com',
+        ];
     }
 
-    return [
-        'http://localhost:5173',
-        'http://localhost:4173',
-        'https://muzbeats.pages.dev',
-        'https://prodmuz.com',
-        'https://www.prodmuz.com',
-        'https://staging.prodmuz.com',
-    ];
+    return raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
 }
 
 const allowedOrigins = getAllowedOrigins();
@@ -72,6 +100,26 @@ app.use((req, _res, next) => {
     next();
 });
 
+/**
+ * Readiness gate: listen early so deploy platforms can probe `/health` during boot,
+ * but refuse storefront/checkout/download traffic until {@link markServerReady}.
+ * `/health` is handled below (503 while starting).
+ */
+app.use((req, res, next) => {
+    if (isServerReady()) {
+        next();
+        return;
+    }
+    if (req.path === '/health') {
+        next();
+        return;
+    }
+    res.status(503).json({
+        error: 'Server is starting',
+        message: 'Server boot in progress - Try again shortly',
+    });
+});
+
 // Register webhook route BEFORE express.json() so it gets raw body (for future webhook handlers)
 app.use('/api/webhooks', webhookRoutes);
 
@@ -82,8 +130,19 @@ app.use(express.json());
 // This serves files from server/public/assets/
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
-// Health check endpoint
+/**
+ * Deploy health / readiness probe.
+ * - 503 while DB init + catalog audit run (process is up; not ready for traffic)
+ * - 200 after {@link markServerReady}
+ */
 app.get('/health', (_req, res) => {
+    if (!isServerReady()) {
+        res.status(503).json({
+            status: 'starting',
+            message: 'Server is starting',
+        });
+        return;
+    }
     res.json({ status: 'ok', message: 'Server is running' });
 });
 
@@ -115,39 +174,41 @@ app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
     next(err);
 });
 
-// Validate environment variables first (cheap) before touching the database (expensive).
-// Deployed environments fail fast here if required config is missing.
+// Fail closed on config before announcing identity / opening the port.
+let listenPort: number;
 try {
-    assertRequiredEnv();
+    assertRequiredEnvAtBoot();
+    listenPort = parseListenPort();
+    assertDatabaseConfigAtBoot();
+    assertPayPalModeAtBoot();
+    assertCheckoutLimitsValidAtBoot();
 } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logError('index.boot', 'Invalid environment configuration', { message });
+    logError('index.boot', 'Invalid boot configuration', { message });
     process.exit(1);
 }
 
-// Assert checkout price/quantity bounds before accepting traffic
-try {
-    assertCheckoutLimitsValid();
-} catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    logError('index.boot', 'Invalid checkout configuration', { message });
-    process.exit(1);
-}
+/**
+ * Listen first so Railway/etc. can hit `/health` during (possibly slow) R2 catalog audit.
+ * Mark ready only after DB + catalog checks pass; otherwise exit so the deploy fails closed.
+ */
+app.listen(listenPort, () => {
+    logInfo('index.listen', 'HTTP server listening (not ready for traffic yet)', {
+        url: `http://localhost:${listenPort}`,
+    });
+});
 
-// Initialize database and start server (fail fast if schema cannot be verified)
 initializeDatabase()
+    .then(() => assertCatalogReady())
     .then(() => {
-        app.listen(PORT, () => {
-            logInfo('index.listen', 'Server running', {
-                url: `http://localhost:${PORT}`,
-            });
-            logInfo('index.listen', 'Serving static files', {
-                path: path.join(__dirname, '../public/assets'),
-            });
+        markServerReady();
+        logInfo('index.ready', 'Server ready', {
+            url: `http://localhost:${listenPort}`,
+            staticAssets: path.join(__dirname, '../public/assets'),
         });
     })
     .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        logError('index.boot', 'Failed to initialize database', { message });
+        logError('index.boot', 'Server failed to start', { message });
         process.exit(1);
     });

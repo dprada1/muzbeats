@@ -1,477 +1,147 @@
 /**
- * Audit catalog consistency: DB rows vs local disk and/or R2.
+ * CLI entry for catalog consistency: DB rows vs local disk and/or R2.
  *
  * Always checks (no storage I/O beyond DB):
  * - `cover_path` UUID matches beat id when under `/assets/images/covers/`
  * - `bpm` column matches BPM parsed from mp3 filename (parse / bounds / mismatch)
  *
- * Storage checks (gated by mode):
- * - local: MP3 + cover under `server/public/`; WAV under `server/private/beats/wav/`
- * - r2: public MP3/cover via HTTP HEAD on `R2_PUBLIC_URL`; private WAV via S3 HeadObject
+ * Storage checks (gated by mode) — intended pairings:
+ * - `--local-only`: local disk + local DB (`DB_HOST` / `DB_NAME` / …, no `DATABASE_URL`)
+ * - `--r2`: R2 objects + deployed DB (`DATABASE_URL` = staging/prod public proxy from laptop,
+ *   or Railway's URL when the job runs in that environment). Requires `R2_PUBLIC_BUCKET_NAME`
+ *   (S3 ListObjects for MP3 inventory) in addition to `R2_PUBLIC_URL` / private R2 creds.
+ * - `--both`: same DB connection vs local disk AND R2 (useful as a cross-check; expect
+ *   noise if local disk is incomplete while R2 is the source of truth)
  *
- * Usage:
- *   npm run audit-catalog
- *   npm run audit-catalog -- --json
- *   npm run audit-catalog -- --local-only
- *   npm run audit-catalog -- --r2
- *   npm run audit-catalog -- --both --json
+ * Also enforces inventory: |mp3| = |wav| = |DB rows| with matching filename stems (orphans fail).
+ * Empty catalog (0 rows) warns but is not an exit-1 by itself if inventory is also empty.
  *
- * Default storage mode: `local` (safe for laptop without R2).
+ * Usage (storage flag is required — no silent default):
+ *   npm run audit-catalog:local
+ *   npm run audit-catalog:r2
+ *   npm run audit-catalog:both
+ *   npm run audit-catalog:local -- --json
+ *   npx tsx src/db/audit-catalog.ts --local-only --json
+ *
+ * Bare `npm run audit-catalog` (no storage flag) throws.
+ * Named scripts bake in the storage mode so you usually avoid typing flags.
+ * The `--` after an npm script name is npm's separator (see comment in package.json / docs below);
+ * extra flags like `--json` go after it. Or call `tsx` directly and skip npm's `--`.
+ *
  * Exit code 1 when any issue is found (for CI).
+ *
+ * Server boot uses the same core via `assertCatalogReady` with profile `boot`
+ * (skimask + MP3 + WAV + BPM + inventory — skips custom covers / cover UUID drift).
  */
 
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { access } from 'fs/promises';
 import pool from '@/config/database.js';
 import {
-    getWavPath,
-    getPrivateWavR2Key,
-    isR2PrivateConfigured,
-    probePrivateR2Wav,
-    R2WavProbe,
-} from '@/services/downloadService.js';
-import { isR2PublicConfigured } from '@/utils/r2.js';
+    getEnv
+} from '@/config/env.js';
+import {
+    type CatalogAuditResult,
+    type StorageMode,
+    parseStorageMode,
+    runCatalogAudit,
+} from '@/db/catalogAudit.js';
 
 dotenv.config();
 
-const __filename: string = fileURLToPath(import.meta.url);
-const __dirname: string = path.dirname(__filename);
-
-/** Absolute path to `server/public` (URL paths under `/assets/...`). */
-const PUBLIC_ROOT: string = path.join(__dirname, '../../public');
-
-/**
- * Absolute path to `server/private`.
- * Local WAV masters live at `private/beats/wav/<file>.wav`
- * (DB logical path is `/assets/beats/wav/...` via {@link getWavPath}).
- */
-const PRIVATE_ROOT: string = path.join(__dirname, '../../private');
-
-/** Soft fallback cover used when `cover_path` is null/empty in the DB. */
-const DEFAULT_COVER = '/assets/images/skimask.png';
-
-/** Same bounds as `beats.bpm` CHECK in `schema.sql` (and filename audit). */
-const BPM_MIN_EXCLUSIVE = 0;
-const BPM_MAX_EXCLUSIVE = 300;
-
-/**
- * Columns we SELECT for the catalog audit.
- * Kept local (SQL schema has no shared TS model); only the fields this script needs.
- */
-type BeatRow = {
-    id: string;
-    title: string;
-    key: string;
-    bpm: number;
-    audio_path: string;
-    cover_path: string | null;
-};
-
-/**
- * One catalog inconsistency found during the audit.
- *
- * @property beatId - Beat UUID
- * @property title - Beat title (for grepping / human-readable logs)
- * @property code - Stable machine-readable issue class (e.g. `MP3_MISSING_LOCAL`)
- * @property detail - Extra context (paths, expected vs actual values)
- */
-type Issue = {
-    beatId: string;
-    title: string;
-    code: string;
-    detail: string;
-};
-
-/** Which object stores to probe for MP3 / cover / WAV files. */
-type StorageMode = 'local' | 'r2' | 'both';
-
-/** Existence probe that distinguishes missing from config/API failures. */
-type ObjectProbe = 'exists' | 'missing' | 'unconfigured' | 'error';
-
-/**
- * Parse `--local-only` / `--r2` / `--both` from argv.
- * `--both` wins if combined with others. Default: `local`.
- */
-function parseStorageMode(argv: string[]): StorageMode {
-    if (argv.includes('--both')) return 'both';
-    if (argv.includes('--r2')) return 'r2';
-    if (argv.includes('--local-only')) return 'local';
-    return 'local';
-}
-
-function stripLeadingSlash(p: string): string {
-    return p.startsWith('/') ? p.slice(1) : p;
+/** True when the env var exists as a non-empty string (value is not validated further). */
+function isEnvVarSet(name: string): boolean {
+    const value = process.env[name];
+    return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
- * Parse BPM from an mp3 basename using `artist__title_key_bpm.mp3`
- * (BPM is the segment after the last `_` in the stem).
- *
- * @param filename - Basename only (e.g. `artist__beat_Cmin_140.mp3`)
- * @returns Parsed BPM, or `null` if the name is not parseable
+ * R2 audits should compare object storage to the deployed catalog, not a laptop-only DB.
+ * Warn (do not exit) so local experimentation still works, but the footgun is loud.
  */
-function parseBpmFromAudioFilename(filename: string): number | null {
-    if (!filename.toLowerCase().endsWith('.mp3')) return null;
-    const stem: string = filename.slice(0, -4);
-    if (!stem.includes('__')) return null;
+function warnIfR2WithoutDeployedDb(storageMode: StorageMode): void {
+    if (storageMode === 'local') return;
+    if (isEnvVarSet('DATABASE_URL')) return;
 
-    const lastUnderscore: number = stem.lastIndexOf('_');
-    if (lastUnderscore <= 0 || lastUnderscore === stem.length - 1) return null;
-
-    const bpm: number = Number(stem.slice(lastUnderscore + 1));
-    if (!Number.isFinite(bpm)) return null;
-    return bpm;
-}
-
-/** Whether a BPM value is inside the catalog / DB allowed range (exclusive bounds). */
-function isBpmInBounds(bpm: number): boolean {
-    return bpm > BPM_MIN_EXCLUSIVE && bpm < BPM_MAX_EXCLUSIVE;
+    console.warn(
+        `[audit-catalog] WARNING: storage mode "${storageMode}" without DATABASE_URL.\n` +
+            `  Beat rows will come from local DB (laptop Postgres via DB_HOST/DB_NAME/…),\n` +
+            `  while files are probed on R2.\n` +
+            `  That pairing is usually wrong — set DATABASE_URL to the staging/prod public proxy URL\n` +
+            `  so R2 is checked against the same catalog Railway serves.`
+    );
 }
 
 /**
- * Local path under `server/private` for a WAV master.
- * `/assets/beats/wav/foo.wav` → `private/beats/wav/foo.wav`
+ * Local-disk audits expect laptop Postgres. `database.ts` prefers DATABASE_URL
+ * whenever it is set, so --local-only + DATABASE_URL quietly compares remote rows to local files.
  */
-function localPrivateWavRelativePath(audioPath: string): string {
-    const logicalWav: string = getWavPath(audioPath); // /assets/beats/wav/foo.wav
-    const withoutAssetsPrefix: string = logicalWav.replace(/^\/?assets/, '');
-    return stripLeadingSlash(withoutAssetsPrefix); // beats/wav/foo.wav
+function warnIfLocalWithDatabaseUrl(storageMode: StorageMode): void {
+    if (storageMode !== 'local') return;
+    if (!isEnvVarSet('DATABASE_URL')) return;
+
+    console.warn(
+        `[audit-catalog] WARNING: --local-only with DATABASE_URL set.\n` +
+            `  Beat rows will come from DATABASE_URL, not local DB — while files are probed on disk.\n` +
+            `  Unset DATABASE_URL for a true local audit, or use --r2 if you meant to check the deployed catalog.`
+    );
 }
 
-/**
- * Check whether a file exists under a filesystem root.
- *
- * @param root - Absolute directory (e.g. PUBLIC_ROOT)
- * @param urlStylePath - Path with or without leading `/`
- */
-async function localFileExists(root: string, urlStylePath: string): Promise<boolean> {
-    const fullPath: string = path.join(root, stripLeadingSlash(urlStylePath));
+function warnIfBothMode(storageMode: StorageMode): void {
+    if (storageMode !== 'both') return;
+    console.warn(
+        `[audit-catalog] NOTE: --both uses one DB connection for both stores.\n` +
+            `  Local disk and R2 are each compared to the same beat rows.\n` +
+            `  Prefer --local-only (laptop DB + disk) and --r2 (DATABASE_URL + R2) as separate runs\n` +
+            `  unless you intentionally want that cross-check.`
+    );
+}
+
+async function closePool(): Promise<void> {
     try {
-        await access(fullPath);
-        return true;
-    } catch {
-        return false;
+        await pool.end();
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[audit-catalog] Failed to close database pool: ${message}`);
     }
 }
 
-/**
- * Map a DB `/assets/...` path to the public R2 object key / URL path.
- * `/assets/beats/mp3/foo.mp3` → `beats/mp3/foo.mp3`
- */
-function toPublicR2ObjectPath(assetPath: string): string {
-    const clean: string = stripLeadingSlash(assetPath);
-    return clean.startsWith('assets/') ? clean.slice('assets/'.length) : clean;
-}
+async function main(): Promise<void> {
+    // process.argv: [nodeBinary, scriptPath, ...user flags] — same idea as C++ argv.
+    const argv: string[] = process.argv;
+    const shouldOutputAsJson: boolean = argv.includes('--json');
+    const storageMode: StorageMode = parseStorageMode(argv);
+    const checkLocal: boolean = storageMode === 'local' || storageMode === 'both';
+    const checkR2: boolean = storageMode === 'r2' || storageMode === 'both';
 
-/**
- * Probe a public R2 object via HTTP HEAD on `R2_PUBLIC_URL`
- * (no public bucket name required in env).
- */
-async function probePublicR2Object(assetPath: string): Promise<ObjectProbe> {
-    const base: string | undefined = process.env.R2_PUBLIC_URL?.replace(/\/$/, '');
-    if (!base) return 'unconfigured';
+    warnIfR2WithoutDeployedDb(storageMode);
+    warnIfLocalWithDatabaseUrl(storageMode);
+    warnIfBothMode(storageMode);
 
-    const url = `${base}/${toPublicR2ObjectPath(assetPath)}`;
-    try {
-        const res = await fetch(url, { method: 'HEAD' });
-        if (res.ok) return 'exists';
-        if (res.status === 404) return 'missing';
-        return 'error';
-    } catch {
-        return 'error';
-    }
-}
-
-/**
- * True when `coverPath` is under `/assets/images/covers/` but the filename UUID
- * (basename without extension) does not equal `beatId`.
- */
-function coverIdMismatch(beatId: string, coverPath: string): boolean {
-    if (!coverPath.includes('/assets/images/covers/')) {
-        return false;
-    }
-    const base: string = path.basename(coverPath);
-    const dot: number = base.lastIndexOf('.');
-    const idPart: string = dot > 0 ? base.slice(0, dot) : base;
-    return idPart !== beatId;
-}
-
-function pushIssue(
-    issues: Issue[],
-    row: BeatRow,
-    code: string,
-    detail: string
-): void {
-    issues.push({ beatId: row.id, title: row.title, code, detail });
-}
-
-/** Run async work over items with a fixed concurrency limit. */
-async function mapPool<T>(
-    items: T[],
-    concurrency: number,
-    fn: (item: T) => Promise<void>
-): Promise<void> {
-    let next: number = 0;
-    const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
-        while (next < items.length) {
-            const i = next++;
-            await fn(items[i]);
-        }
+    // profile `full`: covers + BPM + audio (CLI). Boot uses `boot` (skips custom covers).
+    const catalogAuditResult: CatalogAuditResult = await runCatalogAudit({
+        storageMode,
+        profile: 'full',
     });
-    await Promise.all(workers);
-}
+    const { issues, publicRoot, privateRoot, inventory } = catalogAuditResult;
+    const dbRows = inventory.dbRows;
 
-/**
- * Fail fast when the chosen mode needs R2 but env is incomplete.
- * @returns Error message, or `null` if OK to proceed
- */
-function r2ConfigError(mode: StorageMode): string | null {
-    if (mode === 'local') return null;
-
-    const needPrivate: boolean = !isR2PrivateConfigured();
-    const needPublic: boolean = !isR2PublicConfigured();
-    if (!needPrivate && !needPublic) return null;
-
-    const missing: string[] = [];
-    if (needPrivate) {
-        missing.push(
-            'private R2 (R2_PRIVATE_BUCKET_NAME, R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)'
+    if (dbRows === 0) {
+        console.warn(
+            '[audit-catalog] WARNING: catalog has 0 beats — nothing to sell until DB rows exist'
         );
     }
-    if (needPublic) {
-        missing.push('public R2 (R2_PUBLIC_URL)');
-    }
-    return `Storage mode "${mode}" requires R2 configuration; missing: ${missing.join('; ')}`;
-}
 
-/**
- * Load all beats and report filesystem / R2 / naming inconsistencies.
- */
-async function main() {
-    const argv: string[] = process.argv;
-    const jsonOutput: boolean = argv.includes('--json');
-    const mode: StorageMode = parseStorageMode(argv);
-    const checkLocal: boolean = mode === 'local' || mode === 'both';
-    const checkR2: boolean = mode === 'r2' || mode === 'both';
-
-    const configErr: string | null = r2ConfigError(mode);
-    if (configErr) {
-        console.error(configErr);
-        await pool.end().catch(() => {});
-        process.exit(1);
-    }
-
-    const { rows } = await pool.query<BeatRow>(
-        'SELECT id, title, key, bpm, audio_path, cover_path FROM beats ORDER BY title'
-    );
-
-    const issues: Issue[] = [];
-
-    // Soft-fallback cover must exist (once per run — not per beat).
-    if (checkLocal && !(await localFileExists(PUBLIC_ROOT, DEFAULT_COVER))) {
-        issues.push({
-            beatId: 'n/a',
-            title: 'Default cover',
-            code: 'DEFAULT_COVER_MISSING_LOCAL',
-            detail: `skimask not found under public/: ${DEFAULT_COVER}`,
-        });
-    }
-    if (checkR2) {
-        const skimaskProbe: ObjectProbe = await probePublicR2Object(DEFAULT_COVER);
-        if (skimaskProbe === 'missing') {
-            issues.push({
-                beatId: 'n/a',
-                title: 'Default cover',
-                code: 'DEFAULT_COVER_MISSING_R2',
-                detail: `skimask not found on public R2: ${toPublicR2ObjectPath(DEFAULT_COVER)}`,
-            });
-        } else if (skimaskProbe === 'error') {
-            issues.push({
-                beatId: 'n/a',
-                title: 'Default cover',
-                code: 'DEFAULT_COVER_R2_ERROR',
-                detail: `Public R2 HEAD failed for skimask: ${toPublicR2ObjectPath(DEFAULT_COVER)}`,
-            });
-        } else if (skimaskProbe === 'unconfigured') {
-            // Defensive: r2ConfigError should have exited already.
-            issues.push({
-                beatId: 'n/a',
-                title: 'Default cover',
-                code: 'DEFAULT_COVER_R2_UNCONFIGURED',
-                detail: 'R2_PUBLIC_URL is not configured',
-            });
-        }
-    }
-
-    // Local fs checks are fast — no need to parallelize. R2 HEADs benefit from a small pool.
-    const concurrency = checkR2 ? 8 : 1;
-
-    await mapPool(rows, concurrency, async (row: BeatRow) => {
-        const coverPath: string = row.cover_path || DEFAULT_COVER;
-        const isCustomCover: boolean = coverPath !== DEFAULT_COVER;
-
-        // --- Logical checks (always) ---
-        if (isCustomCover && coverIdMismatch(row.id, coverPath)) {
-            pushIssue(
-                issues,
-                row,
-                'COVER_ID_MISMATCH',
-                `cover_path does not use beat id: ${coverPath}`
-            );
-        }
-
-        const filename: string = path.basename(row.audio_path);
-        const filenameBpm: number | null = parseBpmFromAudioFilename(filename);
-        if (filenameBpm === null) {
-            pushIssue(
-                issues,
-                row,
-                'AUDIO_FILENAME_UNPARSEABLE',
-                `Cannot parse BPM from filename: ${filename}`
-            );
-        } else if (!isBpmInBounds(filenameBpm)) {
-            pushIssue(
-                issues,
-                row,
-                'AUDIO_FILENAME_BPM_OUT_OF_BOUNDS',
-                `Filename BPM ${filenameBpm} outside (${BPM_MIN_EXCLUSIVE}, ${BPM_MAX_EXCLUSIVE}): ${filename}`
-            );
-        } else if (filenameBpm !== row.bpm) {
-            pushIssue(
-                issues,
-                row,
-                'BPM_MISMATCH',
-                `DB bpm=${row.bpm} but filename implies ${filenameBpm} (${filename})`
-            );
-        }
-
-        const logicalWavPath: string = getWavPath(row.audio_path);
-        const privateWavRel: string = localPrivateWavRelativePath(row.audio_path);
-
-        // --- Local disk ---
-        if (checkLocal) {
-            if (!(await localFileExists(PUBLIC_ROOT, row.audio_path))) {
-                pushIssue(
-                    issues,
-                    row,
-                    'MP3_MISSING_LOCAL',
-                    `MP3 not found under public/: ${row.audio_path}`
-                );
-            }
-
-            if (isCustomCover && !(await localFileExists(PUBLIC_ROOT, coverPath))) {
-                pushIssue(
-                    issues,
-                    row,
-                    'COVER_MISSING_LOCAL',
-                    `Cover not found under public/: ${coverPath}`
-                );
-            }
-
-            if (!(await localFileExists(PRIVATE_ROOT, privateWavRel))) {
-                pushIssue(
-                    issues,
-                    row,
-                    'WAV_MISSING_LOCAL',
-                    `WAV not found under private/: ${privateWavRel} (from ${row.audio_path})`
-                );
-            }
-        }
-
-        // --- R2 ---
-        // Note: mode that needs R2 already passed r2ConfigError; "unconfigured" below is a safety net only.
-        if (checkR2) {
-            const mp3Probe: ObjectProbe = await probePublicR2Object(row.audio_path);
-            if (mp3Probe === 'missing') {
-                pushIssue(
-                    issues,
-                    row,
-                    'MP3_MISSING_R2',
-                    `MP3 not found on public R2: ${toPublicR2ObjectPath(row.audio_path)}`
-                );
-            } else if (mp3Probe === 'error') {
-                pushIssue(
-                    issues,
-                    row,
-                    'MP3_R2_ERROR',
-                    `Public R2 HEAD failed for MP3: ${toPublicR2ObjectPath(row.audio_path)}`
-                );
-            } else if (mp3Probe === 'unconfigured') {
-                pushIssue(
-                    issues,
-                    row,
-                    'MP3_R2_UNCONFIGURED',
-                    `R2_PUBLIC_URL unconfigured while probing ${toPublicR2ObjectPath(row.audio_path)}`
-                );
-            }
-
-            if (isCustomCover) {
-                const coverProbe: ObjectProbe = await probePublicR2Object(coverPath);
-                if (coverProbe === 'missing') {
-                    pushIssue(
-                        issues,
-                        row,
-                        'COVER_MISSING_R2',
-                        `Cover not found on public R2: ${toPublicR2ObjectPath(coverPath)}`
-                    );
-                } else if (coverProbe === 'error') {
-                    pushIssue(
-                        issues,
-                        row,
-                        'COVER_R2_ERROR',
-                        `Public R2 HEAD failed for cover: ${toPublicR2ObjectPath(coverPath)}`
-                    );
-                } else if (coverProbe === 'unconfigured') {
-                    pushIssue(
-                        issues,
-                        row,
-                        'COVER_R2_UNCONFIGURED',
-                        `R2_PUBLIC_URL unconfigured while probing ${toPublicR2ObjectPath(coverPath)}`
-                    );
-                }
-            }
-
-            const wavKey: string = getPrivateWavR2Key(row.audio_path);
-            const wavProbe: R2WavProbe = await probePrivateR2Wav(row.audio_path);
-            if (wavProbe === 'missing') {
-                pushIssue(
-                    issues,
-                    row,
-                    'WAV_MISSING_R2',
-                    `WAV not found in private R2: ${wavKey} (logical ${logicalWavPath})`
-                );
-            } else if (wavProbe === 'error') {
-                pushIssue(
-                    issues,
-                    row,
-                    'WAV_R2_ERROR',
-                    `Private R2 HEAD failed for WAV: ${wavKey}`
-                );
-            } else if (wavProbe === 'unconfigured') {
-                pushIssue(
-                    issues,
-                    row,
-                    'WAV_R2_UNCONFIGURED',
-                    'Private R2 is not configured'
-                );
-            }
-        }
-    });
-
-    // Concurrent workers push in nondeterministic order; sort for stable CLI/JSON output.
-    issues.sort((a, b) => a.title.localeCompare(b.title) || a.code.localeCompare(b.code));
-
-    if (jsonOutput) {
+    if (shouldOutputAsJson) {
+        // null = no replacer; 2 = indent spaces (pretty-print)
         console.log(
             JSON.stringify(
                 {
-                    storageMode: mode,
-                    beatCount: rows.length,
+                    storageMode,
                     issueCount: issues.length,
-                    publicRoot: PUBLIC_ROOT,
-                    privateRoot: PRIVATE_ROOT,
+                    publicRoot,
+                    privateRoot,
+                    databaseSource: isEnvVarSet('DATABASE_URL') ? 'DATABASE_URL' : 'local DB',
+                    inventory,
                     issues,
                 },
                 null,
@@ -479,14 +149,32 @@ async function main() {
             )
         );
     } else {
-        console.log(`Audited ${rows.length} beats (storage mode: ${mode})`);
+        console.log(`Audited ${dbRows} beats (storage mode: ${storageMode})`);
+        console.log(
+            `  database: ${isEnvVarSet('DATABASE_URL') ? 'DATABASE_URL' : 'local DB'}`
+        );
+        if (inventory.local) {
+            console.log(
+                `  inventory local: mp3=${inventory.local.mp3Count} wav=${inventory.local.wavCount} dbRows=${inventory.dbRows}`
+            );
+        }
+        if (inventory.r2) {
+            console.log(
+                `  inventory r2:    mp3=${inventory.r2.mp3Count} wav=${inventory.r2.wavCount} dbRows=${inventory.dbRows}`
+            );
+        }
+        // publicRoot / privateRoot are always local filesystem paths (useful for --local-only / --both).
+        // R2 mode does not rewrite them into bucket URLs — R2 paths are logged separately below.
         if (checkLocal) {
-            console.log(`  local public:  ${PUBLIC_ROOT}`);
-            console.log(`  local private: ${PRIVATE_ROOT}`);
+            console.log(`  local public:  ${publicRoot}`);
+            console.log(`  local private: ${privateRoot}`);
         }
         if (checkR2) {
-            console.log(`  public R2:  ${process.env.R2_PUBLIC_URL ?? '(unset)'}`);
-            console.log(`  private R2: ${process.env.R2_PRIVATE_BUCKET_NAME ?? '(unset)'}`);
+            console.log(`  public R2:  ${getEnv('R2_PUBLIC_URL') ?? '(unset)'}`);
+            console.log(
+                `  public R2 bucket: ${getEnv('R2_PUBLIC_BUCKET_NAME') ?? '(unset)'}`
+            );
+            console.log(`  private R2: ${getEnv('R2_PRIVATE_BUCKET_NAME') ?? '(unset)'}`);
         }
         if (issues.length === 0) {
             console.log('No catalog issues found.');
@@ -500,19 +188,16 @@ async function main() {
         }
     }
 
-    await pool.end();
+    await closePool();
 
     if (issues.length > 0) {
         process.exit(1);
     }
 }
 
-main().catch(async (err) => {
+// Rejected promises from main() land here (async errors = failures inside awaits, not sync throws).
+main().catch(async (err: unknown) => {
     console.error(err);
-    try {
-        await pool.end();
-    } catch {
-        /* ignore */
-    }
+    await closePool();
     process.exit(1);
 });

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import pool from '@/config/database.js';
 import type { Beat } from '@/types/Beat.js';
 import { QueryResult } from 'pg';
+import { initializeDatabase } from '@/db/initializeDatabase.js';
 
 dotenv.config();
 
@@ -24,35 +25,9 @@ async function migrateJsonToDatabase() {
         const beats: Beat[] = JSON.parse(fileContent);
         console.log(`✅ Found ${beats.length} beats in JSON file\n`);
 
-        // 2. Check if table exists, create if not
-        console.log('🔍 Checking if beats table exists...');
-        const tableCheck: QueryResult<any> = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'beats'
-            );
-        `);
-
-        if (!tableCheck.rows[0].exists) {
-            console.log('📊 Creating beats table...');
-            await pool.query(`
-                CREATE TABLE beats (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    title VARCHAR(255) NOT NULL,
-                    key VARCHAR(50) NOT NULL,
-                    bpm INTEGER NOT NULL CHECK (bpm > 0 AND bpm < 300),
-                    price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-                    audio_path VARCHAR(500) NOT NULL,
-                    cover_path VARCHAR(500) NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            `);
-            console.log('✅ Beats table created\n');
-        } else {
-            console.log('✅ Beats table already exists\n');
-        }
+        console.log('🔍 Ensuring catalog schema exists...');
+        await initializeDatabase();
+        console.log('✅ Schema ready\n');
 
         // 3. Check if data already exists
         const countResult: QueryResult<any> = await pool.query('SELECT COUNT(*) FROM beats');

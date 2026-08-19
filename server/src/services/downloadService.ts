@@ -1,11 +1,33 @@
 import pool from '@/config/database.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
-import { S3Client, HeadObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import type { GetObjectCommandOutput } from '@aws-sdk/client-s3';
-import { QueryResult } from 'pg';
-import { logError } from '@/utils/logger.js';
+import {
+    fileURLToPath
+} from 'url';
+import {
+    existsSync
+} from 'fs';
+import {
+    S3Client,
+    HeadObjectCommand,
+    GetObjectCommand,
+    ListObjectsV2Command,
+    type ListObjectsV2CommandOutput
+} from '@aws-sdk/client-s3';
+import type {
+    GetObjectCommandOutput
+} from '@aws-sdk/client-s3';
+import {
+    QueryResult
+} from 'pg';
+import {
+    logError
+} from '@/utils/logger.js';
+import {
+    getEnv
+} from '@/config/env.js';
+import {
+    isR2PrivateConfigured
+} from '@/utils/r2.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,51 +43,62 @@ function stripLeadingSlash(p: string): string {
     return p.startsWith('/') ? p.slice(1) : p;
 }
 
-/**
- * Returns whether all required private R2 environment variables are set.
- *
- * Required:
- *  - `R2_PRIVATE_BUCKET_NAME`
- *  - `R2_ENDPOINT`
- *  - `R2_ACCESS_KEY_ID`
- *  - `R2_SECRET_ACCESS_KEY`.
- *
- * @returns `true` when private R2 can be initialized; `false` otherwise (expected in local dev without R2)
- */
-export function isR2PrivateConfigured(): boolean {
-    return !!(
-        process.env.R2_PRIVATE_BUCKET_NAME &&
-        process.env.R2_ENDPOINT &&
-        process.env.R2_ACCESS_KEY_ID &&
-        process.env.R2_SECRET_ACCESS_KEY
-    );
-}
-
-let privateS3Client: S3Client | null = null;
+let r2S3Client: S3Client | null = null;
 
 /**
- * Returns a cached S3 client for the private R2 bucket.
- *
- * Trust this as the single gate for private R2 configuration; callers should not re-check individual env vars.
+ * Returns a cached S3 client for Cloudflare R2 (account credentials).
+ * Works for private and public buckets when the same API token can access both.
  *
  * @returns Configured `S3Client`, or `null` when {@link isR2PrivateConfigured} is false
  */
-function getPrivateS3Client(): S3Client | null {
+function getR2S3Client(): S3Client | null {
     if (!isR2PrivateConfigured()) {
         return null;
     }
-    if (privateS3Client) {
-        return privateS3Client;
+    if (r2S3Client) {
+        return r2S3Client;
     }
-    privateS3Client = new S3Client({
+    r2S3Client = new S3Client({
         region: 'auto',
-        endpoint: process.env.R2_ENDPOINT,
+        endpoint: getEnv('R2_ENDPOINT'),
         credentials: {
-            accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
-            secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
+            accessKeyId: getEnv('R2_ACCESS_KEY_ID') as string,
+            secretAccessKey: getEnv('R2_SECRET_ACCESS_KEY') as string,
         },
     });
-    return privateS3Client;
+    return r2S3Client;
+}
+
+/**
+ * List object keys under a prefix (paginated). Same R2 credentials as private WAV access.
+ *
+ * @returns Keys on success; `null` if the S3 client is unconfigured; throws on API errors
+ */
+export async function listR2ObjectKeys(
+    bucket: string,
+    prefix: string
+): Promise<string[] | null> {
+    const r2S3Client = getR2S3Client();
+    if (!r2S3Client) return null;
+
+    const keys: string[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+        const output: ListObjectsV2CommandOutput = await r2S3Client.send(
+            new ListObjectsV2Command({
+                Bucket: bucket,
+                Prefix: prefix,
+                ContinuationToken: continuationToken,
+            })
+        );
+        for (const obj of output.Contents ?? []) {
+            if (obj.Key) keys.push(obj.Key);
+        }
+        continuationToken = output.IsTruncated ? output.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    return keys;
 }
 
 export type DownloadTokenInvalidReason = 'expired' | 'limit_reached';
@@ -240,14 +273,14 @@ export async function hasR2WavFile(audioPath: string): Promise<boolean> {
  * @param audioPath - Database audio path for the purchased beat
  */
 export async function probePrivateR2Wav(audioPath: string): Promise<R2WavProbe> {
-    const client = getPrivateS3Client();
+    const client = getR2S3Client();
     if (!client) return 'unconfigured';
 
     const key = getPrivateWavR2Key(audioPath);
     try {
         await client.send(
             new HeadObjectCommand({
-                Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+                Bucket: getEnv('R2_PRIVATE_BUCKET_NAME'),
                 Key: key,
             })
         );
@@ -316,16 +349,16 @@ export async function getPrivateR2Object(audioPath: string): Promise<{
     contentType: string | null;
     contentLength: number | null;
 }> {
-    const privateR2Client = getPrivateS3Client();
-    if (!privateR2Client) {
+    const client = getR2S3Client();
+    if (!client) {
         throw new Error('Private R2 is not configured');
     }
 
     const key = getPrivateWavR2Key(audioPath);
 
-    const result: GetObjectCommandOutput = await privateR2Client.send(
+    const result: GetObjectCommandOutput = await client.send(
         new GetObjectCommand({
-            Bucket: process.env.R2_PRIVATE_BUCKET_NAME,
+            Bucket: getEnv('R2_PRIVATE_BUCKET_NAME'),
             Key: key,
         })
     );

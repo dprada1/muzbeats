@@ -1,5 +1,10 @@
--- Create beats table
--- This matches the Beat type structure from your JSON data
+-- Source of truth for CREATE TABLE / INDEX (idempotent: IF NOT EXISTS).
+-- Applied by initializeDatabase / npm run init-db.
+--
+-- This file does NOT ALTER existing tables. Column/CHECK changes for databases
+-- that already exist live in src/db/migrations/.
+--
+-- PostgreSQL has no UNSIGNED integer type. Use INTEGER/DECIMAL + CHECK instead.
 
 CREATE TABLE IF NOT EXISTS beats (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -22,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_beats_price ON beats(price);
 CREATE TABLE IF NOT EXISTS orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_email VARCHAR(255) NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL CHECK (total_amount > 0),
     status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
     paypal_order_id VARCHAR(255) UNIQUE,
     download_email_sent_at TIMESTAMPTZ NULL,
@@ -35,7 +40,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
-    price_at_purchase DECIMAL(10, 2) NOT NULL,
+    price_at_purchase DECIMAL(10, 2) NOT NULL CHECK (price_at_purchase > 0),
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -47,7 +52,8 @@ CREATE TABLE IF NOT EXISTS downloads (
     beat_id UUID NOT NULL REFERENCES beats(id) ON DELETE RESTRICT,
     download_token VARCHAR(255) UNIQUE NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
-    download_count INTEGER DEFAULT 0,
-    max_downloads INTEGER DEFAULT 5,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    download_count INTEGER NOT NULL DEFAULT 0 CHECK (download_count >= 0),
+    max_downloads INTEGER NOT NULL DEFAULT 5 CHECK (max_downloads > 0),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CHECK (download_count <= max_downloads)
 );
