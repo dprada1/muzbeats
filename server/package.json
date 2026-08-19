@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias && mkdir -p dist/db && cp src/db/schema.sql dist/db/schema.sql",
     "start": "node dist/index.js",
     "lint": "echo \"Linting not configured yet\"",
     "migrate": "tsx src/db/migrate-json-to-db.ts",
@@ -24,6 +24,10 @@
     "init-db": "tsx src/db/initializeDatabase.ts",
     "test-db": "tsx src/test-db.ts",
     "update-prices": "tsx src/db/update-prices.ts",
+    "audit-catalog": "tsx src/db/audit-catalog.ts",
+    "audit-catalog:local": "tsx src/db/audit-catalog.ts --local-only",
+    "audit-catalog:r2": "tsx src/db/audit-catalog.ts --r2",
+    "audit-catalog:both": "tsx src/db/audit-catalog.ts --both",
     "test": "vitest --ui --coverage",
     "test:run": "vitest run --coverage",
     "create-test-download": "tsx src/__tests__/webhook/create-test-download.ts"

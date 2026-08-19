@@ -1,12 +1,24 @@
-import { Resend } from 'resend';
+import {
+    Resend
+} from 'resend';
 import dotenv from 'dotenv';
 import pool from '@/config/database.js';
-import type { QueryResult } from 'pg';
-import { logError, logInfo, logWarn } from '@/utils/logger.js';
+import type {
+    QueryResult
+} from 'pg';
+import {
+    getEnv,
+    isSet
+} from '@/config/env.js';
+import {
+    logError,
+    logInfo,
+    logWarn
+} from '@/utils/logger.js';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(getEnv('RESEND_API_KEY'));
 
 const HTTPS_OR_HTTP_SCHEME_REGEX: RegExp = /^https?:\/\//i;
 
@@ -28,7 +40,7 @@ type OrderDownloadItem = {
  *
  * Trims whitespace. Empty (or whitespace-only) input returns `""`.
  * Protocol-relative values like `//api.example.com` become `https://…` (email-safe).
- * Bare hosts without a scheme get `https` in production and `http` otherwise.
+ * Bare hosts without a scheme get `https` in staging/production and `http` in development.
  * Values that already start with `http://` or `https://` are returned trimmed as-is.
  *
  * @param raw - Candidate base URL from env (may omit scheme or use `//host`)
@@ -43,9 +55,11 @@ function normalizeBaseUrl(raw: string): string {
         return `https:${v}`;
     }
 
-    // If user forgot scheme, assume https in prod, http in dev.
+    // If user forgot scheme: https for staging/production, http only in local development.
     if (!HTTPS_OR_HTTP_SCHEME_REGEX.test(v)) {
-        const scheme = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+        const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+        const scheme =
+            nodeEnv === 'production' || nodeEnv === 'staging' ? 'https' : 'http';
         return `${scheme}://${v}`;
     }
 
@@ -110,14 +124,12 @@ async function getOrderDownloadItems(orderId: string): Promise<OrderDownloadItem
  *
  * @returns Absolute, scheme-normalized base URL
  * @throws If neither EMAIL_LINK_BASE_URL nor BACKEND_URL is configured, or if the resolved
- *   URL uses insecure http:// in production
+ *   URL uses insecure http:// in staging/production
  */
 function getBaseURL(): string {
     // Local development uses EMAIL_LINK_BASE_URL (a public tunnel) with highest priority;
     // production/staging use BACKEND_URL. First non-empty wins.
-    const rawBaseUrl =
-        process.env.EMAIL_LINK_BASE_URL?.trim() ||
-        process.env.BACKEND_URL?.trim();
+    const rawBaseUrl = getEnv('EMAIL_LINK_BASE_URL') || getEnv('BACKEND_URL');
     if (!rawBaseUrl) {
         throw new Error(
             'emailService.getBaseURL: Neither EMAIL_LINK_BASE_URL nor BACKEND_URL is configured; cannot build download links.'
@@ -126,11 +138,12 @@ function getBaseURL(): string {
 
     const baseUrl = normalizeBaseUrl(rawBaseUrl);
 
-    // Refuse plaintext http:// in production: the download link (and therefore the streamed
-    // WAV and its capability token) would travel unencrypted and be exposed to MITM.
-    if (process.env.NODE_ENV === 'production' && baseUrl.startsWith('http://')) {
+    // Refuse plaintext http:// in staging/production: download links (and tokens) must be https.
+    const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
+    const isDeployed = nodeEnv === 'production' || nodeEnv === 'staging';
+    if (isDeployed && baseUrl.startsWith('http://')) {
         throw new Error(
-            `emailService.getBaseURL: Refusing insecure http:// base URL in production (${baseUrl}). Use https://.`
+            `emailService.getBaseURL: Refusing insecure http:// base URL in ${nodeEnv} (${baseUrl}). Use https://.`
         );
     }
 
@@ -160,19 +173,19 @@ function getDownloadURL(baseUrl: string, token: string): string {
  */
 function getLogoURL(): string {
     // Best: explicit public logo URL (HTTPS)
-    const emailLogoURL = process.env.EMAIL_LOGO_URL
+    const emailLogoURL = getEnv('EMAIL_LOGO_URL');
     if (emailLogoURL) {
         return emailLogoURL;
     }
 
     // Next best: Build logo URL from known backend URL using production backend static route (HTTPS)
-    const backendURL = process.env.BACKEND_URL
+    const backendURL = getEnv('BACKEND_URL');
     if (backendURL) {
         return `${backendURL}/assets/images/skimask.png`;
     }
 
     // Next best: R2 public URL (HTTPS) – upload logo to `images/skimask.png`
-    const R2PublicURL = process.env.R2_PUBLIC_URL;
+    const R2PublicURL = getEnv('R2_PUBLIC_URL');
     if (R2PublicURL) {
         const r2Url = R2PublicURL.endsWith('/')
             ? R2PublicURL.slice(0, -1)
@@ -234,7 +247,7 @@ export async function sendDownloadEmail(
     orderTotal: number
 ): Promise<boolean> {
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    if (!isSet('RESEND_API_KEY')) {
         logWarn(
             'emailService.sendDownloadEmail',
             'RESEND_API_KEY not configured — skipping email send',
@@ -246,7 +259,7 @@ export async function sendDownloadEmail(
     // Optional safety: only allow emails to specific recipients (useful in staging)
     // Example:
     // EMAIL_ALLOWLIST=you@gmail.com,other@test.com
-    const emailAllowlist = process.env.EMAIL_ALLOWLIST;
+    const emailAllowlist = getEnv('EMAIL_ALLOWLIST');
     if (emailAllowlist) {
         const allowlist = emailAllowlist
             .split(',')
@@ -453,9 +466,9 @@ export async function sendDownloadEmail(
     `;
 
     // Send email
-    const resendReplyToEmail = process.env.RESEND_REPLY_TO_EMAIL;
+    const resendReplyToEmail = getEnv('RESEND_REPLY_TO_EMAIL');
     const { data, error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'MuzBeats <orders@prodmuz.com>',
+        from: getEnv('RESEND_FROM_EMAIL') || 'MuzBeats <orders@prodmuz.com>',
         to: emailAddress,
         ...(resendReplyToEmail ? { replyTo: resendReplyToEmail } : {}),
         subject: 'Your MuzBeats Purchase - Download Links',

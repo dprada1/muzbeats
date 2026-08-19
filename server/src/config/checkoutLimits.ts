@@ -71,8 +71,8 @@ function assertMinMax(minName: string, min: number, maxName: string, max: number
     }
 }
 
-/** Fail fast at startup if checkout bounds are misconfigured */
-export function assertCheckoutLimitsValid(): void {
+/** Fail fast at boot if checkout bounds are misconfigured. */
+export function assertCheckoutLimitsValidAtBoot(): void {
     if (CHECKOUT_CURRENCY !== 'USD') {
         throw new Error(
             `Invalid checkout config: CHECKOUT_CURRENCY must be 'USD' (got '${CHECKOUT_CURRENCY}')`

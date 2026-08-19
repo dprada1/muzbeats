@@ -1,3 +1,5 @@
+import util from 'util';
+
 type LogMeta = unknown;
 
 function formatMessage(
@@ -9,6 +11,20 @@ function formatMessage(
     return `[${timestamp}] [${level}] ${scope}: ${message}`;
 }
 
+/**
+ * Always expand meta on the following line so `{` is Allman (not K&R / compact).
+ * Short objects like `{ url: '...' }` used to stay inline because `console.log(msg, obj)`
+ * uses `util.inspect` compact mode when the object fits the terminal width.
+ */
+function inspectMeta(meta: LogMeta): string {
+    return util.inspect(meta, {
+        colors: Boolean(process.stdout.isTTY),
+        compact: false,
+        breakLength: 1,
+        depth: null,
+    });
+}
+
 /** Routine success / progress (boot OK, email sent, etc.). */
 export function logInfo(
     scope: string,
@@ -16,7 +32,7 @@ export function logInfo(
     meta?: LogMeta
 ): void {
     if (meta !== undefined) {
-        console.log(formatMessage('INFO', scope, message), meta);
+        console.log(`${formatMessage('INFO', scope, message)}\n${inspectMeta(meta)}`);
     } else {
         console.log(formatMessage('INFO', scope, message));
     }
@@ -29,7 +45,7 @@ export function logWarn(
     meta?: LogMeta
 ): void {
     if (meta !== undefined) {
-        console.warn(formatMessage('WARN', scope, message), meta);
+        console.warn(`${formatMessage('WARN', scope, message)}\n${inspectMeta(meta)}`);
     } else {
         console.warn(formatMessage('WARN', scope, message));
     }
@@ -42,7 +58,7 @@ export function logError(
     meta?: LogMeta
 ): void {
     if (meta !== undefined) {
-        console.error(formatMessage('ERROR', scope, message), meta);
+        console.error(`${formatMessage('ERROR', scope, message)}\n${inspectMeta(meta)}`);
     } else {
         console.error(formatMessage('ERROR', scope, message));
     }

@@ -13,7 +13,7 @@ import {
 import { getRouteParam } from '@/utils/routeParams.js';
 import { createReadStream, statSync } from 'fs';
 import path from 'path';
-import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
+import { getR2PublicUrl, isR2PublicURLConfigured } from '@/utils/r2.js';
 import { logError, logInfo, logWarn } from '@/utils/logger.js';
 
 /**
@@ -220,7 +220,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
                 {
                     audioPath: validation.audioPath,
                     privateR2Enabled: isPrivateR2Enabled(),
-                    r2PublicConfigured: isR2PublicConfigured(),
+                    r2PublicConfigured: isR2PublicURLConfigured(),
                 }
             );
             res.status(500).json({
@@ -243,7 +243,7 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
         }
 
         // Dev MP3 fallback: redirect to public R2 when configured (see getR2Url NODE_ENV behavior in r2.ts)
-        if (isR2PublicConfigured()) {
+        if (isR2PublicURLConfigured()) {
             const redirectUrl = getR2PublicUrl(validation.audioPath);
             res.redirect(302, redirectUrl);
             return;

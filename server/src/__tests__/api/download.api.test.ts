@@ -20,7 +20,7 @@ vi.mock('@/services/downloadService.js', async (importOriginal) => {
 
 vi.mock('@/utils/r2.js', () => ({
     getR2PublicUrl: vi.fn(),
-    isR2PublicConfigured: vi.fn(),
+    isR2PublicURLConfigured: vi.fn(),
 }));
 
 vi.mock('fs', async (importOriginal) => {
@@ -42,7 +42,7 @@ import {
     getPrivateR2Object,
     isPrivateR2Enabled,
 } from '@/services/downloadService.js';
-import { getR2PublicUrl, isR2PublicConfigured } from '@/utils/r2.js';
+import { getR2PublicUrl, isR2PublicURLConfigured } from '@/utils/r2.js';
 
 const TOKEN = 'test-download-token';
 const AUDIO_PATH = '/assets/beats/mp3/test_beat.mp3';
@@ -86,7 +86,7 @@ describe('GET /api/downloads/:token', () => {
         mockNoR2Wav();
         vi.mocked(hasLocalWavFile).mockReturnValue(false);
         vi.mocked(getAudioFilePath).mockReturnValue(null);
-        vi.mocked(isR2PublicConfigured).mockReturnValue(false);
+        vi.mocked(isR2PublicURLConfigured).mockReturnValue(false);
         vi.mocked(isPrivateR2Enabled).mockReturnValue(false);
         vi.mocked(getR2PublicUrl).mockReturnValue(AUDIO_PATH);
     });
@@ -216,7 +216,7 @@ describe('GET /api/downloads/:token', () => {
         });
 
         test('B6: redirects to public MP3 URL in dev when configured', async () => {
-            vi.mocked(isR2PublicConfigured).mockReturnValue(true);
+            vi.mocked(isR2PublicURLConfigured).mockReturnValue(true);
             vi.mocked(getR2PublicUrl).mockReturnValue(AUDIO_PATH);
 
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`).redirects(0);

@@ -1,6 +1,15 @@
-import { paypalSDK } from '@/config/paypal.js';
-import { getBeatById } from './beatsService.js';
-import type { Beat } from '@/types/Beat.js';
+import {
+    getPayPalSDK
+} from '@/config/paypal.js';
+import {
+    getEnv
+} from '@/config/env.js';
+import {
+    getBeatById
+} from './beatsService.js';
+import type {
+    Beat
+} from '@/types/Beat.js';
 import {
     OrdersController,
     CheckoutPaymentIntent,
@@ -14,15 +23,34 @@ import {
     CHECKOUT_CURRENCY,
     MAX_BEAT_PRICE_CENTS,
     MAX_CART_TOTAL_CENTS,
+    MAX_ITEM_QUANTITY,
     MIN_BEAT_PRICE_CENTS,
     MIN_CART_TOTAL_CENTS,
+    MIN_ITEM_QUANTITY,
 } from '@/config/checkoutLimits.js';
-import { CheckoutError, internalCheckoutError } from '@/utils/checkoutErrors.js';
-import { centsToUsd, formatUsdFromCents, usdToCents } from '@/utils/money.js';
-import { logError, logInfo, logWarn } from '@/utils/logger.js';
+import {
+    CheckoutError,
+    internalCheckoutError
+} from '@/utils/checkoutErrors.js';
+import {
+    centsToUsd,
+    formatUsdFromCents,
+    usdToCents
+} from '@/utils/money.js';
+import {
+    logError,
+    logInfo,
+    logWarn
+} from '@/utils/logger.js';
 
-// Get orders controller from SDK client
-const ordersController = new OrdersController(paypalSDK as any);
+let ordersControllerInstance: OrdersController | undefined;
+
+function getOrdersController(): OrdersController {
+    if (!ordersControllerInstance) {
+        ordersControllerInstance = new OrdersController(getPayPalSDK() as any);
+    }
+    return ordersControllerInstance;
+}
 
 // Temporary storage for order data (in production, use Redis or database)
 // Maps PayPal order ID -> beat IDs (payer email comes from PayPal at capture)
@@ -117,6 +145,18 @@ export async function createPayPalOrder(
             const { quantity } = cartLines[i];
             const beat = validBeats[i];
 
+            if (
+                !Number.isInteger(quantity) ||
+                quantity < MIN_ITEM_QUANTITY ||
+                quantity > MAX_ITEM_QUANTITY
+            ) {
+                logWarn('paypalService.createPayPalOrder', 'Line quantity out of bounds', {
+                    beatId: beat.id,
+                    quantity,
+                });
+                throw internalCheckoutError();
+            }
+
             if (!Number.isFinite(beat.price)) {
                 logWarn(
                     'paypalService.createPayPalOrder',
@@ -194,7 +234,7 @@ export async function createPayPalOrder(
             customId: beatIdsString,
         }];
 
-        const response: ApiResponse<Order> = await ordersController.createOrder({
+        const response: ApiResponse<Order> = await getOrdersController().createOrder({
             body: {
                 intent: CheckoutPaymentIntent.Capture,
                 purchaseUnits: purchaseUnits,
@@ -202,8 +242,8 @@ export async function createPayPalOrder(
                     brandName: 'MuzBeats',
                     landingPage: OrderApplicationContextLandingPage.NoPreference,
                     userAction: OrderApplicationContextUserAction.PayNow,
-                    returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/store/checkout/success`,
-                    cancelUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/store/checkout`,
+                    returnUrl: `${getEnv('FRONTEND_URL') || 'http://localhost:5173'}/store/checkout/success`,
+                    cancelUrl: `${getEnv('FRONTEND_URL') || 'http://localhost:5173'}/store/checkout`,
                 },
             },
         });
@@ -261,7 +301,7 @@ export async function createPayPalOrder(
  */
 export async function capturePayPalOrder(orderId: string): Promise<unknown> {
     try {
-        const response = await ordersController.captureOrder({
+        const response = await getOrdersController().captureOrder({
             id: orderId,
         });
 
@@ -280,7 +320,7 @@ export async function capturePayPalOrder(orderId: string): Promise<unknown> {
  */
 export async function getPayPalOrder(orderId: string): Promise<PayPalOrderSummary> {
     try {
-        const response = await ordersController.getOrder({
+        const response = await getOrdersController().getOrder({
             id: orderId,
         });
 
