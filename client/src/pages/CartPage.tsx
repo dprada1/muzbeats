@@ -21,7 +21,9 @@ export default function CartPage() {
         return () => setBeats([]);
     }, [cartItems, setBeats]);
 
-    useEffect(() => window.scrollTo({ top: 0 }), []);
+    useEffect(() => {
+        window.scrollTo({ top: 0 });
+    }, []);
 
     // Request cancellation for rate limiting
     const requestCancellerRef = useRef<{ controller: AbortController | null }>({ controller: null });
