@@ -1,9 +1,11 @@
+# Install and build must stay in one command. Railway builder v4 has
+# skipped the install phase on cache hits, then `tsc` is missing (exit 127).
+# --include=dev keeps typescript/tsc-alias even when NODE_ENV=production.
 [phases.install]
-cmds = ["cd server && npm install"]
+cmds = ["cd server && npm install --include=dev"]
 
 [phases.build]
-cmds = ["cd server && npm run build"]
+cmds = ["cd server && npm install --include=dev && npm run build"]
 
 [start]
 cmd = "cd server && npm start"
-
