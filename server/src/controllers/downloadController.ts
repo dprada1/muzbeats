@@ -47,18 +47,21 @@ function streamDownloadToClient(
                          .replace(/\s+/g, ' ')
                          .trim() || 'download';
 
-    let resolvedContentType = contentType;
-    if (!resolvedContentType) {
-        if (ext === '.wav') resolvedContentType = 'audio/wav';
-        else if (ext === '.mp3') resolvedContentType = 'audio/mpeg';
-        else resolvedContentType = 'application/octet-stream';
-    }
-
-    res.setHeader('Content-Type', resolvedContentType);
+    // Always octet-stream for token downloads. R2 often stores WAVs as audio/wav;
+    // Chrome then opens its gray in-tab player instead of saving the file.
+    void contentType;
+    void ext;
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, no-store');
     if (contentLength != null && contentLength > 0) {
         res.setHeader('Content-Length', contentLength);
     }
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    const encoded = encodeURIComponent(filename);
+    res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"; filename*=UTF-8''${encoded}`
+    );
     // Deferred: HTTP Range / Accept-Ranges (206 partial content). Whole-file 200 is sufficient
     // for token-based WAV delivery; partial ranges complicate download counting without clear product benefit.
 
@@ -115,6 +118,36 @@ export async function downloadBeatHandler(req: Request, res: Response): Promise<
 
         if (!token) {
             res.status(400).json({ error: 'Download token is required' });
+            return;
+        }
+
+        // Email clicks are cross-origin navigations (Gmail → API). Chrome starts the
+        // WAV as a document, then cancels the HTTP/2 stream (`stream canceled by remote`)
+        // and leaves a blank tab. A same-origin HTML page can use <a download>.
+        // curl, tests, and ?file=1 still stream the bytes.
+        if (req.query.file !== '1' && req.get('Sec-Fetch-Dest') === 'document') {
+            res.setHeader('Cache-Control', 'no-store');
+            res.status(200).type('html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MuzBeats download</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee;
+           min-height: 100vh; margin: 0; display: grid; place-items: center; }
+    a { color: #f3c000; }
+  </style>
+</head>
+<body>
+  <p>Your download should start automatically.
+    <a id="dl" href="?file=1" download>Click here if it does not.</a>
+  </p>
+  <script>
+    document.getElementById('dl').click();
+  </script>
+</body>
+</html>`);
             return;
         }
 

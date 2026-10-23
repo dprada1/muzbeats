@@ -95,6 +95,17 @@ describe('GET /api/downloads/:token', () => {
         process.env.NODE_ENV = originalNodeEnv;
     });
 
+    test('browser document navigation gets an HTML start page instead of the WAV', async () => {
+        const res = await request(createApp())
+            .get(`/api/downloads/${TOKEN}`)
+            .set('Sec-Fetch-Dest', 'document');
+
+        expect(res.status).toBe(200);
+        expect(res.headers['content-type']).toMatch(/html/);
+        expect(res.text).toContain('?file=1');
+        expect(validateDownloadToken).not.toHaveBeenCalled();
+    });
+
     describe('token validation (A1–A3)', () => {
         test('returns 404 when token is not found', async () => {
             vi.mocked(validateDownloadToken).mockResolvedValue(null);
@@ -155,12 +166,30 @@ describe('GET /api/downloads/:token', () => {
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`);
 
             expect(res.status).toBe(200);
-            expect(res.headers['content-type']).toMatch(/audio\/wav/);
+            expect(res.headers['content-type']).toMatch(/octet-stream/);
+            expect(res.headers['content-disposition']).toMatch(/attachment/);
             expect(res.headers['content-length']).toBe(String(MOCK_WAV_BODY.length));
             expect(getPrivateR2Object).toHaveBeenCalledWith(AUDIO_PATH);
             await vi.waitFor(() =>
                 expect(incrementDownloadCount).toHaveBeenCalledWith(validValidation.downloadId)
             );
+        });
+
+        test('B1b: ?file=1 streams the WAV even for a document navigation', async () => {
+            vi.mocked(hasR2WavFile).mockResolvedValue(true);
+            vi.mocked(getPrivateR2Object).mockResolvedValue({
+                stream: Readable.from([MOCK_WAV_BODY]),
+                contentType: MOCK_WAV_CONTENT_TYPE,
+                contentLength: MOCK_WAV_BODY.length,
+            });
+
+            const res = await request(createApp())
+                .get(`/api/downloads/${TOKEN}?file=1`)
+                .set('Sec-Fetch-Dest', 'document');
+
+            expect(res.status).toBe(200);
+            expect(res.headers['content-type']).toMatch(/octet-stream/);
+            expect(getPrivateR2Object).toHaveBeenCalledWith(AUDIO_PATH);
         });
 
         test('B2: returns 500 when R2 GET fails in prod-like environment', async () => {
@@ -184,7 +213,8 @@ describe('GET /api/downloads/:token', () => {
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`);
 
             expect(res.status).toBe(200);
-            expect(res.headers['content-type']).toMatch(/audio\/wav/);
+            expect(res.headers['content-type']).toMatch(/octet-stream/);
+            expect(res.headers['content-disposition']).toMatch(/attachment/);
             await vi.waitFor(() =>
                 expect(incrementDownloadCount).toHaveBeenCalledWith(validValidation.downloadId)
             );
@@ -209,7 +239,8 @@ describe('GET /api/downloads/:token', () => {
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`);
 
             expect(res.status).toBe(200);
-            expect(res.headers['content-type']).toMatch(/audio\/wav/);
+            expect(res.headers['content-type']).toMatch(/octet-stream/);
+            expect(res.headers['content-disposition']).toMatch(/attachment/);
             await vi.waitFor(() =>
                 expect(incrementDownloadCount).toHaveBeenCalledWith(validValidation.downloadId)
             );
@@ -233,7 +264,8 @@ describe('GET /api/downloads/:token', () => {
             const res = await request(createApp()).get(`/api/downloads/${TOKEN}`);
 
             expect(res.status).toBe(200);
-            expect(res.headers['content-type']).toMatch(/audio\/mpeg/);
+            expect(res.headers['content-type']).toMatch(/octet-stream/);
+            expect(res.headers['content-disposition']).toMatch(/attachment/);
             await vi.waitFor(() =>
                 expect(incrementDownloadCount).toHaveBeenCalledWith(validValidation.downloadId)
             );

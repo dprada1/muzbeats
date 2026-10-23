@@ -179,6 +179,7 @@ function getLogoURL(): string {
     }
 
     // Next best: Build logo URL from known backend URL using production backend static route (HTTPS)
+    // Note: We use skimask.png (not skimask.webp) b/c many email clients don't like .webp files, so we use .png files instead.
     const backendURL = getEnv('BACKEND_URL');
     if (backendURL) {
         return `${backendURL}/assets/images/skimask.png`;
@@ -339,6 +340,7 @@ export async function sendDownloadEmail(
                     </div>
                     <a 
                         href="${escapeHTML(downloadURL)}" 
+                        download
                         style="display: inline-block; padding: 12px 24px; background-color: #f3c000; color: #000; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;"
                     >
                         Download WAV
